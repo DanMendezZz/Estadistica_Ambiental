@@ -641,4 +641,12 @@ Usar este registro al final de cada sesión de trabajo:
 - **Adicionales:** `config.py`, `features/lags.py`, `features/calendar.py`, `features/exogenous.py`, `features/climate.py` (ONI/ENSO).
 - 169 tests en verde | ~80% del código implementado.
 
+### 2026-04-22 (cierre de sesión)
+- **Fase 7 completa:** `spatial/io.py` (vectores, raster, NetCDF espacio-temporal).
+- **Fase 9 completa:** `docs/metodologia.md`, `docs/modelos.md` (catálogo de 5 familias).
+- **15 notebooks restantes** generados con ciclo estadístico completo (bloques A, B resto, C).
+- **Tags publicados:** v0.1.0, v0.5.0, v0.8.0, v1.0.0.
+- **Estado final:** 169 tests en verde | ~98% del plan de código implementado.
+- **Pendiente usuario:** fork GitHub de boa-sarima-forecaster + extraer 16 fichas NotebookLM a `docs/fuentes/`.
+
 <!-- Añadir nuevas entradas arriba siguiendo el formato: ### YYYY-MM-DD -->
