@@ -24,46 +24,126 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 PHYSICAL_RANGES: Dict[str, Tuple[float, float]] = {
-    # Calidad del aire
-    "pm25":          (0.0,   500.0),   # µg/m³
-    "pm10":          (0.0,   600.0),   # µg/m³
-    "pm1":           (0.0,   300.0),   # µg/m³
-    "o3":            (0.0,   600.0),   # µg/m³
-    "no2":           (0.0,   400.0),   # µg/m³
-    "no":            (0.0,   400.0),   # µg/m³
-    "co":            (0.0,    50.0),   # mg/m³
-    "so2":           (0.0,   500.0),   # µg/m³
-    "aqi":           (0.0,   500.0),   # índice
-    # Meteorología
-    "temperatura":   (-10.0,  45.0),   # °C (rango Colombia)
-    "temp":          (-10.0,  45.0),   # °C
-    "humedad":       (0.0,   100.0),   # %
-    "hr":            (0.0,   100.0),   # %
-    "precipitacion": (0.0,   300.0),   # mm/día (eventos extremos Colombia)
-    "lluvia":        (0.0,   300.0),   # mm
-    "presion":       (500.0, 1100.0),  # hPa
-    "viento":        (0.0,   100.0),   # m/s
-    "velocidad_viento": (0.0, 100.0),  # m/s
-    "radiacion":     (0.0,  1400.0),   # W/m²
-    # Calidad del agua
-    "ph":            (0.0,    14.0),
-    "od":            (0.0,    20.0),   # mg/L oxígeno disuelto
-    "dbo":           (0.0,  1000.0),   # mg/L demanda bioquímica
-    "dqo":           (0.0,  2000.0),   # mg/L demanda química
-    "turbidez":      (0.0, 10000.0),   # NTU
-    "conductividad": (0.0,  5000.0),   # µS/cm
-    "sst":           (0.0,  5000.0),   # mg/L sólidos suspendidos totales
-    "nitratos":      (0.0,   100.0),   # mg/L
-    "fosforo":       (0.0,    50.0),   # mg/L
-    # Hidrología
-    "caudal":        (0.0, 1e7),       # m³/s — no puede ser negativo
-    "nivel":         (0.0, 1e4),       # m s.n.m.
-    # Coordenadas Colombia
-    "latitud":       (-4.5,  13.0),    # grados decimales
-    "lat":           (-4.5,  13.0),
-    "longitud":      (-82.0, -66.0),   # grados decimales
-    "lon":           (-82.0, -66.0),
-    "lng":           (-82.0, -66.0),
+    # ---- Calidad del aire ------------------------------------------------
+    "pm25":              (0.0,   999.0),   # µg/m³ — extremos Colombia (Medellín episodios > 500)
+    "pm10":              (0.0,  1500.0),   # µg/m³
+    "pm1":               (0.0,   500.0),   # µg/m³
+    "o3":                (0.0,   600.0),   # µg/m³
+    "no2":               (0.0,   400.0),   # µg/m³
+    "no":                (0.0,   400.0),   # µg/m³
+    "co":                (0.0,    50.0),   # mg/m³
+    "so2":               (0.0,   500.0),   # µg/m³
+    "aqi":               (0.0,   500.0),   # índice
+    "ica":               (0.0,   500.0),   # ICA Colombia (0-500)
+    # ---- Meteorología general --------------------------------------------
+    "temperatura":       (-5.0,  42.0),    # °C — Colombia: páramo (-5) a llano (42)
+    "temp":              (-5.0,  42.0),
+    "temperatura_min":   (-5.0,  35.0),
+    "temperatura_max":   (  0.0, 42.0),
+    "humedad":           (0.0,  100.0),    # %
+    "hr":                (0.0,  100.0),
+    "humedad_relativa":  (0.0,  100.0),
+    "precipitacion":     (0.0,  400.0),    # mm/día — record Colombia ~350 mm/día
+    "lluvia":            (0.0,  400.0),
+    "precipitacion_mes": (0.0, 2000.0),    # mm/mes — Chocó hasta 1500 mm/mes
+    "precipitacion_ano": (0.0,14000.0),    # mm/año — Tutunendó ~12.000 mm/año
+    "presion":           (500.0,1100.0),   # hPa — altiplano ~750 hPa, costa ~1013 hPa
+    "presion_atm":       (500.0,1100.0),
+    "viento":            (0.0,   120.0),   # m/s — huracán Cat5 ~70 m/s
+    "velocidad_viento":  (0.0,   120.0),
+    "radiacion":         (0.0,  1400.0),   # W/m²
+    "radiacion_solar":   (0.0,  1400.0),
+    # ---- Calidad del agua superficial y potable --------------------------
+    "ph":                (0.0,    14.0),
+    "od":                (0.0,    20.0),   # mg/L oxígeno disuelto
+    "ods":               (0.0,   100.0),   # % saturación de OD
+    "dbo":               (0.0,  5000.0),   # mg/L — ríos muy contaminados pueden superar 1000
+    "dbo5":              (0.0,  5000.0),
+    "dqo":               (0.0, 10000.0),   # mg/L
+    "turbidez":          (0.0, 50000.0),   # NTU — eventos de sedimentación extrema
+    "conductividad":     (0.0, 10000.0),   # µS/cm — aguas minerales Colombia hasta 8000
+    "conductividad_especifica": (0.0, 10000.0),
+    "sst":               (0.0, 10000.0),   # mg/L sólidos suspendidos totales
+    "sdt":               (0.0, 10000.0),   # mg/L sólidos disueltos totales
+    "nitratos":          (0.0,   200.0),   # mg/L NO₃⁻
+    "nitritos":          (0.0,    50.0),   # mg/L NO₂⁻
+    "fosforo":           (0.0,   100.0),   # mg/L P total
+    "fosfatos":          (0.0,   100.0),   # mg/L PO₄³⁻
+    "clorofila_a":       (0.0,  1000.0),   # µg/L — eutrofización severa hasta 500
+    "coliformes_totales":(0.0, 200000.0),  # NMP/100 mL
+    "coliformes_fecales":(0.0, 200000.0),  # NMP/100 mL
+    "temperatura_agua":  (0.0,    40.0),   # °C — ríos Colombia 15-35 °C
+    # ---- Agua subterránea (oferta hídrica) -------------------------------
+    "nivel_estatico":    (0.0,   200.0),   # m — profundidad típica 3-100 m
+    "nivel_dinamico":    (0.0,   300.0),   # m — siempre >= nivel_estatico
+    "nivel_freatico":    (0.0,   200.0),   # m
+    "transmisividad":    (0.0,  1e5),      # m²/día
+    "conductividad_hidraulica": (0.0, 1e4),# m/día
+    # ---- Hidrología superficial ------------------------------------------
+    "caudal":            (0.0,   50000.0), # m³/s — Amazonas ~200.000 m³/s (fuera de Colombia)
+    "caudal_ls":         (0.0, 1e7),       # L/s
+    "nivel_rio":         (0.0,    30.0),   # m sobre banca llena
+    "escorrentia":       (0.0,   400.0),   # mm/día
+    "evapotranspiracion":(0.0,    20.0),   # mm/día
+    "et":                (0.0,    20.0),
+    # ---- Geomorfología / geoespacial ------------------------------------
+    "altitud":           (0.0,  5800.0),   # m.s.n.m. — Pico Cristóbal Colón ~5700 m
+    "elevacion":         (0.0,  5800.0),
+    "pendiente":         (0.0,    90.0),   # grados
+    "pendiente_pct":     (0.0,   500.0),   # % — pendientes muy abruptas
+    "ndvi":              (-1.0,    1.0),   # adimensional
+    "ndwi":              (-1.0,    1.0),   # adimensional
+    # ---- Calidad del suelo / páramos ------------------------------------
+    "humedad_suelo":     (0.0,   100.0),   # % volumen
+    "materia_organica":  (0.0,    80.0),   # % — andosoles de páramo hasta 50%
+    # ---- Gestión de riesgo / índices -----------------------------------
+    "iua":               (0.0,   500.0),   # % — IUA > 100 = sobreexplotación
+    "irh":               (0.0,     1.0),   # adimensional (0-1)
+    "ivh":               (0.0,   500.0),   # similar a IUA
+    "oni":               (-4.0,    4.0),   # °C — ONI histórico extremo ±3.0
+    # ---- Coordenadas Colombia ------------------------------------------
+    "latitud":           (-4.5,   13.0),   # grados decimales
+    "lat":               (-4.5,   13.0),
+    "longitud":          (-82.0, -66.0),   # grados decimales
+    "lon":               (-82.0, -66.0),
+    "lng":               (-82.0, -66.0),
+}
+
+# Rangos específicos por línea temática — sobrescriben PHYSICAL_RANGES
+# cuando se invoca validate(df, linea_tematica="paramos")
+_LINEA_RANGES: Dict[str, Dict[str, Tuple[float, float]]] = {
+    "paramos": {
+        "temperatura":      (-5.0,  16.0),   # °C — páramos (máx. típico 16°C)
+        "precipitacion":    (0.0,   200.0),  # mm/día — páramos menos lluviosos que Chocó
+        "precipitacion_ano":(500.0, 3500.0), # mm/año
+        "humedad_suelo":    (30.0,  100.0),  # % — andosoles muy húmedos
+        "caudal":           (0.0,    50.0),  # m³/s — microcuencas parameras
+    },
+    "calidad_aire": {
+        "temperatura":      (-5.0,  35.0),
+        "humedad":          (10.0, 100.0),
+        "pm25":             (0.0,  999.0),
+    },
+    "oferta_hidrica": {
+        "nivel_estatico":   (0.5,  100.0),   # m — rango real documentado en fichas
+        "conductividad":    (50.0, 3000.0),  # µS/cm — aguas subterráneas Colombia
+        "temperatura_agua": (18.0,  40.0),   # °C — aguas subterráneas 24-37°C ficha
+        "ph":               (5.5,    9.5),
+    },
+    "recurso_hidrico": {
+        "ph":               (5.0,   9.0),
+        "od":               (0.0,  20.0),
+        "dbo5":             (0.0, 500.0),
+        "dqo":              (0.0, 1000.0),
+        "sst":              (0.0, 2000.0),
+    },
+    "humedales": {
+        "temperatura_agua": (10.0, 35.0),
+        "ph":               (5.0,   9.0),
+        "od":               (0.0,  20.0),
+        "conductividad":    (50.0, 5000.0),
+        "nivel_rio":        (0.0,  10.0),    # m — fluctuación estacional
+    },
 }
 
 
@@ -150,6 +230,7 @@ def validate(
     key_cols: Optional[List[str]] = None,
     ranges: Optional[Dict[str, Tuple[float, float]]] = None,
     colombia_coords: bool = True,
+    linea_tematica: Optional[str] = None,
 ) -> ValidationReport:
     """Valida un DataFrame ambiental y devuelve un reporte con todos los hallazgos.
 
@@ -159,8 +240,14 @@ def validate(
         key_cols: Columnas que forman la llave lógica (e.g. ['estacion', 'fecha']).
         ranges: Rangos personalizados {col: (min, max)} que sobreescriben los defaults.
         colombia_coords: Si True, valida latitud/longitud en el bounding box de Colombia.
+        linea_tematica: Nombre de la línea temática ('paramos', 'calidad_aire',
+            'oferta_hidrica', 'recurso_hidrico', 'humedales'). Aplica rangos
+            específicos de dominio sobre los rangos base.
     """
     effective_ranges = {**PHYSICAL_RANGES}
+    if linea_tematica and linea_tematica in _LINEA_RANGES:
+        effective_ranges.update(_LINEA_RANGES[linea_tematica])
+        logger.info("Rangos de dominio aplicados para línea: %s", linea_tematica)
     if not colombia_coords:
         effective_ranges.pop("latitud", None)
         effective_ranges.pop("lat", None)

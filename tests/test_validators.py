@@ -95,7 +95,9 @@ class TestCheckRanges:
         assert "temperatura" not in result
 
     def test_detects_pm25_violation(self):
-        df = pd.DataFrame({"pm25": [10.0, 600.0, 15.0]})  # 600 > 500
+        # Rango plausible actualizado a 999 µg/m³ (episodios extremos Colombia).
+        # Un sensor mal calibrado o error de digitación puede reportar 1500+.
+        df = pd.DataFrame({"pm25": [10.0, 1500.0, 15.0]})  # 1500 > 999
         result = _check_ranges(df, PHYSICAL_RANGES)
         assert "pm25" in result
         assert result["pm25"]["n"] == 1
