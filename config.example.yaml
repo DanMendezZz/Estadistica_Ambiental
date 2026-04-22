@@ -1,0 +1,48 @@
+# config.example.yaml — Ejemplo de configuración del proyecto
+# Copia este archivo como config.yaml y ajusta los valores
+# config.yaml está en .gitignore
+
+project:
+  name: "estadistica_ambiental"
+  version: "0.1.0"
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  output_dir: "data/output"
+
+# Configuración de una serie temporal ambiental
+series:
+  date_col: "fecha"
+  value_col: "valor"
+  estacion_col: "estacion"
+  linea_tematica: "calidad_aire"  # calidad_aire | oferta_hidrica | paramos | ...
+  frecuencia: "H"  # H=horaria, D=diaria, M=mensual
+  variable_unidad: "PM2.5 (µg/m³)"
+
+# Modelos candidatos (true = incluir en comparación)
+modelos:
+  sarima: true
+  sarimax: true
+  prophet: true
+  xgboost: true
+  random_forest: true
+  lstm: false       # requiere [deep]
+  kriging: false    # requiere [spatial]
+
+# Optimización bayesiana (Optuna TPE)
+optimizacion:
+  n_trials: 50
+  timeout_seconds: 600
+  metric: "mae"     # mae | rmse | nse | kge
+
+# Backtesting
+backtesting:
+  strategy: "walk_forward"   # walk_forward | expanding | sliding
+  n_splits: 5
+  horizon: 24                # pasos hacia adelante
+
+# Reportes
+reporting:
+  formato: "html"            # html | pdf
+  output_dir: "data/output/reports"
