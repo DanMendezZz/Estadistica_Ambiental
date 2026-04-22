@@ -64,4 +64,93 @@
 
 ---
 
+## ADR-005 — Normas colombianas centralizadas en config.py
+
+**Fecha:** 2026-04-22
+**Estado:** Aceptado
+
+**Contexto:** Las normas ambientales colombianas estaban dispersas o ausentes en el código. Cada notebook o función las repetía como constantes locales, generando inconsistencias.
+
+**Decisión:** Todas las normas regulatorias colombianas se centralizan en `config.py` como diccionarios con nombre explícito:
+- `NORMA_CO` — Res. 2254/2017 (calidad del aire)
+- `NORMA_OMS` — Guías OMS 2021
+- `NORMA_AGUA_POTABLE` — Res. 2115/2007
+- `NORMA_VERTIMIENTOS` — Res. 631/2015
+- `IUA_THRESHOLDS`, `IRH_THRESHOLDS`, `ICA_CATEGORIES` — índices hídricos IDEAM
+- `ENSO_THRESHOLDS`, `ENSO_LAG_MESES` — clasificación ONI y lags por línea
+- `DEFORESTACION_ALERTAS`, `RANGO_TEMP_ECOSISTEMA` — umbrales SMByC y temperatura por ecosistema
+
+**Consecuencias:** Un único punto de verdad para umbrales normativos. Cambiar una norma (ej. actualización de la Res. 2254) requiere modificar solo `config.py`.
+
+---
+
+## ADR-006 — Validación de rangos físicos con especificidad por línea temática
+
+**Fecha:** 2026-04-22
+**Estado:** Aceptado
+
+**Contexto:** El validador original tenía rangos genéricos para 30 variables. Al aplicarse a líneas temáticas específicas (páramos, oferta hídrica subterránea), los rangos eran incorrectos: temperatura del páramo tiene máx. 16°C, no 45°C; conductividad de aguas subterráneas llega a 3000 µS/cm, no 5000.
+
+**Decisión:** `validators.py` mantiene `PHYSICAL_RANGES` como base (74 variables) más un diccionario `_LINEA_RANGES` con sobrescrituras por línea. `validate()` acepta el parámetro `linea_tematica=` que aplica los rangos específicos antes que los personalizados:
+
+```python
+validate(df, date_col="fecha", linea_tematica="paramos")
+```
+
+**Consecuencias:** Más falsos positivos eliminados. El analista recibe advertencias relevantes para su dominio específico en lugar de alertas genéricas.
+
+---
+
+## ADR-007 — Lags ENSO diferenciados por línea temática
+
+**Fecha:** 2026-04-22
+**Estado:** Aceptado
+
+**Contexto:** La función `enso_dummy()` aplicaba el ONI sin lag. La respuesta hidrológica/ambiental al ENSO varía por ecosistema: páramos responden en ~2 meses, cuencas andinas en ~4 meses, calidad del aire en ~2 meses.
+
+**Decisión:** Se crea `enso_lagged()` en `features/climate.py` que aplica el lag correspondiente desde `config.ENSO_LAG_MESES` según la línea temática. El lag es configurable explícitamente si el analista tiene evidencia específica:
+
+```python
+enso_lagged(df, oni, date_col="fecha", linea_tematica="oferta_hidrica")  # lag=4 automático
+enso_lagged(df, oni, date_col="fecha", lag_meses=6)                      # override manual
+```
+
+Se agrega también `_classify_enso_intensity()` que distingue eventos moderados de fuertes (umbral ±1.5 ONI).
+
+**Consecuencias:** Covariables ENSO más representativas para cada modelo. Los notebooks regenerados incluyen la celda ENSO solo en las líneas donde aplica.
+
+---
+
+## ADR-008 — Reporte de cumplimiento normativo como artefacto separado
+
+**Fecha:** 2026-04-22
+**Estado:** Aceptado
+
+**Contexto:** El `forecast_report.py` solo muestra métricas predictivas. Para las entidades ambientales colombianas, el producto más importante no es el pronóstico sino saber si los datos superan las normas (Resoluciones, Guías OMS, IUA crítico).
+
+**Decisión:** Se crea `reporting/compliance_report.py` con `compliance_report()` que genera un HTML independiente con:
+- Semáforo por variable (verde/amarillo/rojo según excedencias)
+- Tabla de excedencias con cada norma colombiana aplicable, umbral, tipo (mínimo/máximo) y período de retorno
+- Series temporales con línea de norma superpuesta
+- Contexto de dominio extraído de `docs/fuentes/<linea>.md`
+
+La lógica de cálculo vive en `inference/intervals.py::exceedance_report()` (testeable de forma aislada). El reporte es el envoltorio HTML.
+
+**Consecuencias:** Separación entre lógica estadística (testeable) y presentación (HTML). `exceedance_report()` puede usarse sin generar HTML.
+
+---
+
+## ADR-009 — Conectores a fuentes de datos ambientales colombianas como módulo io
+
+**Fecha:** 2026-04-22
+**Estado:** Aceptado
+
+**Contexto:** Las 16 fichas de dominio referencian consistentemente las mismas fuentes de datos oficiales (IDEAM DHIME, RMCAB, SIATA, OpenAQ, SMByC, datos.gov.co). Sin conectores estandarizados, cada notebook reimplementa el acceso de forma ad-hoc.
+
+**Decisión:** Se crea `io/connectors.py` con conectores para cada fuente. Las fuentes con API pública (OpenAQ v3) devuelven DataFrames directamente. Las fuentes sin API (IDEAM DHIME) proveen un loader flexible para archivos descargados manualmente con instrucciones claras en el docstring.
+
+**Consecuencias:** Un punto único de acceso a datos. Las instrucciones de descarga manual están en el código (docstring), no en documentación externa que se desactualiza.
+
+---
+
 <!-- Agregar nuevas decisiones arriba, manteniendo numeración incremental -->
