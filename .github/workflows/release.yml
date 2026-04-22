@@ -1,0 +1,130 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write   # necesario para crear GitHub Releases
+
+jobs:
+  # ─────────────────────────────────────────────
+  # JOB 1: Tests completos antes de publicar
+  # ─────────────────────────────────────────────
+  test-before-release:
+    name: Full test suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install package
+        run: pip install -e ".[dev]"
+
+      - name: Run all tests
+        run: python -m pytest tests/ -v --tb=short
+
+  # ─────────────────────────────────────────────
+  # JOB 2: Build wheel + sdist
+  # ─────────────────────────────────────────────
+  build:
+    name: Build package
+    needs: test-before-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build
+        run: pip install build
+
+      - name: Build wheel and sdist
+        run: python -m build
+
+      - name: Verify build
+        run: |
+          pip install twine
+          twine check dist/*
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  # ─────────────────────────────────────────────
+  # JOB 3: Extraer notas del CHANGELOG
+  # ─────────────────────────────────────────────
+  changelog:
+    name: Extract release notes
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      notes: ${{ steps.extract.outputs.notes }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract section for this tag
+        id: extract
+        shell: python
+        run: |
+          import os, re
+          tag = os.environ["GITHUB_REF_NAME"]          # e.g. v1.0.0
+          version = tag.lstrip("v")
+          text = open("CHANGELOG.md", encoding="utf-8").read()
+          # Busca ## [version] hasta el siguiente ##
+          pattern = rf"## \[{re.escape(version)}\].*?(?=\n## \[|\Z)"
+          match = re.search(pattern, text, re.DOTALL)
+          notes = match.group(0).strip() if match else f"Release {tag}"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"notes<<EOF\n{notes}\nEOF\n")
+
+  # ─────────────────────────────────────────────
+  # JOB 4: Crear GitHub Release
+  # ─────────────────────────────────────────────
+  github-release:
+    name: GitHub Release
+    needs: changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body: ${{ needs.changelog.outputs.notes }}
+          files: dist/*
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') }}
+
+  # ─────────────────────────────────────────────
+  # JOB 5: Publicar en PyPI (deshabilitado por defecto)
+  # Habilitar cuando el paquete esté listo para publicación pública.
+  # Requiere: secret PYPI_API_TOKEN en Settings > Secrets.
+  # ─────────────────────────────────────────────
+  # publish-pypi:
+  #   name: Publish to PyPI
+  #   needs: github-release
+  #   runs-on: ubuntu-latest
+  #   environment: pypi
+  #   steps:
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: dist
+  #         path: dist/
+  #     - uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         password: ${{ secrets.PYPI_API_TOKEN }}

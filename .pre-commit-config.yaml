@@ -1,0 +1,33 @@
+repos:
+  # Ruff — linting y formato (reemplaza flake8 + isort + black)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.7
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # Hooks generales de calidad
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+        exclude: ".*\\.ipynb$"   # notebooks tienen formato propio
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+        exclude: ".*\\.ipynb$"
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=500"]    # evitar datasets accidentales
+      - id: debug-statements     # detecta print() / pdb accidentales
+      - id: no-commit-to-branch
+        args: ["--branch", "main"]   # fuerza uso de feature branches
+
+  # Validación de notebooks
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.8.5
+    hooks:
+      - id: nbqa-ruff
+        args: [--fix]
