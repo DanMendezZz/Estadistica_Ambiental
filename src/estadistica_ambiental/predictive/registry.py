@@ -18,6 +18,14 @@ _REGISTRY: Dict[str, Type[BaseModel]] = {
     "lightgbm":     LightGBMModel,
 }
 
+# Modelos deep learning — se registran solo si PyTorch está disponible
+try:
+    from estadistica_ambiental.predictive.deep import LSTMModel, GRUModel
+    _REGISTRY["lstm"] = LSTMModel
+    _REGISTRY["gru"]  = GRUModel
+except ImportError:
+    pass
+
 
 def get_model(name: str, **kwargs) -> BaseModel:
     """Instancia un modelo por nombre. kwargs pasan al constructor."""
