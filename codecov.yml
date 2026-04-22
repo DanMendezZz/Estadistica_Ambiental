@@ -1,0 +1,22 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 70%          # umbral mínimo global (espacial usa deps opcionales)
+        threshold: 5%        # tolerancia de caída entre commits
+    patch:
+      default:
+        target: 60%          # cobertura mínima en código nuevo de cada PR
+
+  # Ignorar módulos con dependencias opcionales pesadas
+  ignore:
+    - "src/estadistica_ambiental/predictive/deep.py"
+    - "src/estadistica_ambiental/predictive/bayesian.py"
+    - "src/estadistica_ambiental/spatial/autocorrelation.py"
+    - "src/estadistica_ambiental/spatial/viz.py"
+    - "src/estadistica_ambiental/features/climate.py"
+
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false

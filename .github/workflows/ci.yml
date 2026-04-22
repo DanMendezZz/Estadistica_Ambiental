@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+      - "adapt-**"
+      - "import-**"
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────
+  # JOB 1: Linting y formato
+  # ─────────────────────────────────────────────
+  lint:
+    name: Lint & Format (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install "ruff>=0.3"
+
+      - name: Check lint
+        run: ruff check src/ tests/
+
+      - name: Check format
+        run: ruff format --check src/ tests/
+
+  # ─────────────────────────────────────────────
+  # JOB 2: Tests — matriz Python × OS
+  # ─────────────────────────────────────────────
+  test:
+    name: Tests (py${{ matrix.python-version }} / ${{ matrix.os }})
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+        os: [ubuntu-latest, windows-latest]
+        exclude:
+          # Python 3.10 solo en ubuntu para reducir tiempo de CI
+          - os: windows-latest
+            python-version: "3.10"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package + dev deps
+        run: pip install -e ".[dev]"
+
+      - name: Run core tests
+        run: >
+          python -m pytest tests/
+          --tb=short
+          -q
+          --cov=src/estadistica_ambiental
+          --cov-report=xml:coverage.xml
+          --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        # Solo desde ubuntu + py3.12 para no duplicar reportes
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  # ─────────────────────────────────────────────
+  # JOB 3: Tests con dependencias espaciales
+  # ─────────────────────────────────────────────
+  test-spatial:
+    name: Tests con [spatial]
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install con extras espaciales
+        # GDAL puede fallar en CI — usamos conda o ignoramos si falla
+        run: |
+          pip install -e ".[dev]" || true
+          pip install geopandas pykrige pysal esda folium branca || true
+
+      - name: Run tests (incluyendo espaciales)
+        run: python -m pytest tests/ --tb=short -q
+
+  # ─────────────────────────────────────────────
+  # JOB 4: Auditoría de seguridad
+  # ─────────────────────────────────────────────
+  security:
+    name: Security audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit core dependencies
+        # No falla el CI si hay vulnerabilidades — solo las reporta
+        run: pip-audit -r requirements.txt --progress-spinner off || true
+
+      - name: Audit installed packages
+        run: |
+          pip install -e ".[dev]"
+          pip-audit --progress-spinner off || true
+
+  # ─────────────────────────────────────────────
+  # JOB 5: Validar notebooks (sintaxis JSON)
+  # ─────────────────────────────────────────────
+  notebooks:
+    name: Validate notebooks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check notebook JSON validity
+        run: |
+          python - <<'EOF'
+          import json, pathlib, sys
+          errors = []
+          for nb in pathlib.Path("notebooks").rglob("*.ipynb"):
+              try:
+                  data = json.loads(nb.read_text(encoding="utf-8"))
+                  assert data.get("nbformat") == 4
+              except Exception as e:
+                  errors.append(f"{nb}: {e}")
+          if errors:
+              print("Notebooks con errores:")
+              for e in errors: print(f"  {e}")
+              sys.exit(1)
+          print(f"OK: {len(list(pathlib.Path('notebooks').rglob('*.ipynb')))} notebooks validados")
+          EOF

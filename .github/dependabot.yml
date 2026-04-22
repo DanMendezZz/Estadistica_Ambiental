@@ -1,0 +1,56 @@
+version: 2
+
+updates:
+  # Dependencias Python
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: "America/Bogota"
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - python
+    groups:
+      # Agrupar actualizaciones de análisis de datos juntas
+      data-stack:
+        patterns:
+          - "pandas"
+          - "numpy"
+          - "scipy"
+          - "pyarrow"
+      # Agrupar modelos estadísticos
+      stats-models:
+        patterns:
+          - "statsmodels"
+          - "pymannkendall"
+          - "optuna"
+      # Agrupar ML
+      ml-stack:
+        patterns:
+          - "scikit-learn"
+          - "xgboost"
+          - "lightgbm"
+      # Visualización
+      viz-stack:
+        patterns:
+          - "matplotlib"
+          - "seaborn"
+          - "plotly"
+    ignore:
+      # No actualizar automáticamente dependencias que puedan romper la API
+      - dependency-name: "pandas"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "statsmodels"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    labels:
+      - dependencies
+      - github-actions
