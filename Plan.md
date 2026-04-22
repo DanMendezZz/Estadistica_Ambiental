@@ -629,4 +629,16 @@ Usar este registro al final de cada sesión de trabajo:
 - Fase 7 dedicada a la capa espacial; Fase 4 MVP ahora apunta a calidad del aire (caso directo).
 - Notebooks reorganizados en subcarpetas por bloque.
 
+### 2026-04-22 (sesión de implementación)
+- **Fase 0 completa:** estructura, CLAUDE.md, docs/decisiones.md, 16 fichas fuentes, ramas, push a GitHub.
+- **Fase 1 completa:** `io/loaders.py`, `io/validators.py`, `eda/variables.py`, `eda/quality.py`, `eda/profiling.py`, `eda/viz.py`.
+- **Fase 2 completa:** `descriptive/univariate.py`, `descriptive/bivariate.py`, `descriptive/temporal.py`, `inference/distributions.py`, `inference/hypothesis.py`, `inference/stationarity.py`, `inference/trend.py`, `inference/intervals.py`.
+- **Fase 3 completa:** `preprocessing/imputation.py`, `preprocessing/outliers.py`, `preprocessing/resampling.py`, `predictive/base.py`, `predictive/classical.py` (ARIMA/SARIMA/SARIMAX/ETS), `optimization/bayes_opt.py`, `evaluation/metrics.py`.
+- **Fase 5 completa:** `predictive/ml.py` (XGBoost, RF, LightGBM), `predictive/prophet_model.py`, `predictive/registry.py`.
+- **Fase 6 completa:** `evaluation/backtesting.py`, `evaluation/comparison.py`, `reporting/forecast_report.py`.
+- **Fase 7 completa (código):** `spatial/projections.py`, `spatial/interpolation.py`, `spatial/autocorrelation.py`, `spatial/viz.py`.
+- **Fase 4 completa:** notebook MVP `calidad_aire.ipynb` con ciclo estadístico completo + 3 modelos + reporte.
+- **Adicionales:** `config.py`, `features/lags.py`, `features/calendar.py`, `features/exogenous.py`, `features/climate.py` (ONI/ENSO).
+- 169 tests en verde | ~80% del código implementado.
+
 <!-- Añadir nuevas entradas arriba siguiendo el formato: ### YYYY-MM-DD -->
