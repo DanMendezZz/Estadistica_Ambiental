@@ -78,7 +78,8 @@ def _normalize(df: pd.DataFrame, cols: List[str]) -> pd.DataFrame:
             result[col] = 0.0
             continue
         norm = (s - lo) / (hi - lo)
-        result[col] = (1 - norm) if col not in _HIGHER_IS_BETTER else norm
+        # lower score = better; para higher-is-better, invertimos
+        result[col] = norm if col not in _HIGHER_IS_BETTER else (1 - norm)
     return result
 
 
