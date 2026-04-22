@@ -71,15 +71,25 @@ src/estadistica_ambiental/
 
 ## Atribución
 
-Este repositorio deriva del trabajo de **Tomás Cárdenas** en [`boa-sarima-forecaster`](https://github.com/TomCardeLo/boa-sarima-forecaster).
+Este repositorio se construye sobre el trabajo de **Tomás Cárdenas López** ([@TomCardeLo](https://github.com/TomCardeLo)):
 
-Los módulos heredados se identifican en el código con el docstring:
+> **[boa-sarima-forecaster](https://github.com/TomCardeLo/boa-sarima-forecaster)**
+> Pipeline modular de pronóstico con SARIMA y optimización bayesiana (Optuna TPE).
+
+Los siguientes módulos se heredan directa o parcialmente de ese repositorio y se adaptan al dominio ambiental:
+
+| Módulo origen (`boa-sarima-forecaster`) | Módulo destino (`estadistica_ambiental`) |
+|---|---|
+| `src/sarima_bayes/optimizer.py` | `optimization/bayes_opt.py` |
+| `src/sarima_bayes/model.py` | `predictive/classical.py` |
+| `src/sarima_bayes/metrics.py` | `evaluation/metrics.py` |
+| `src/sarima_bayes/config.py` | `config.py` |
+
+Cada módulo heredado incluye en su encabezado:
 
 ```python
 # Adaptado de boa-sarima-forecaster/<módulo>.py por Dan Méndez — <fecha>
 ```
-
-Módulos con mayor herencia: `optimization/bayes_opt.py`, `predictive/classical.py`, `evaluation/metrics.py`.
 
 ## Documentación
 
