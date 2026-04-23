@@ -24,6 +24,7 @@ def walk_forward(
     domain: str = "general",
     strategy: str = "expanding",
     pollutant: str = "pm25",
+    gap: int = 0,
 ) -> Dict:
     """Walk-forward backtesting con ventana expansiva o deslizante.
 
@@ -38,6 +39,9 @@ def walk_forward(
         strategy: 'expanding' (crece) | 'sliding' (tamaño fijo).
         pollutant: Contaminante para breakpoints ICA ('pm25', 'pm10', 'o3',
             'no2', 'so2', 'co'). Solo aplica con domain='air_quality'.
+        gap: Observaciones de purga entre fin de train y comienzo de test.
+            Evita leakage por autocorrelación alta (PM2.5 horario, caudal diario).
+            Default 0 (sin purga) para compatibilidad retroactiva.
 
     Returns:
         Dict con 'metrics' (promedio), 'folds' (lista por fold) y 'predictions'.
@@ -56,7 +60,7 @@ def walk_forward(
             train_start = fold_idx * step
             train_end = min_train + fold_idx * step
 
-        test_start = train_end
+        test_start = train_end + gap
         test_end   = min(test_start + horizon, n)
 
         if test_end > n or test_start >= n:

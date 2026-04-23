@@ -85,7 +85,32 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   # ─────────────────────────────────────────────
-  # JOB 3: Tests con dependencias espaciales
+  # JOB 3: Tests con extras ML (xgboost / lightgbm)
+  # ─────────────────────────────────────────────
+  test-ml:
+    name: Tests con [ml]
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install con extras ML
+        run: pip install -e ".[dev,ml]"
+
+      - name: Run tests con cobertura ML
+        run: >
+          python -m pytest tests/
+          --tb=short -q
+          --cov=src/estadistica_ambiental
+          --cov-report=xml:coverage-ml.xml
+
+  # ─────────────────────────────────────────────
+  # JOB 4: Tests con dependencias espaciales
   # ─────────────────────────────────────────────
   test-spatial:
     name: Tests con [spatial]
