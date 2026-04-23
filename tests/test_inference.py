@@ -4,13 +4,16 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from estadistica_ambiental.inference.distributions import normality_tests, fit_distribution
-from estadistica_ambiental.inference.hypothesis import ttest, mannwhitney, anova, kruskalwallis
+from estadistica_ambiental.inference.distributions import fit_distribution, normality_tests
+from estadistica_ambiental.inference.hypothesis import anova, kruskalwallis, mannwhitney, ttest
+from estadistica_ambiental.inference.intervals import (
+    ci_mean,
+    ci_median_bootstrap,
+    ci_quantile_bootstrap,
+    exceedance_probability,
+)
 from estadistica_ambiental.inference.stationarity import adf_test, kpss_test, stationarity_report
 from estadistica_ambiental.inference.trend import mann_kendall, sens_slope
-from estadistica_ambiental.inference.intervals import (
-    ci_mean, ci_median_bootstrap, ci_quantile_bootstrap, exceedance_probability,
-)
 
 
 @pytest.fixture

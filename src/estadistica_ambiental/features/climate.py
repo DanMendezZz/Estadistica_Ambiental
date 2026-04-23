@@ -12,7 +12,7 @@ from typing import Optional
 
 import pandas as pd
 
-from estadistica_ambiental.config import ENSO_THRESHOLDS, ENSO_LAG_MESES
+from estadistica_ambiental.config import ENSO_LAG_MESES, ENSO_THRESHOLDS
 
 logger = logging.getLogger(__name__)
 

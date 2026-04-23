@@ -8,7 +8,6 @@ import pytest
 
 from estadistica_ambiental.preprocessing.imputation import impute
 
-
 # ---------------------------------------------------------------------------
 # Fixture
 # ---------------------------------------------------------------------------

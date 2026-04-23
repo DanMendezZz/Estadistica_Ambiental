@@ -7,9 +7,11 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
-import pandas as pd
+if TYPE_CHECKING:
+    import geopandas
+    import xarray
 
 logger = logging.getLogger(__name__)
 

@@ -18,7 +18,6 @@ Salidas en data/output/fase8/:
 """
 from __future__ import annotations
 
-import json
 import logging
 import warnings
 from pathlib import Path
@@ -193,8 +192,8 @@ def main() -> None:
     logger.info("--- Modelo 1: SARIMA optimizado ---")
     sarima_config = optimizar_sarima(serie)
     try:
-        from estadistica_ambiental.predictive.classical import SARIMAXModel
         from estadistica_ambiental.evaluation.backtesting import walk_forward
+        from estadistica_ambiental.predictive.classical import SARIMAXModel
 
         sarima = SARIMAXModel(
             order=sarima_config["order"],
@@ -293,7 +292,7 @@ def main() -> None:
     # ── 5.6 Detección de anomalías en residuos ──────────────────────────────
     logger.info("--- Detección de anomalías en residuos ---")
     try:
-        from estadistica_ambiental.evaluation.anomaly import detect_anomalies, anomaly_summary
+        from estadistica_ambiental.evaluation.anomaly import anomaly_summary, detect_anomalies
         mejor_preds = resultados.get(mejor, {}).get("predictions", pd.DataFrame())
         if not mejor_preds.empty:
             anom_df = detect_anomalies(

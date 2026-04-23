@@ -62,7 +62,6 @@ def meteorological_features(
     - Indicador de lluvia binario
     - Velocidad de viento al cuadrado (proxy de dispersión)
     """
-    import numpy as np
     result = df.copy()
 
     if temp_col and humidity_col and temp_col in df.columns and humidity_col in df.columns:

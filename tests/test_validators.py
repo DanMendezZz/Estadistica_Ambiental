@@ -4,15 +4,14 @@ import pandas as pd
 import pytest
 
 from estadistica_ambiental.io.validators import (
+    PHYSICAL_RANGES,
     ValidationReport,
-    validate,
-    _check_missing,
     _check_duplicates,
+    _check_missing,
     _check_ranges,
     _check_temporal,
-    PHYSICAL_RANGES,
+    validate,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

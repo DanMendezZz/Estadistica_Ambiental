@@ -9,11 +9,10 @@ import pandas as pd
 import pytest
 
 from estadistica_ambiental.features.climate import (
-    load_oni,
     enso_dummy,
     enso_lagged,
+    load_oni,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

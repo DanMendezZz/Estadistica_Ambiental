@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def _make_lag_features(series: np.ndarray, lags: List[int]) -> pd.DataFrame:
     max_lag = max(lags)
     n = len(series)
-    data = {f"lag_{l}": series[max_lag - l: n - l] for l in lags}
+    data = {f"lag_{lag}": series[max_lag - lag: n - lag] for lag in lags}
     return pd.DataFrame(data)
 
 
@@ -47,7 +47,7 @@ class _SklearnModel(BaseModel):
         history = list(self._last_values)
         preds = []
         for i in range(horizon):
-            lag_vals = {f"lag_{l}": history[-l] for l in self._lags}
+            lag_vals = {f"lag_{lag}": history[-lag] for lag in self._lags}
             row = pd.DataFrame([lag_vals])
             if X_future is not None and i < len(X_future):
                 exog_row = X_future.iloc[[i]].reset_index(drop=True)

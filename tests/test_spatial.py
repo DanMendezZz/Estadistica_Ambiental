@@ -4,17 +4,16 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from estadistica_ambiental.spatial.interpolation import idw
-from estadistica_ambiental.spatial.projections import bounding_box_colombia, points_to_geodataframe
-from estadistica_ambiental.features.lags import add_lags, add_rolling_features, add_diff_features
+from estadistica_ambiental.evaluation.comparison import rank_models, select_best
 from estadistica_ambiental.features.calendar import add_calendar_features
 from estadistica_ambiental.features.exogenous import meteorological_features
-from estadistica_ambiental.evaluation.comparison import rank_models, select_best
-from estadistica_ambiental.reporting.stats_report import stats_report
+from estadistica_ambiental.features.lags import add_diff_features, add_lags, add_rolling_features
 from estadistica_ambiental.preprocessing.imputation import impute
 from estadistica_ambiental.preprocessing.outliers import flag_outliers
-from estadistica_ambiental.preprocessing.resampling import resample, fill_missing_timestamps
-
+from estadistica_ambiental.preprocessing.resampling import fill_missing_timestamps, resample
+from estadistica_ambiental.reporting.stats_report import stats_report
+from estadistica_ambiental.spatial.interpolation import idw
+from estadistica_ambiental.spatial.projections import bounding_box_colombia, points_to_geodataframe
 
 # ---------------------------------------------------------------------------
 # spatial/interpolation — IDW (no requiere dependencias opcionales)

@@ -209,7 +209,7 @@ def build_notebook(path_rel, nombre, variable, unidad, linea_key, modelos_sugeri
         md("## 2. Validación y EDA\n"
            f"> `validate()` usa rangos físicos específicos para `{linea_key}` desde `config.py`."),
         code(
-            f'val = validate(df, date_col="fecha", linea_tematica=LINEA)\n'
+            'val = validate(df, date_col="fecha", linea_tematica=LINEA)\n'
             'print(val.summary())'
         ),
         code(

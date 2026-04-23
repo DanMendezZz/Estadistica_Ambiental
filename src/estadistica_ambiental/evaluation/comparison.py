@@ -8,7 +8,7 @@ from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 
-from estadistica_ambiental.evaluation.metrics import evaluate, METRIC_DIRECTION
+from estadistica_ambiental.evaluation.metrics import METRIC_DIRECTION
 
 logger = logging.getLogger(__name__)
 

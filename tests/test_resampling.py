@@ -7,11 +7,10 @@ import pandas as pd
 import pytest
 
 from estadistica_ambiental.preprocessing.resampling import (
-    resample,
     align_frequencies,
     fill_missing_timestamps,
+    resample,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixture

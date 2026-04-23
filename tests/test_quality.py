@@ -6,15 +6,14 @@ import pytest
 
 from estadistica_ambiental.eda.quality import (
     MissingPattern,
-    assess_quality,
+    _analyze_freeze,
     _analyze_missing,
     _analyze_outliers,
-    _analyze_freeze,
     _analyze_temporal_gaps,
-    _cross_column_checks,
     _consecutive_gap_lengths,
+    _cross_column_checks,
+    assess_quality,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

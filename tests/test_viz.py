@@ -1,6 +1,7 @@
 """Tests para estadistica_ambiental.eda.viz."""
 
 import matplotlib
+
 matplotlib.use("Agg")  # sin ventana gráfica en CI/tests
 
 import matplotlib.pyplot as plt
@@ -8,14 +9,14 @@ import pandas as pd
 import pytest
 
 from estadistica_ambiental.eda.viz import (
-    plot_series,
-    plot_missing_heatmap,
-    plot_histogram,
     plot_boxplot,
     plot_correlation_heatmap,
-    plot_seasonal_means,
+    plot_histogram,
+    plot_missing_heatmap,
     plot_multi_series,
     plot_scatter,
+    plot_seasonal_means,
+    plot_series,
 )
 
 

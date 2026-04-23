@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 import numpy as np
 import pandas as pd
 
-
 # ---------------------------------------------------------------------------
 # Penalización estándar cuando un trial de Optuna falla
 # ---------------------------------------------------------------------------

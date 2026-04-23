@@ -25,7 +25,7 @@ EPSG_WEB_MERCATOR   = 3857
 def reproject(gdf, from_epsg: int, to_epsg: int):
     """Reprojecta un GeoDataFrame entre sistemas de referencia."""
     try:
-        import geopandas as gpd
+        import geopandas  # noqa: F401
     except ImportError:
         raise ImportError("pip install geopandas")
 
@@ -64,8 +64,8 @@ def bounding_box_colombia(buffer_deg: float = 0.0) -> Tuple[float, float, float,
 def clip_to_colombia(gdf, buffer_deg: float = 0.5):
     """Recorta un GeoDataFrame al territorio colombiano."""
     try:
-        from shapely.geometry import box
         import geopandas as gpd
+        from shapely.geometry import box
     except ImportError:
         raise ImportError("pip install geopandas shapely")
 

@@ -6,7 +6,6 @@ ADF y KPSS son obligatorias antes de aplicar ARIMA (ADR-004).
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import pandas as pd
 from statsmodels.tsa.stattools import adfuller, kpss

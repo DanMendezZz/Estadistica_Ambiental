@@ -6,7 +6,7 @@ import html
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 import numpy as np
 import pandas as pd

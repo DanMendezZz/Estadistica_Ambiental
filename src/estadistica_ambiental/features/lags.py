@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List
 
 import pandas as pd
 
@@ -15,8 +15,8 @@ def add_lags(
 ) -> pd.DataFrame:
     """Agrega columnas lag_N para la variable objetivo."""
     result = df.copy()
-    for l in lags:
-        result[f"{col}_lag{l}"] = result[col].shift(l)
+    for lag in lags:
+        result[f"{col}_lag{lag}"] = result[col].shift(lag)
     if drop_na:
         result = result.dropna()
     return result

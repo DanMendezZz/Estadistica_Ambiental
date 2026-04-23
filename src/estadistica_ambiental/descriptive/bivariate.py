@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-import numpy as np
 import pandas as pd
 from scipy import stats as spstats
 
@@ -47,7 +46,7 @@ def correlation_table(
             elif method == "kendall":
                 r, p = spstats.kendalltau(a, b)
             else:
-                raise ValueError(f"method debe ser pearson, spearman o kendall")
+                raise ValueError("method debe ser pearson, spearman o kendall")
             if abs(r) >= min_abs_corr:
                 rows.append({"var1": c1, "var2": c2,
                              "correlation": round(r, 4), "pval": round(p, 6),

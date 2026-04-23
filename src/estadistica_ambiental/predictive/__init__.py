@@ -6,10 +6,10 @@ puedan importarlos directamente desde ``estadistica_ambiental.predictive``.
 """
 
 from estadistica_ambiental.predictive.base import (
+    OPTIMIZER_PENALTY,
     BaseModel,
     ModelSpec,
     OptimizationResult,
-    OPTIMIZER_PENALTY,
 )
 
 __all__ = [

@@ -16,7 +16,7 @@ import argparse
 import json
 import logging
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
@@ -200,7 +200,7 @@ def run_pipeline(linea: str, cfg: LineaConfig, df: pd.DataFrame, modelos: List[s
     # 3. ENSO
     if cfg.usa_enso:
         try:
-            from estadistica_ambiental.features.climate import load_oni, enso_lagged
+            from estadistica_ambiental.features.climate import enso_lagged, load_oni
             oni = load_oni()
             if not oni.empty:
                 df = enso_lagged(df, oni, date_col="fecha", linea_tematica=linea)
