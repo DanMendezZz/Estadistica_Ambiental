@@ -153,4 +153,33 @@ La lógica de cálculo vive en `inference/intervals.py::exceedance_report()` (te
 
 ---
 
+## ADR-010 — Correcciones de correctitud en módulos de calidad del aire (PR #6)
+
+**Fecha:** 2026-04-22
+**Estado:** Aceptado
+
+**Contexto:** La revisión automatizada (ultrareview) de la rama `review/air-quality-modules` detectó 10 bugs de correctitud en los módulos `evaluation/metrics.py`, `evaluation/anomaly.py`, `optimization/bayes_opt.py`, `predictive/base.py` y `preprocessing/air_quality.py`. Ninguno causaba crash; todos producían resultados silenciosamente incorrectos.
+
+**Decisiones tomadas:**
+
+1. **Breakpoints ICA por contaminante** — `evaluate()`, `hit_rate_ica()` y `walk_forward()` aceptan `pollutant='pm25'`. El helper `_get_ica_breakpoints()` importa `_ICA_BREAKPOINTS` de `preprocessing/air_quality.py` (fuente única de verdad de Res. 2254/2017). Antes, PM10, O3, NO2, SO2 y CO recibían silenciosamente los umbrales de PM2.5.
+
+2. **NaN en métricas de calidad del aire** — `hit_rate_ica()` filtra pares NaN antes de categorizar (igual que `evaluate()`). `detect_anomalies()` usa `np.nanmean`/`np.nanstd` en lugar de `np.mean`/`np.std`; guarda `umbral` y `threshold` en `df.attrs` para que `anomaly_summary()` reporte el umbral exactamente aplicado.
+
+3. **`nrmse` con varianza cero** — Retorna `float('nan')` cuando `std(y_true) < 1e-10`, consistente con `r2`, `mase`, `kge` y `pbias`. La alternativa (epsilon `1e-8`) producía valores astronómicos que colapsaban el ranking min-max de `rank_models`.
+
+4. **Penalidad de Optuna sign-aware** — `objetivo_robusto` usa `penalty = ±OPTIMIZER_PENALTY` según `direction`. Para `direction='maximize'` (R², KGE, NSE, `hit_rate_ica`), devolver `+1e6` hacía que TPE convergiera hacia configuraciones que lanzaban excepciones. `OptimizationResult.__post_init__` usa `abs(best_score)` para el sentinel check.
+
+5. **`TrialPruned` re-lanzado** — `except optuna.TrialPruned: raise` antes del catch genérico. Sin esto, el `MedianPruner` configurado explícitamente en el código era completamente inoperante.
+
+6. **Fallback preserve best** — El branch de excepción de `optimize_model` consulta `study.best_trial` antes de caer al `warm_starts[0]`. `n_trials` reporta `len(study.trials)` (reales ejecutados), no el presupuesto pedido. `build_model` usa `best_p or {}` en lugar de `best_p` (falsiness guard incorrecta para dict vacío).
+
+7. **`flag_spatial_episodes` determinismo** — `mask_vec_mes` filtra por `flag_episode == 'original'`, excluyendo valores `cap_absoluto` y medianas ya imputadas de iteraciones anteriores. El mismo filtro ya se aplicaba al pivot (línea 259) — se extendió al loop interno.
+
+8. **Mediana de imputación limpia** — Paso 3 de `flag_spatial_episodes` pre-determina `idx_hard` e `idx_soft` antes de cualquier imputación, NaN-maskea esas posiciones en `serie_clean`, y usa una sola `mediana_local` para ambos grupos. Antes, el rolling window incluía los propios outliers a reemplazar.
+
+**Consecuencias:** 21 tests de regresión en `tests/test_regression_pr6.py` protegen cada corrección. La API pública de `evaluate`, `hit_rate_ica`, `walk_forward` y `anomaly_summary` es retrocompatible (parámetros nuevos con defaults que reproducen el comportamiento anterior correcto). El comportamiento anterior incorrecto no era semánticamente válido, por lo que no se necesita deprecation period.
+
+---
+
 <!-- Agregar nuevas decisiones arriba, manteniendo numeración incremental -->

@@ -97,6 +97,7 @@ def evaluate(
     domain: str = "general",
     y_train: Optional[np.ndarray] = None,
     ica_breakpoints: Optional[dict] = None,
+    pollutant: str = "pm25",
 ) -> dict:
     """Calcula todas las métricas relevantes según el dominio.
 
@@ -104,7 +105,10 @@ def evaluate(
         domain: 'general' | 'hydrology' | 'air_quality'
         y_train: serie de entrenamiento para MASE (opcional).
         ica_breakpoints: puntos de corte ICA custom para hit_rate_ica.
-            Solo aplica con domain='air_quality'.
+            Si se provee, tiene precedencia sobre ``pollutant``.
+        pollutant: contaminante para seleccionar breakpoints ICA correctos
+            ('pm25', 'pm10', 'o3', 'no2', 'so2', 'co'). Solo aplica con
+            domain='air_quality' y sin ica_breakpoints explícito.
     """
     y_true = np.asarray(y_true, dtype=float)
     y_pred = np.asarray(y_pred, dtype=float)
@@ -131,7 +135,7 @@ def evaluate(
 
     if domain == "air_quality":
         result["hit_rate_ica"] = round(
-            hit_rate_ica(y_true, y_pred, breakpoints=ica_breakpoints), 2
+            hit_rate_ica(y_true, y_pred, breakpoints=ica_breakpoints, pollutant=pollutant), 2
         )
 
     return result
@@ -152,12 +156,16 @@ def nrmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     NRMSE = RMSE / std(y_true). Rango (0, inf), escala-invariante.
     NRMSE < 1.0 indica mejor desempeño que el modelo de la media.
     Reemplaza sMAPE cuando la serie contiene valores cercanos a cero.
+    Retorna nan si y_true tiene varianza cero (sensor saturado, fold degenerado).
     """
-    std_y = float(np.std(y_true)) + 1e-8
+    std_y = float(np.std(y_true))
+    if std_y < 1e-10:
+        return float("nan")
     return float(rmse(y_true, y_pred) / std_y)
 
 
 # Puntos de corte ICA por defecto — Resolución 2254/2017, PM2.5 (µg/m³)
+# Solo se usa si air_quality._ICA_BREAKPOINTS no está disponible.
 _ICA_BREAKPOINTS_DEFAULT: dict = {
     "Buena":        (  -np.inf,  12.0),
     "Aceptable":    (    12.0,   37.0),
@@ -166,6 +174,24 @@ _ICA_BREAKPOINTS_DEFAULT: dict = {
     "Muy_danina":   (   150.0,  250.0),
     "Peligrosa":    (   250.0,   np.inf),
 }
+
+
+def _get_ica_breakpoints(pollutant: str) -> dict:
+    """Devuelve breakpoints ICA en formato {categoría: (lo, hi)} para el contaminante dado.
+
+    Usa _ICA_BREAKPOINTS de preprocessing.air_quality (Res. 2254/2017).
+    Si el contaminante no se reconoce, usa PM2.5 con aviso en log.
+    """
+    try:
+        from estadistica_ambiental.preprocessing.air_quality import (
+            _ICA_BREAKPOINTS,
+            _ICA_LABELS,
+        )
+        key = pollutant.lower().replace(".", "").replace("₂", "2").replace("₃", "3")
+        bins = _ICA_BREAKPOINTS.get(key, _ICA_BREAKPOINTS["pm25"])
+        return {label: (bins[i], bins[i + 1]) for i, label in enumerate(_ICA_LABELS)}
+    except ImportError:
+        return _ICA_BREAKPOINTS_DEFAULT
 
 
 def _categorize_ica(values: np.ndarray, breakpoints: dict) -> np.ndarray:
@@ -181,22 +207,28 @@ def hit_rate_ica(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     breakpoints: Optional[dict] = None,
+    pollutant: str = "pm25",
 ) -> float:
     """Porcentaje de predicciones en la misma categoría ICA que el valor real.
 
     Args:
-        y_true: valores reales de concentración (µg/m³).
-        y_pred: valores predichos de concentración (µg/m³).
-        breakpoints: dict con {categoria: (min_excl, max_incl)} o None para
-            usar Res. 2254/2017 (PM2.5). Ejemplo:
-            {"Buena": (-inf, 12), "Aceptable": (12, 37), ...}
+        y_true: valores reales de concentración (µg/m³, o mg/m³ para CO).
+        y_pred: valores predichos de concentración.
+        breakpoints: dict con {categoria: (min_excl, max_incl)} personalizado.
+            Si se provee, tiene precedencia sobre ``pollutant``.
+        pollutant: contaminante para seleccionar breakpoints de Res. 2254/2017.
+            Opciones: 'pm25', 'pm10', 'o3', 'no2', 'so2', 'co'. Default: 'pm25'.
 
     Returns:
         float entre 0.0 y 100.0 (porcentaje de coincidencias de categoría).
     """
-    bp = breakpoints if breakpoints is not None else _ICA_BREAKPOINTS_DEFAULT
+    bp = breakpoints if breakpoints is not None else _get_ica_breakpoints(pollutant)
     y_true = np.asarray(y_true, dtype=float)
     y_pred = np.asarray(y_pred, dtype=float)
+    mask = ~(np.isnan(y_true) | np.isnan(y_pred))
+    y_true, y_pred = y_true[mask], y_pred[mask]
+    if len(y_true) == 0:
+        return float("nan")
     cats_true = _categorize_ica(y_true, bp)
     cats_pred = _categorize_ica(y_pred, bp)
     return float(np.mean(cats_true == cats_pred) * 100)
