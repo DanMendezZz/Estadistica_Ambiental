@@ -76,6 +76,31 @@ class SARIMAXModel(BaseModel):
         return np.asarray(forecast)
 
     @property
+    def warm_starts(self):
+        return [
+            {"p": 1, "d": 1, "q": 1, "P": 1, "D": 1, "Q": 1},
+            {"p": 2, "d": 1, "q": 2, "P": 1, "D": 1, "Q": 1},
+            {"p": 0, "d": 1, "q": 1, "P": 0, "D": 1, "Q": 1},
+        ]
+
+    def suggest_params(self, trial) -> dict:
+        return {
+            "p": trial.suggest_int("p", 0, 4),
+            "d": trial.suggest_int("d", 0, 2),
+            "q": trial.suggest_int("q", 0, 4),
+            "P": trial.suggest_int("P", 0, 2),
+            "D": trial.suggest_int("D", 0, 1),
+            "Q": trial.suggest_int("Q", 0, 2),
+        }
+
+    def build_model(self, params: dict) -> "SARIMAXModel":
+        return SARIMAXModel(
+            order=(params.get("p", 1), params.get("d", 1), params.get("q", 1)),
+            seasonal_order=(params.get("P", 0), params.get("D", 0), params.get("Q", 0), 12),
+            trend=self.trend,
+        )
+
+    @property
     def aic(self) -> float:
         return self._result.aic if self._fitted else float("inf")
 
@@ -91,6 +116,26 @@ class ARIMAModel(SARIMAXModel):
     def __init__(self, order: Tuple[int, int, int] = (1, 1, 1)):
         super().__init__(order=order, seasonal_order=(0, 0, 0, 0))
 
+    @property
+    def warm_starts(self):
+        return [
+            {"p": 1, "d": 1, "q": 1},
+            {"p": 2, "d": 1, "q": 2},
+            {"p": 1, "d": 0, "q": 1},
+        ]
+
+    def suggest_params(self, trial) -> dict:
+        return {
+            "p": trial.suggest_int("p", 0, 5),
+            "d": trial.suggest_int("d", 0, 2),
+            "q": trial.suggest_int("q", 0, 5),
+        }
+
+    def build_model(self, params: dict) -> "ARIMAModel":
+        return ARIMAModel(
+            order=(params.get("p", 1), params.get("d", 1), params.get("q", 1))
+        )
+
 
 class SARIMAModel(SARIMAXModel):
     """SARIMA sin exógenas."""
@@ -102,6 +147,31 @@ class SARIMAModel(SARIMAXModel):
         seasonal_order: Tuple[int, int, int, int] = (1, 1, 1, 12),
     ):
         super().__init__(order=order, seasonal_order=seasonal_order)
+
+    @property
+    def warm_starts(self):
+        return [
+            {"p": 1, "d": 1, "q": 1, "P": 1, "D": 1, "Q": 1},
+            {"p": 2, "d": 1, "q": 2, "P": 0, "D": 1, "Q": 1},
+            {"p": 0, "d": 1, "q": 1, "P": 1, "D": 1, "Q": 0},
+        ]
+
+    def suggest_params(self, trial) -> dict:
+        return {
+            "p": trial.suggest_int("p", 0, 4),
+            "d": trial.suggest_int("d", 0, 2),
+            "q": trial.suggest_int("q", 0, 4),
+            "P": trial.suggest_int("P", 0, 2),
+            "D": trial.suggest_int("D", 0, 1),
+            "Q": trial.suggest_int("Q", 0, 2),
+        }
+
+    def build_model(self, params: dict) -> "SARIMAModel":
+        s = self.seasonal_order[3]
+        return SARIMAModel(
+            order=(params.get("p", 1), params.get("d", 1), params.get("q", 1)),
+            seasonal_order=(params.get("P", 1), params.get("D", 1), params.get("Q", 1), s),
+        )
 
 
 class ETSModel(BaseModel):
@@ -144,3 +214,26 @@ class ETSModel(BaseModel):
         if not self._fitted:
             raise RuntimeError("Llama fit() primero.")
         return np.asarray(self._result.forecast(steps=horizon))
+
+    @property
+    def warm_starts(self):
+        return [
+            {"trend": "add",  "seasonal": "add",  "damped_trend": False},
+            {"trend": "mul",  "seasonal": "mul",  "damped_trend": False},
+            {"trend": "add",  "seasonal": "add",  "damped_trend": True},
+        ]
+
+    def suggest_params(self, trial) -> dict:
+        return {
+            "trend":        trial.suggest_categorical("trend", ["add", "mul", None]),
+            "seasonal":     trial.suggest_categorical("seasonal", ["add", "mul", None]),
+            "damped_trend": trial.suggest_categorical("damped_trend", [True, False]),
+        }
+
+    def build_model(self, params: dict) -> "ETSModel":
+        return ETSModel(
+            trend=params.get("trend", "add"),
+            seasonal=params.get("seasonal", "add"),
+            seasonal_periods=self.seasonal_periods,
+            damped_trend=params.get("damped_trend", False),
+        )

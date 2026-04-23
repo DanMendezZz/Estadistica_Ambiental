@@ -99,11 +99,14 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install con extras espaciales
-        # GDAL puede fallar en CI — usamos conda o ignoramos si falla
-        run: |
-          pip install -e ".[dev]" || true
-          pip install geopandas pykrige pysal esda folium branca || true
+      - name: Install core + dev
+        run: pip install -e ".[dev]"
+
+      - name: Install spatial extras (GDAL puede fallar en CI)
+        # continue-on-error expone el fallo en la UI sin cancelar el job.
+        # Los tests espaciales usan pytest.importorskip y se saltean si geopandas no instala.
+        continue-on-error: true
+        run: pip install geopandas pykrige pysal esda folium branca
 
       - name: Run tests (incluyendo espaciales)
         run: python -m pytest tests/ --tb=short -q
