@@ -9,6 +9,28 @@
 
 ---
 
+## ADR-011 — Fork vs. dependencia de `boa-sarima-forecaster`
+
+**Fecha:** 2026-04-23
+**Estado:** Aceptado
+
+**Contexto:** El repo hereda código de `TomCardeLo/boa-sarima-forecaster` (ADR-001). Hay dos modelos de relación posibles:
+1. **Fork con atribución** (estado actual): el código se copia y se adapta. Las correcciones upstream no llegan automáticamente; las correcciones locales no llegan upstream a menos que se abra un PR.
+2. **Dependencia opcional**: `boa-sarima-forecaster` se declara como `[project.optional-dependencies]` y se consume su API en lugar de copiar el código. Las correcciones upstream llegarían con `pip upgrade`.
+
+**Decisión:** **Mantener fork con atribución** (opción 1) + abrir un PR de vuelta a upstream con las correcciones genéricas (NaN consistency en `metrics.py`, guard `nrmse` con varianza cero). Razones:
+- `boa-sarima-forecaster` usa terminología financiera (SKU, country) que requeriría wrappers constantes como dependencia.
+- El dominio ambiental colombiano añade normas, validadores y métricas (NSE, KGE, IUA, ICA) que no tienen sentido en el repo financiero de origen.
+- El acoplamiento de release schedule sería una fricción real para uso institucional.
+- La opción de dependencia tiene sentido solo si `boa-sarima-forecaster` evoluciona hacia ser una librería de propósito general; hoy no lo es.
+
+**Consecuencias:**
+- Abrir PR a `TomCardeLo/boa-sarima-forecaster` con la corrección P1-1 (`r2` constante → NaN en lugar de 0.0) y el `nrmse` con varianza cero — son cambios genéricos y correctos para cualquier dominio.
+- Mantener el header `# Adaptado de boa-sarima-forecaster/...` en cada módulo heredado.
+- Reevaluar en 12 meses si Tomás publica una versión PyPI de `boa-sarima-forecaster` con API estable.
+
+---
+
 ## ADR-001 — Herencia de boa-sarima-forecaster
 
 **Fecha:** 2026-04-22
