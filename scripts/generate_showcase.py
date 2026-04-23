@@ -34,8 +34,7 @@ def _sinteticos_kennedy(rng: np.random.Generator) -> pd.DataFrame:
     doy = fechas.day_of_year.values.astype(float)
 
     # Estacionalidad bimodal bogotana (dos estaciones secas: ene-feb y jul-ago)
-    peak1_doy = 25.0   # ~25 ene — corazón de primera estación seca
-    peak2_doy = 210.0  # ~29 jul — corazón de segunda estación seca
+    peak1_doy = 25.0   # ~25 ene; la fórmula genera el segundo pico en ~jul por armonía
     season = (
         7.0 * np.cos(2 * np.pi * (doy - peak1_doy) / 365)
         + 4.0 * np.cos(4 * np.pi * (doy - peak1_doy) / 365 + np.pi)
