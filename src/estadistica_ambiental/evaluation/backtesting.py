@@ -119,4 +119,5 @@ def compare_backtests(results: Dict[str, Dict]) -> pd.DataFrame:
     for model_name, result in results.items():
         row = {"model": model_name, **result.get("metrics", {})}
         rows.append(row)
-    return pd.DataFrame(rows).set_index("model").sort_values("rmse")
+    df = pd.DataFrame(rows).set_index("model")
+    return df.sort_values("rmse") if "rmse" in df.columns else df

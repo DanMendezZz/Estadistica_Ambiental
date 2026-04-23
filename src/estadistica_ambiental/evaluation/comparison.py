@@ -8,7 +8,7 @@ from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 
-from estadistica_ambiental.evaluation.metrics import evaluate
+from estadistica_ambiental.evaluation.metrics import evaluate, METRIC_DIRECTION
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +18,6 @@ _WEIGHTS = {
     "hydrology":   {"nse": 0.40, "kge": 0.30, "rmse": 0.20, "pbias": 0.10},
     "air_quality": {"rmse": 0.30, "nrmse": 0.20, "mae": 0.20, "hit_rate_ica": 0.30},
 }
-
-# Para métricas donde mayor es mejor, invertimos el signo al normalizar
-_HIGHER_IS_BETTER = {"r2", "nse", "kge", "hit_rate_ica"}
 
 
 def rank_models(
@@ -82,7 +79,7 @@ def _normalize(df: pd.DataFrame, cols: List[str]) -> pd.DataFrame:
             continue
         norm = (s - lo) / (hi - lo)
         # lower score = better; para higher-is-better, invertimos
-        result[col] = norm if col not in _HIGHER_IS_BETTER else (1 - norm)
+        result[col] = (1 - norm) if METRIC_DIRECTION.get(col, False) else norm
     return result
 
 
