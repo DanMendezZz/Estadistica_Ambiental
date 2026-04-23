@@ -16,11 +16,11 @@ logger = logging.getLogger(__name__)
 _WEIGHTS = {
     "general":     {"rmse": 0.35, "mae": 0.30, "r2": 0.20, "mase": 0.15},
     "hydrology":   {"nse": 0.40, "kge": 0.30, "rmse": 0.20, "pbias": 0.10},
-    "air_quality": {"rmse": 0.30, "mae": 0.25, "r2": 0.25, "smape": 0.20},
+    "air_quality": {"rmse": 0.30, "nrmse": 0.20, "mae": 0.20, "hit_rate_ica": 0.30},
 }
 
 # Para métricas donde mayor es mejor, invertimos el signo al normalizar
-_HIGHER_IS_BETTER = {"r2", "nse", "kge"}
+_HIGHER_IS_BETTER = {"r2", "nse", "kge", "hit_rate_ica"}
 
 
 def rank_models(
