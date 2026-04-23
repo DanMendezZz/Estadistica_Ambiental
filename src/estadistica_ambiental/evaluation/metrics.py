@@ -8,10 +8,13 @@ y desactiva RMSLE para variables que pueden ser negativas (ADR-003).
 
 from __future__ import annotations
 
+import logging
 from typing import Optional
 
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -33,7 +36,7 @@ def mse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 def r2(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     ss_res = np.sum((y_true - y_pred) ** 2)
     ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
-    return float(1 - ss_res / ss_tot) if ss_tot > 0 else 0.0
+    return float(1 - ss_res / ss_tot) if ss_tot > 0 else float("nan")
 
 
 def smape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -71,20 +74,29 @@ def mase(
 def nse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """Nash-Sutcliffe Efficiency. Rango (-∞, 1]; 1=perfecto, <0=peor que media."""
     denom = np.sum((y_true - np.mean(y_true)) ** 2)
-    return float(1 - np.sum((y_true - y_pred) ** 2) / denom) if denom > 0 else -np.inf
+    return float(1 - np.sum((y_true - y_pred) ** 2) / denom) if denom > 0 else float("nan")
 
 
 def kge(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """Kling-Gupta Efficiency. Rango (-∞, 1]; 1=perfecto."""
     r = np.corrcoef(y_true, y_pred)[0, 1]
-    alpha = np.std(y_pred) / np.std(y_true) if np.std(y_true) > 0 else np.nan
-    beta  = np.mean(y_pred) / np.mean(y_true) if np.mean(y_true) != 0 else np.nan
+    std_true = np.std(y_true)
+    mean_true = np.mean(y_true)
+    if std_true < 1e-10:
+        logger.warning("kge: std(y_true) ≈ 0 — serie constante o fold degenerado. Retorna nan.")
+        return float("nan")
+    if abs(mean_true) < 1e-10:
+        logger.warning("kge: mean(y_true) ≈ 0 — beta indefinido. Retorna nan.")
+        return float("nan")
+    alpha = float(np.std(y_pred) / std_true)
+    beta  = float(np.mean(y_pred) / mean_true)
     return float(1 - np.sqrt((r - 1) ** 2 + (alpha - 1) ** 2 + (beta - 1) ** 2))
 
 
 def pbias(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """Percent Bias (%). Positivo = sobreestimación."""
-    return float(np.sum(y_true - y_pred) / np.sum(y_true) * 100) if np.sum(y_true) != 0 else np.nan
+    total = np.sum(y_true)
+    return float((total - np.sum(y_pred)) / total * 100) if abs(total) >= 1e-10 else float("nan")
 
 
 # ---------------------------------------------------------------------------
@@ -115,6 +127,9 @@ def evaluate(
 
     mask = ~(np.isnan(y_true) | np.isnan(y_pred))
     y_true, y_pred = y_true[mask], y_pred[mask]
+
+    if len(y_true) == 0:
+        raise ValueError("No quedan observaciones válidas después de filtrar NaN.")
 
     result = {
         "mae":   round(mae(y_true, y_pred), 4),

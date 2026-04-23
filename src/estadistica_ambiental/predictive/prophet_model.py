@@ -87,3 +87,31 @@ class ProphetModel(BaseModel):
 
         forecast = self._model.predict(future)
         return forecast["yhat"].values[-horizon:]
+
+    @property
+    def warm_starts(self):
+        return [
+            {"changepoint_prior_scale": 0.05, "seasonality_prior_scale": 10.0},
+            {"changepoint_prior_scale": 0.10, "seasonality_prior_scale":  5.0},
+            {"changepoint_prior_scale": 0.01, "seasonality_prior_scale": 20.0},
+        ]
+
+    def suggest_params(self, trial) -> dict:
+        return {
+            "changepoint_prior_scale":  trial.suggest_float(
+                "changepoint_prior_scale", 0.001, 0.5, log=True
+            ),
+            "seasonality_prior_scale":  trial.suggest_float(
+                "seasonality_prior_scale", 0.01, 20.0, log=True
+            ),
+        }
+
+    def build_model(self, params: dict) -> "ProphetModel":
+        return ProphetModel(
+            changepoint_prior_scale=params.get("changepoint_prior_scale", 0.05),
+            seasonality_prior_scale=params.get("seasonality_prior_scale", 10.0),
+            yearly_seasonality=self.yearly_seasonality,
+            weekly_seasonality=self.weekly_seasonality,
+            daily_seasonality=self.daily_seasonality,
+            interval_width=self.interval_width,
+        )

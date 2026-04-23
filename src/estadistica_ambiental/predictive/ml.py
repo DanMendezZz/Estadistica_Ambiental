@@ -75,6 +75,27 @@ class XGBoostModel(_SklearnModel):
         defaults.update(xgb_params)
         self._model = XGBRegressor(**defaults)
 
+    @property
+    def warm_starts(self):
+        return [
+            {"n_estimators": 200, "max_depth": 4, "learning_rate": 0.05,
+             "subsample": 0.8, "colsample_bytree": 0.8},
+            {"n_estimators": 500, "max_depth": 6, "learning_rate": 0.01,
+             "subsample": 0.7, "colsample_bytree": 0.7},
+        ]
+
+    def suggest_params(self, trial) -> dict:
+        return {
+            "n_estimators":     trial.suggest_int("n_estimators", 50, 500),
+            "max_depth":        trial.suggest_int("max_depth", 2, 8),
+            "learning_rate":    trial.suggest_float("learning_rate", 1e-3, 0.3, log=True),
+            "subsample":        trial.suggest_float("subsample", 0.6, 1.0),
+            "colsample_bytree": trial.suggest_float("colsample_bytree", 0.6, 1.0),
+        }
+
+    def build_model(self, params: dict) -> "XGBoostModel":
+        return XGBoostModel(lags=self._lags, **params)
+
 
 class RandomForestModel(_SklearnModel):
     """Random Forest para pronóstico ambiental."""
@@ -89,6 +110,23 @@ class RandomForestModel(_SklearnModel):
                     "min_samples_leaf": 2, "random_state": 42, "n_jobs": -1}
         defaults.update(rf_params)
         self._model = RandomForestRegressor(**defaults)
+
+    @property
+    def warm_starts(self):
+        return [
+            {"n_estimators": 200, "max_depth": None,  "min_samples_leaf": 2},
+            {"n_estimators": 500, "max_depth": 10,    "min_samples_leaf": 1},
+        ]
+
+    def suggest_params(self, trial) -> dict:
+        return {
+            "n_estimators":    trial.suggest_int("n_estimators", 50, 500),
+            "max_depth":       trial.suggest_categorical("max_depth", [None, 5, 10, 20]),
+            "min_samples_leaf": trial.suggest_int("min_samples_leaf", 1, 10),
+        }
+
+    def build_model(self, params: dict) -> "RandomForestModel":
+        return RandomForestModel(lags=self._lags, **params)
 
 
 class LightGBMModel(_SklearnModel):
@@ -108,3 +146,21 @@ class LightGBMModel(_SklearnModel):
                     "verbosity": -1, "n_jobs": -1}
         defaults.update(lgb_params)
         self._model = LGBMRegressor(**defaults)
+
+    @property
+    def warm_starts(self):
+        return [
+            {"n_estimators": 200, "max_depth": -1, "learning_rate": 0.05, "num_leaves": 31},
+            {"n_estimators": 500, "max_depth":  7, "learning_rate": 0.01, "num_leaves": 63},
+        ]
+
+    def suggest_params(self, trial) -> dict:
+        return {
+            "n_estimators":  trial.suggest_int("n_estimators", 50, 500),
+            "max_depth":     trial.suggest_int("max_depth", -1, 10),
+            "learning_rate": trial.suggest_float("learning_rate", 1e-3, 0.3, log=True),
+            "num_leaves":    trial.suggest_int("num_leaves", 20, 150),
+        }
+
+    def build_model(self, params: dict) -> "LightGBMModel":
+        return LightGBMModel(lags=self._lags, **params)
