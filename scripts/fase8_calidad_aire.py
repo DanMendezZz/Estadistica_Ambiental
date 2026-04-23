@@ -330,8 +330,8 @@ def predictiva(serie: pd.Series) -> dict:
     resultados: dict = {}
 
     try:
-        from estadistica_ambiental.predictive.classical import SARIMAXModel
         from estadistica_ambiental.evaluation.backtesting import walk_forward
+        from estadistica_ambiental.predictive.classical import SARIMAXModel
 
         # SARIMA(1,1,1)(1,1,1,7) — estacionalidad semanal
         model = SARIMAXModel(order=(1, 1, 1), seasonal_order=(1, 1, 1, 7))
@@ -446,11 +446,11 @@ def main() -> None:
     validar(df_raw)
 
     # 2. EDA (red + estación) — en paralelo conceptual
-    eda_red  = eda_red_completa(df_raw)
+    eda_red_completa(df_raw)
     eda_est  = eda_estacion(serie_diaria)
 
     # 3. Descriptiva
-    anual = descriptiva(serie_diaria)
+    descriptiva(serie_diaria)
 
     # 4. Inferencial
     inf = inferencial(serie_diaria)

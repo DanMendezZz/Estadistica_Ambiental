@@ -17,9 +17,14 @@ Mejoras incorporadas (v2):
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 import optuna
+
+if TYPE_CHECKING:
+    import pandas as pd
+
+    from estadistica_ambiental.predictive.base import OptimizationResult
 
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 logger = logging.getLogger(__name__)

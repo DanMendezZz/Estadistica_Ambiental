@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional, Tuple
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
-
-from estadistica_ambiental.predictive.base import BaseModel
 
 logger = logging.getLogger(__name__)
 

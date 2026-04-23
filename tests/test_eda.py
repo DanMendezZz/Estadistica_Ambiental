@@ -4,11 +4,9 @@ import pandas as pd
 import pytest
 
 from estadistica_ambiental.eda.variables import (
-    VariableCatalog,
     VariableType,
     classify,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixture base

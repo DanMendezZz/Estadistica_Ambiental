@@ -6,10 +6,6 @@ Previo a modelos espaciales para verificar que existe dependencia espacial.
 from __future__ import annotations
 
 import logging
-from typing import Optional
-
-import numpy as np
-import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +50,10 @@ def morans_i(
     }
 
 
-def _interpret_moran(I: float, p: float, alpha: float) -> str:
+def _interpret_moran(moran_i: float, p: float, alpha: float) -> str:
     if p >= alpha:
         return "distribución espacialmente aleatoria (no significativo)"
-    if I > 0:
+    if moran_i > 0:
         return "clustering espacial positivo (valores similares agrupados)"
     return "dispersión espacial (valores distintos adyacentes)"
 

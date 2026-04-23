@@ -6,7 +6,7 @@ Usado para mapear contaminantes o variables hídricas entre estaciones dispersas
 from __future__ import annotations
 
 import logging
-from typing import Optional, Tuple
+from typing import Tuple
 
 import numpy as np
 import pandas as pd

@@ -29,7 +29,6 @@ from estadistica_ambiental.optimization.bayes_opt import optimize_model
 from estadistica_ambiental.predictive.base import OPTIMIZER_PENALTY
 from estadistica_ambiental.preprocessing.air_quality import flag_spatial_episodes
 
-
 # ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
@@ -380,7 +379,7 @@ class TestMergedBug017:
         def obj(trial):
             return 0.5  # no params suggested → best_params = {}
 
-        result = optimize_model(
+        optimize_model(
             model_spec=SpecWithBuild(),
             objective=obj,
             n_trials=2,

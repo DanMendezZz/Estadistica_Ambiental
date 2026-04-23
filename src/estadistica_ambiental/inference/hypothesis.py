@@ -38,7 +38,7 @@ def mannwhitney(
     """Mann-Whitney U — alternativa no paramétrica al t-test."""
     cats = groups or df[group_col].dropna().unique().tolist()
     if len(cats) != 2:
-        raise ValueError(f"mannwhitney requiere exactamente 2 grupos.")
+        raise ValueError("mannwhitney requiere exactamente 2 grupos.")
     a = df.loc[df[group_col] == cats[0], value_col].dropna().values
     b = df.loc[df[group_col] == cats[1], value_col].dropna().values
     stat, p = spstats.mannwhitneyu(a, b, alternative="two-sided")

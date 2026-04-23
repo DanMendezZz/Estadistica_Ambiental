@@ -7,7 +7,7 @@ Si PyTorch no está disponible, el import falla gracefully con ImportError.
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -146,7 +146,6 @@ class GRUModel(LSTMModel):
     def _build_net(self):
         _check_torch()
         import torch.nn as nn
-        torch = _check_torch()
 
         class GRUNet(nn.Module):
             def __init__(self, lookback, hidden_size, n_layers, dropout):

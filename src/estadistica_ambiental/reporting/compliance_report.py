@@ -24,14 +24,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import numpy as np
 import pandas as pd
 
-from estadistica_ambiental.inference.intervals import exceedance_report, exceedance_probability
 from estadistica_ambiental.config import (
-    NORMA_CO, NORMA_OMS, NORMA_AGUA_POTABLE, NORMA_VERTIMIENTOS,
-    IUA_THRESHOLDS, ICA_CATEGORIES, DOCS_FUENTES,
+    DOCS_FUENTES,
 )
+from estadistica_ambiental.inference.intervals import exceedance_probability, exceedance_report
 
 logger = logging.getLogger(__name__)
 

@@ -98,7 +98,7 @@ class QualityReport:
         # Gaps temporales
         if self.temporal_gaps:
             tg = self.temporal_gaps
-            lines.append(f"\nCompletitud temporal:")
+            lines.append("\nCompletitud temporal:")
             lines.append(f"  Frecuencia inferida: {tg.inferred_freq or 'no inferida'}")
             lines.append(f"  Esperados: {tg.expected_n} | Presentes: {tg.actual_n} | {tg.completeness_pct:.1f}%")
             lines.append(f"  Gaps: {tg.n_gaps} | Mayor gap: {tg.max_gap_periods} periodos")
@@ -121,7 +121,7 @@ class QualityReport:
 
         # Inconsistencias cruzadas
         if self.cross_issues:
-            lines.append(f"\nInconsistencias cruzadas:")
+            lines.append("\nInconsistencias cruzadas:")
             for issue in self.cross_issues:
                 lines.append(f"  ⚠ {issue}")
 
@@ -229,7 +229,6 @@ def _classify_missing_pattern(series: pd.Series, pct_missing: float) -> Tuple[Mi
         return MissingPattern.MCAR, "sin faltantes"
 
     mask = series.isna()
-    n = len(series)
 
     # MNAR heurístico: los faltantes se concentran en extremos de la distribución
     if pd.api.types.is_numeric_dtype(series):

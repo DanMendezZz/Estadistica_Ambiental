@@ -12,8 +12,7 @@ Nota: ICA_CATEGORIES en config.py corresponde al Índice de Calidad del Agua
 from __future__ import annotations
 
 import logging
-import warnings
-from typing import Literal, Optional, Tuple
+from typing import Literal, Tuple
 
 import numpy as np
 import pandas as pd

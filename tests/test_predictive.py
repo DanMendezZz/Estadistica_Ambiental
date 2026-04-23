@@ -4,10 +4,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from estadistica_ambiental.predictive.ml import XGBoostModel, RandomForestModel
-from estadistica_ambiental.predictive.registry import get_model, list_models, register
+from estadistica_ambiental.evaluation.backtesting import compare_backtests, walk_forward
 from estadistica_ambiental.predictive.classical import ARIMAModel
-from estadistica_ambiental.evaluation.backtesting import walk_forward, compare_backtests
+from estadistica_ambiental.predictive.ml import RandomForestModel, XGBoostModel
+from estadistica_ambiental.predictive.registry import get_model, list_models, register
 
 
 @pytest.fixture
@@ -94,8 +94,9 @@ class TestRegistry:
             get_model("modelo_fantasma")
 
     def test_register_custom(self):
-        from estadistica_ambiental.predictive.base import BaseModel
         import numpy as np
+
+        from estadistica_ambiental.predictive.base import BaseModel
 
         class NaiveModel(BaseModel):
             name = "Naive"
@@ -143,7 +144,7 @@ class TestBaseModelHelpers:
         assert "NaiveHelper" in repr(model)
 
     def test_optimization_result_penalty_sets_fallback(self):
-        from estadistica_ambiental.predictive.base import OptimizationResult, OPTIMIZER_PENALTY
+        from estadistica_ambiental.predictive.base import OPTIMIZER_PENALTY, OptimizationResult
         r = OptimizationResult(best_params={}, best_score=OPTIMIZER_PENALTY, n_trials=0)
         assert r.fallback is True
 

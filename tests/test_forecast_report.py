@@ -7,13 +7,12 @@ import pandas as pd
 import pytest
 
 from estadistica_ambiental.reporting.forecast_report import (
-    forecast_report,
-    _section_summary,
+    _build_body,
     _section_metrics_table,
     _section_series,
-    _build_body,
+    _section_summary,
+    forecast_report,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

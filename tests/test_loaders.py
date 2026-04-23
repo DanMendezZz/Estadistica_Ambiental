@@ -140,6 +140,7 @@ class TestLoadTsv:
 class TestHelpers:
     def test_invalid_date_col_logs_warning(self, csv_file, caplog):
         import logging
+
         from estadistica_ambiental.io.loaders import load_csv
         with caplog.at_level(logging.WARNING):
             load_csv(csv_file, date_col="columna_inexistente")

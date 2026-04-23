@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    import folium
+    import matplotlib.pyplot as plt
 
 logger = logging.getLogger(__name__)
 
@@ -66,8 +70,8 @@ def choropleth_map(
     Requiere: pip install folium branca.
     """
     try:
-        import folium
         import branca.colormap as cm
+        import folium
     except ImportError:
         raise ImportError("pip install folium branca")
 
@@ -107,7 +111,6 @@ def plot_kriging_map(
 ) -> "plt.Figure":
     """Mapa estático (matplotlib) del resultado del Kriging."""
     import matplotlib.pyplot as plt
-    import matplotlib.colors as mcolors
 
     fig, ax = plt.subplots(figsize=figsize)
     img = ax.pcolormesh(grid_lon, grid_lat, z_values,

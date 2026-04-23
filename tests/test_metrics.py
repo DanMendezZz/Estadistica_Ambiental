@@ -5,13 +5,20 @@ import pandas as pd
 import pytest
 
 from estadistica_ambiental.evaluation.metrics import (
-    mae, rmse, r2, smape, nse, kge, evaluate, compare_models,
+    compare_models,
+    evaluate,
+    kge,
+    mae,
+    nse,
+    r2,
+    rmse,
+    smape,
 )
 from estadistica_ambiental.optimization.bayes_opt import (
-    optimize, best_params, sarima_search_space,
+    best_params,
+    optimize,
 )
-from estadistica_ambiental.predictive.classical import ARIMAModel, SARIMAXModel, ETSModel
-
+from estadistica_ambiental.predictive.classical import ARIMAModel, ETSModel, SARIMAXModel
 
 # --- fixtures ---
 

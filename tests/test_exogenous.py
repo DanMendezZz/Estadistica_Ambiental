@@ -12,7 +12,6 @@ from estadistica_ambiental.features.exogenous import (
     meteorological_features,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------

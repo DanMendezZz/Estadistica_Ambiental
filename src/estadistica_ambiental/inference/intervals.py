@@ -2,18 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Optional, Tuple
+from typing import Callable, Dict, Tuple
 
 import numpy as np
 import pandas as pd
 from scipy import stats as spstats
 
 from estadistica_ambiental.config import (
+    NORMA_AGUA_POTABLE,
     NORMA_CO,
     NORMA_OMS,
-    NORMA_AGUA_POTABLE,
     NORMA_VERTIMIENTOS,
-    ICA_CATEGORIES,
 )
 
 

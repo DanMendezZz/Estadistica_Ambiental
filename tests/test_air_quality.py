@@ -12,7 +12,6 @@ from estadistica_ambiental.preprocessing.air_quality import (
     flag_spatial_episodes,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures comunes
 # ---------------------------------------------------------------------------
@@ -170,7 +169,6 @@ class TestFlagSpatialEpisodes:
     def test_episodio_critico_preserved_value_col(self):
         # Los valores marcados como episodio_critico NO deben ser reemplazados
         df = _make_two_station_df(spike_value=500.0, spike_count=6)
-        original_spike = df.loc[df["pm25"] == 500.0, "pm25"].values[0]
         result = flag_spatial_episodes(
             df, "pm25", "estacion", "fecha", "lat", "lon",
             min_consecutive_hours=4,

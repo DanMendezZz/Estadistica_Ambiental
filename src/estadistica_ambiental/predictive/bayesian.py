@@ -61,7 +61,7 @@ class BayesianARIMA(BaseModel):
         self._model = None
 
     def fit(self, y: pd.Series, X: Optional[pd.DataFrame] = None) -> "BayesianARIMA":
-        pm = _check_pymc()
+        _check_pymc()
         raise NotImplementedError(
             "BayesianARIMA está en desarrollo (Fase 10). "
             "Usar SARIMAXModel para pronóstico clásico."

@@ -23,7 +23,7 @@ def env_df():
 class TestStatsReport:
     def test_creates_html_file(self, tmp_path, env_df):
         out = tmp_path / "stats.html"
-        result = stats_report(env_df, output=str(out), date_col="fecha")
+        stats_report(env_df, output=str(out), date_col="fecha")
         assert out.exists()
 
     def test_returns_path(self, tmp_path, env_df):

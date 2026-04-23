@@ -5,10 +5,16 @@ import pandas as pd
 import pytest
 
 from estadistica_ambiental.descriptive.bivariate import (
-    chi2_test, contingency_table, correlation_matrix, correlation_table,
+    chi2_test,
+    contingency_table,
+    correlation_matrix,
+    correlation_table,
 )
 from estadistica_ambiental.descriptive.temporal import (
-    acf_values, pacf_values, rolling_stats, seasonal_summary,
+    acf_values,
+    pacf_values,
+    rolling_stats,
+    seasonal_summary,
 )
 from estadistica_ambiental.descriptive.univariate import frequency_table, summarize
 

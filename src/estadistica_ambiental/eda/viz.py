@@ -9,10 +9,10 @@ No llaman plt.show() — control queda en el usuario.
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Sequence
 
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 

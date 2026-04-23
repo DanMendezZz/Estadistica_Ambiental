@@ -5,7 +5,12 @@ from __future__ import annotations
 from typing import Dict, List, Type
 
 from estadistica_ambiental.predictive.base import BaseModel
-from estadistica_ambiental.predictive.classical import ARIMAModel, ETSModel, SARIMAModel, SARIMAXModel
+from estadistica_ambiental.predictive.classical import (
+    ARIMAModel,
+    ETSModel,
+    SARIMAModel,
+    SARIMAXModel,
+)
 from estadistica_ambiental.predictive.ml import LightGBMModel, RandomForestModel, XGBoostModel
 
 _REGISTRY: Dict[str, Type[BaseModel]] = {
@@ -20,7 +25,7 @@ _REGISTRY: Dict[str, Type[BaseModel]] = {
 
 # Modelos deep learning — se registran solo si PyTorch está disponible
 try:
-    from estadistica_ambiental.predictive.deep import LSTMModel, GRUModel
+    from estadistica_ambiental.predictive.deep import GRUModel, LSTMModel
     _REGISTRY["lstm"] = LSTMModel
     _REGISTRY["gru"]  = GRUModel
 except ImportError:

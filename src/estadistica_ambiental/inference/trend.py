@@ -6,8 +6,8 @@ para series largas con distribución no normal.
 
 from __future__ import annotations
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def mann_kendall(series: pd.Series, alpha: float = 0.05) -> dict:
