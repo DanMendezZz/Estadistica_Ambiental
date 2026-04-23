@@ -88,6 +88,9 @@ dev = [
     "ipykernel>=6.29",
     "jupyterlab>=4.1",
 ]
+fast = [
+    "polars>=0.20",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/estadistica_ambiental"]
