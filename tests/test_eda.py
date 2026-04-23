@@ -12,27 +12,37 @@ from estadistica_ambiental.eda.variables import (
 # Fixture base
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def env_df():
     """DataFrame con los tipos de variable más comunes en datos ambientales."""
-    return pd.DataFrame({
-        "fecha":          pd.date_range("2023-01-01", periods=6, freq="D"),
-        "estacion":       ["Kennedy", "Usme", "Bosa", "Kennedy", "Usme", "Bosa"],
-        "pm25":           [12.1, 15.3, 18.7, 9.5, 22.0, 14.4],
-        "temperatura":    [14.5, 15.0, 13.0, 16.0, 14.0, 15.5],
-        "n_eventos":      [1, 0, 2, 1, 3, 0],
-        "calidad_aire":   ["buena", "aceptable", "moderada", "buena", "dañina", "aceptable"],
-        "observaciones":  ["sin novedad", "lluvia leve", "tráfico alto",
-                           "sin novedad", "incendio cercano", "neblina"],
-        "lat":            [4.628, 4.487, 4.615, 4.628, 4.487, 4.615],
-        "lon":            [-74.164, -74.132, -74.198, -74.164, -74.132, -74.198],
-        "activo":         [True, True, False, True, False, True],
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2023-01-01", periods=6, freq="D"),
+            "estacion": ["Kennedy", "Usme", "Bosa", "Kennedy", "Usme", "Bosa"],
+            "pm25": [12.1, 15.3, 18.7, 9.5, 22.0, 14.4],
+            "temperatura": [14.5, 15.0, 13.0, 16.0, 14.0, 15.5],
+            "n_eventos": [1, 0, 2, 1, 3, 0],
+            "calidad_aire": ["buena", "aceptable", "moderada", "buena", "dañina", "aceptable"],
+            "observaciones": [
+                "sin novedad",
+                "lluvia leve",
+                "tráfico alto",
+                "sin novedad",
+                "incendio cercano",
+                "neblina",
+            ],
+            "lat": [4.628, 4.487, 4.615, 4.628, 4.487, 4.615],
+            "lon": [-74.164, -74.132, -74.198, -74.164, -74.132, -74.198],
+            "activo": [True, True, False, True, False, True],
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # Tipos básicos
 # ---------------------------------------------------------------------------
+
 
 class TestBasicTypes:
     def test_datetime_detected(self, env_df):
@@ -75,6 +85,7 @@ class TestBasicTypes:
 # Detección por nombre de columna
 # ---------------------------------------------------------------------------
 
+
 class TestNamePatterns:
     def test_fecha_string_col_detected_as_temporal(self):
         df = pd.DataFrame({"fecha": ["2023-01-01", "2023-01-02", "2023-01-03"]})
@@ -96,6 +107,7 @@ class TestNamePatterns:
 # Sobreescrituras manuales
 # ---------------------------------------------------------------------------
 
+
 class TestOverrides:
     def test_override_changes_type(self, env_df):
         cat = classify(env_df, overrides={"n_eventos": VariableType.NUMERIC_CONTINUOUS})
@@ -113,6 +125,7 @@ class TestOverrides:
 # ---------------------------------------------------------------------------
 # VariableCatalog — métodos de acceso
 # ---------------------------------------------------------------------------
+
 
 class TestCatalogAccess:
     def test_by_type(self, env_df):

@@ -58,7 +58,7 @@ def _section_summary(metrics: Dict[str, dict]) -> str:
     if not metrics:
         return ""
     best_model = min(metrics, key=lambda m: metrics[m].get("rmse", float("inf")))
-    best_rmse  = metrics[best_model].get("rmse", "N/A")
+    best_rmse = metrics[best_model].get("rmse", "N/A")
     return f"""<section>
     <h2>Resumen</h2>
     <p>Mejor modelo según RMSE: <strong>{html.escape(best_model)}</strong>

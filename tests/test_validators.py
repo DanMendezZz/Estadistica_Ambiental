@@ -17,30 +17,36 @@ from estadistica_ambiental.io.validators import (
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def clean_df():
-    return pd.DataFrame({
-        "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
-        "estacion": ["Kennedy"] * 5,
-        "pm25": [12.0, 15.0, 18.0, 10.0, 14.0],
-        "temperatura": [14.5, 15.0, 13.0, 16.0, 14.0],
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
+            "estacion": ["Kennedy"] * 5,
+            "pm25": [12.0, 15.0, 18.0, 10.0, 14.0],
+            "temperatura": [14.5, 15.0, 13.0, 16.0, 14.0],
+        }
+    )
 
 
 @pytest.fixture
 def dirty_df():
-    return pd.DataFrame({
-        "fecha": ["2023-01-01", "2023-01-02", "2023-01-02", "2030-01-01", "2023-01-04"],
-        "estacion": ["Kennedy"] * 5,
-        "pm25": [12.0, None, 18.0, 9999.0, 14.0],  # None y valor imposible
-        "temperatura": [14.5, 15.0, 13.0, 16.0, 14.0],
-        "ph": [7.0, 7.5, 8.0, 20.0, 6.5],           # pH=20 imposible
-    })
+    return pd.DataFrame(
+        {
+            "fecha": ["2023-01-01", "2023-01-02", "2023-01-02", "2030-01-01", "2023-01-04"],
+            "estacion": ["Kennedy"] * 5,
+            "pm25": [12.0, None, 18.0, 9999.0, 14.0],  # None y valor imposible
+            "temperatura": [14.5, 15.0, 13.0, 16.0, 14.0],
+            "ph": [7.0, 7.5, 8.0, 20.0, 6.5],  # pH=20 imposible
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # _check_missing
 # ---------------------------------------------------------------------------
+
 
 class TestCheckMissing:
     def test_no_missing(self, clean_df):
@@ -61,6 +67,7 @@ class TestCheckMissing:
 # ---------------------------------------------------------------------------
 # _check_duplicates
 # ---------------------------------------------------------------------------
+
 
 class TestCheckDuplicates:
     def test_no_duplicates(self, clean_df):
@@ -86,6 +93,7 @@ class TestCheckDuplicates:
 # ---------------------------------------------------------------------------
 # _check_ranges
 # ---------------------------------------------------------------------------
+
 
 class TestCheckRanges:
     def test_clean_df_no_violations(self, clean_df):
@@ -117,6 +125,7 @@ class TestCheckRanges:
 # _check_temporal
 # ---------------------------------------------------------------------------
 
+
 class TestCheckTemporal:
     def test_clean_dates(self, clean_df):
         result = _check_temporal(clean_df, "fecha")
@@ -138,6 +147,7 @@ class TestCheckTemporal:
 # ---------------------------------------------------------------------------
 # validate (integración)
 # ---------------------------------------------------------------------------
+
 
 class TestValidate:
     def test_returns_report(self, clean_df):
@@ -166,18 +176,22 @@ class TestValidate:
         assert isinstance(report, ValidationReport)
 
     def test_linea_tematica_paramos(self):
-        df = pd.DataFrame({
-            "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
-            "temperatura": [5.0, 6.0, 7.0, 8.0, 9.0],
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
+                "temperatura": [5.0, 6.0, 7.0, 8.0, 9.0],
+            }
+        )
         report = validate(df, date_col="fecha", linea_tematica="paramos")
         assert isinstance(report, ValidationReport)
 
     def test_linea_tematica_oferta_hidrica(self):
-        df = pd.DataFrame({
-            "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
-            "caudal": [10.0, 15.0, 20.0, 12.0, 18.0],
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
+                "caudal": [10.0, 15.0, 20.0, 12.0, 18.0],
+            }
+        )
         report = validate(df, date_col="fecha", linea_tematica="oferta_hidrica")
         assert isinstance(report, ValidationReport)
 
@@ -186,38 +200,46 @@ class TestValidate:
         assert isinstance(report, ValidationReport)
 
     def test_summary_with_issues_contains_missing_info(self):
-        df = pd.DataFrame({
-            "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
-            "pm25": [12.0, None, None, None, 14.0],
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
+                "pm25": [12.0, None, None, None, 14.0],
+            }
+        )
         report = validate(df, date_col="fecha")
         summary = report.summary()
         assert "pm25" in summary
 
     def test_summary_with_range_violations(self):
-        df = pd.DataFrame({
-            "fecha": pd.date_range("2023-01-01", periods=3, freq="D"),
-            "pm25": [12.0, 9999.0, 14.0],  # 9999 viola rango físico
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=3, freq="D"),
+                "pm25": [12.0, 9999.0, 14.0],  # 9999 viola rango físico
+            }
+        )
         report = validate(df, date_col="fecha")
         summary = report.summary()
         assert isinstance(summary, str)
 
     def test_summary_with_temporal_issues(self):
-        df = pd.DataFrame({
-            "fecha": ["not_a_date", "2023-01-02", "2023-01-03"],
-            "pm25": [12.0, 15.0, 14.0],
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": ["not_a_date", "2023-01-02", "2023-01-03"],
+                "pm25": [12.0, 15.0, 14.0],
+            }
+        )
         report = validate(df, date_col="fecha")
         summary = report.summary()
         assert isinstance(summary, str)
 
     def test_summary_with_key_duplicates(self):
-        df = pd.DataFrame({
-            "fecha": pd.to_datetime(["2023-01-01", "2023-01-01", "2023-01-02"]),
-            "estacion": ["A", "A", "A"],
-            "pm25": [12.0, 13.0, 14.0],
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": pd.to_datetime(["2023-01-01", "2023-01-01", "2023-01-02"]),
+                "estacion": ["A", "A", "A"],
+                "pm25": [12.0, 13.0, 14.0],
+            }
+        )
         report = validate(df, date_col="fecha", key_cols=["estacion", "fecha"])
         summary = report.summary()
         assert isinstance(summary, str)
@@ -230,6 +252,7 @@ class TestValidate:
         assert isinstance(report, ValidationReport)
 
     def test_custom_ranges_applied(self, clean_df):
-        report = validate(clean_df, date_col="fecha",
-                          ranges={"pm25": (0, 10)})  # umbral muy bajo → violations
+        report = validate(
+            clean_df, date_col="fecha", ranges={"pm25": (0, 10)}
+        )  # umbral muy bajo → violations
         assert isinstance(report, ValidationReport)

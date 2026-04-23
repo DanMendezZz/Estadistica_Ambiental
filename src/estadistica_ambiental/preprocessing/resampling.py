@@ -35,7 +35,11 @@ def resample(
 
     if isinstance(agg, str):
         resampled = data[targets].resample(freq)
-        result = getattr(resampled, agg)(min_count=min_count) if agg == "sum" else getattr(resampled, agg)()
+        result = (
+            getattr(resampled, agg)(min_count=min_count)
+            if agg == "sum"
+            else getattr(resampled, agg)()
+        )
     else:
         result = pd.DataFrame(index=data[targets].resample(freq).mean().index)
         for col, func in agg.items():
@@ -53,8 +57,7 @@ def align_frequencies(
     agg: str = "mean",
 ) -> List[pd.DataFrame]:
     """Alinea múltiples DataFrames a la misma frecuencia temporal."""
-    return [resample(df, dc, freq=target_freq, agg=agg)
-            for df, dc in zip(dfs, date_cols)]
+    return [resample(df, dc, freq=target_freq, agg=agg) for df, dc in zip(dfs, date_cols)]
 
 
 def fill_missing_timestamps(

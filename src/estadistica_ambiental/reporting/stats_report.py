@@ -78,14 +78,16 @@ def _section_trend(df: pd.DataFrame, date_col: str, cols: list) -> str:
             continue
         try:
             mk = mann_kendall(s)
-            rows.append({
-                "variable": col,
-                "tendencia": mk["trend"],
-                "significativo": mk["h"],
-                "p-valor": mk["pval"],
-                "tau": mk["tau"],
-                "Sen slope": mk["slope"],
-            })
+            rows.append(
+                {
+                    "variable": col,
+                    "tendencia": mk["trend"],
+                    "significativo": mk["h"],
+                    "p-valor": mk["pval"],
+                    "tau": mk["tau"],
+                    "Sen slope": mk["slope"],
+                }
+            )
         except Exception:
             continue
     if not rows:

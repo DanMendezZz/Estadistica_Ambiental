@@ -37,8 +37,10 @@ def ci_median_bootstrap(
     boot = rng.choice(s, size=(n_boot, len(s)), replace=True)
     medians = np.median(boot, axis=1)
     lo = (1 - confidence) / 2
-    return (round(float(np.percentile(medians, lo * 100)), 4),
-            round(float(np.percentile(medians, (1 - lo) * 100)), 4))
+    return (
+        round(float(np.percentile(medians, lo * 100)), 4),
+        round(float(np.percentile(medians, (1 - lo) * 100)), 4),
+    )
 
 
 def ci_quantile_bootstrap(
@@ -54,8 +56,10 @@ def ci_quantile_bootstrap(
     boot = rng.choice(s, size=(n_boot, len(s)), replace=True)
     quantiles = np.quantile(boot, q, axis=1)
     lo = (1 - confidence) / 2
-    return (round(float(np.percentile(quantiles, lo * 100)), 4),
-            round(float(np.percentile(quantiles, (1 - lo) * 100)), 4))
+    return (
+        round(float(np.percentile(quantiles, lo * 100)), 4),
+        round(float(np.percentile(quantiles, (1 - lo) * 100)), 4),
+    )
 
 
 def ci_bootstrap(
@@ -70,8 +74,10 @@ def ci_bootstrap(
     s = series.dropna().values
     boot_stats = [statistic(rng.choice(s, size=len(s), replace=True)) for _ in range(n_boot)]
     lo = (1 - confidence) / 2
-    return (round(float(np.percentile(boot_stats, lo * 100)), 4),
-            round(float(np.percentile(boot_stats, (1 - lo) * 100)), 4))
+    return (
+        round(float(np.percentile(boot_stats, lo * 100)), 4),
+        round(float(np.percentile(boot_stats, (1 - lo) * 100)), 4),
+    )
 
 
 def exceedance_probability(
@@ -87,9 +93,9 @@ def exceedance_probability(
     n_exceed = int((s > threshold).sum())
     p = n_exceed / n if n else 0.0
     return {
-        "threshold":          threshold,
-        "n_exceedances":      n_exceed,
-        "pct_exceed":         round(p * 100, 2),
+        "threshold": threshold,
+        "n_exceedances": n_exceed,
+        "pct_exceed": round(p * 100, 2),
         "return_period_days": round(1 / p, 1) if p > 0 else None,
     }
 
@@ -99,44 +105,44 @@ def exceedance_probability(
 # Formato: {nombre_variable: [(norma_label, norma_dict, key_en_norma_dict)]}
 # ---------------------------------------------------------------------------
 _NORMA_MAP: Dict[str, list[tuple[str, dict, str]]] = {
-    "pm25":   [
-        ("Res. 2254/2017 — 24h",  NORMA_CO,  "pm25_24h"),
-        ("Res. 2254/2017 — anual",NORMA_CO,  "pm25_annual"),
-        ("OMS 2021 — 24h",        NORMA_OMS, "pm25_24h"),
-        ("OMS 2021 — anual",      NORMA_OMS, "pm25_annual"),
+    "pm25": [
+        ("Res. 2254/2017 — 24h", NORMA_CO, "pm25_24h"),
+        ("Res. 2254/2017 — anual", NORMA_CO, "pm25_annual"),
+        ("OMS 2021 — 24h", NORMA_OMS, "pm25_24h"),
+        ("OMS 2021 — anual", NORMA_OMS, "pm25_annual"),
     ],
-    "pm10":   [
-        ("Res. 2254/2017 — 24h",  NORMA_CO,  "pm10_24h"),
-        ("Res. 2254/2017 — anual",NORMA_CO,  "pm10_annual"),
-        ("OMS 2021 — 24h",        NORMA_OMS, "pm10_24h"),
-        ("OMS 2021 — anual",      NORMA_OMS, "pm10_annual"),
+    "pm10": [
+        ("Res. 2254/2017 — 24h", NORMA_CO, "pm10_24h"),
+        ("Res. 2254/2017 — anual", NORMA_CO, "pm10_annual"),
+        ("OMS 2021 — 24h", NORMA_OMS, "pm10_24h"),
+        ("OMS 2021 — anual", NORMA_OMS, "pm10_annual"),
     ],
-    "o3":     [("Res. 2254/2017 — 8h",   NORMA_CO,  "o3_8h")],
-    "no2":    [
-        ("Res. 2254/2017 — anual",NORMA_CO,  "no2_annual"),
-        ("OMS 2021 — anual",      NORMA_OMS, "no2_annual"),
+    "o3": [("Res. 2254/2017 — 8h", NORMA_CO, "o3_8h")],
+    "no2": [
+        ("Res. 2254/2017 — anual", NORMA_CO, "no2_annual"),
+        ("OMS 2021 — anual", NORMA_OMS, "no2_annual"),
     ],
-    "so2":    [("Res. 2254/2017 — 24h",  NORMA_CO,  "so2_24h")],
-    "co":     [("Res. 2254/2017 — 8h",   NORMA_CO,  "co_8h")],
-    "od":     [("Res. 2115/2007 — agua potable min", NORMA_AGUA_POTABLE, "od_min")],
-    "dbo":    [
+    "so2": [("Res. 2254/2017 — 24h", NORMA_CO, "so2_24h")],
+    "co": [("Res. 2254/2017 — 8h", NORMA_CO, "co_8h")],
+    "od": [("Res. 2115/2007 — agua potable min", NORMA_AGUA_POTABLE, "od_min")],
+    "dbo": [
         ("Res. 2115/2007 — agua potable", NORMA_AGUA_POTABLE, "dbo5_max"),
-        ("Res. 631/2015 — vertimiento",   NORMA_VERTIMIENTOS, "dbo5_max"),
+        ("Res. 631/2015 — vertimiento", NORMA_VERTIMIENTOS, "dbo5_max"),
     ],
-    "dbo5":   [
+    "dbo5": [
         ("Res. 2115/2007 — agua potable", NORMA_AGUA_POTABLE, "dbo5_max"),
-        ("Res. 631/2015 — vertimiento",   NORMA_VERTIMIENTOS, "dbo5_max"),
+        ("Res. 631/2015 — vertimiento", NORMA_VERTIMIENTOS, "dbo5_max"),
     ],
-    "dqo":    [("Res. 631/2015 — vertimiento",   NORMA_VERTIMIENTOS, "dqo_max")],
-    "sst":    [("Res. 631/2015 — vertimiento",   NORMA_VERTIMIENTOS, "sst_max")],
-    "ph":     [
+    "dqo": [("Res. 631/2015 — vertimiento", NORMA_VERTIMIENTOS, "dqo_max")],
+    "sst": [("Res. 631/2015 — vertimiento", NORMA_VERTIMIENTOS, "sst_max")],
+    "ph": [
         ("Res. 2115/2007 — agua potable min", NORMA_AGUA_POTABLE, "ph_min"),
         ("Res. 2115/2007 — agua potable max", NORMA_AGUA_POTABLE, "ph_max"),
-        ("Res. 631/2015 — vertimiento min",   NORMA_VERTIMIENTOS, "ph_min"),
-        ("Res. 631/2015 — vertimiento max",   NORMA_VERTIMIENTOS, "ph_max"),
+        ("Res. 631/2015 — vertimiento min", NORMA_VERTIMIENTOS, "ph_min"),
+        ("Res. 631/2015 — vertimiento max", NORMA_VERTIMIENTOS, "ph_max"),
     ],
     "conductividad": [("Res. 2115/2007 — agua potable", NORMA_AGUA_POTABLE, "conductividad_max")],
-    "nitratos":      [("Res. 2115/2007 — agua potable", NORMA_AGUA_POTABLE, "nitratos_max")],
+    "nitratos": [("Res. 2115/2007 — agua potable", NORMA_AGUA_POTABLE, "nitratos_max")],
 }
 
 
@@ -161,9 +167,16 @@ def exceedance_report(
     variable_key = variable.lower().replace(" ", "_")
     normas = _NORMA_MAP.get(variable_key, [])
     if not normas:
-        return pd.DataFrame(columns=[
-            "norma", "umbral", "n_exceedances", "pct_exceed", "cumple", "return_period_days"
-        ])
+        return pd.DataFrame(
+            columns=[
+                "norma",
+                "umbral",
+                "n_exceedances",
+                "pct_exceed",
+                "cumple",
+                "return_period_days",
+            ]
+        )
 
     rows = []
     s = series.dropna()
@@ -180,14 +193,16 @@ def exceedance_report(
         else:
             n_exceed = int((s > umbral).sum())
         p = n_exceed / n if n else 0.0
-        rows.append({
-            "norma":              label,
-            "umbral":             umbral,
-            "tipo":               "mínimo" if is_min else "máximo",
-            "n_exceedances":      n_exceed,
-            "pct_exceed":         round(p * 100, 2),
-            "cumple":             n_exceed == 0,
-            "return_period_days": round(1 / p, 1) if p > 0 else None,
-        })
+        rows.append(
+            {
+                "norma": label,
+                "umbral": umbral,
+                "tipo": "mínimo" if is_min else "máximo",
+                "n_exceedances": n_exceed,
+                "pct_exceed": round(p * 100, 2),
+                "cumple": n_exceed == 0,
+                "return_period_days": round(1 / p, 1) if p > 0 else None,
+            }
+        )
 
     return pd.DataFrame(rows)

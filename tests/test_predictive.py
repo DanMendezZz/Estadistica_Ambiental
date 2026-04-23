@@ -21,6 +21,7 @@ def ts():
 
 # --- ML models ---
 
+
 class TestXGBoost:
     def test_fit_predict(self, ts):
         model = XGBoostModel(lags=[1, 2, 3])
@@ -38,8 +39,7 @@ class TestXGBoost:
 
 class TestXGBoostWithExog:
     def test_fit_with_exogenous(self, ts):
-        X = pd.DataFrame({"temp": np.random.default_rng(1).normal(15, 3, len(ts))},
-                         index=ts.index)
+        X = pd.DataFrame({"temp": np.random.default_rng(1).normal(15, 3, len(ts))}, index=ts.index)
         model = XGBoostModel(lags=[1, 2, 3])
         model.fit(ts, X=X)
         assert model.is_fitted
@@ -50,8 +50,7 @@ class TestXGBoostWithExog:
             model.predict(3)
 
     def test_predict_with_x_future(self, ts):
-        X = pd.DataFrame({"temp": np.random.default_rng(2).normal(15, 3, len(ts))},
-                         index=ts.index)
+        X = pd.DataFrame({"temp": np.random.default_rng(2).normal(15, 3, len(ts))}, index=ts.index)
         X_future = pd.DataFrame({"temp": np.random.default_rng(3).normal(15, 3, 4)})
         model = XGBoostModel(lags=[1, 2, 3])
         model.fit(ts, X=X)
@@ -67,8 +66,7 @@ class TestRandomForest:
         assert len(preds) == 4
 
     def test_fit_with_exogenous(self, ts):
-        X = pd.DataFrame({"feat": np.random.default_rng(5).normal(0, 1, len(ts))},
-                         index=ts.index)
+        X = pd.DataFrame({"feat": np.random.default_rng(5).normal(0, 1, len(ts))}, index=ts.index)
         X_future = pd.DataFrame({"feat": np.random.default_rng(6).normal(0, 1, 3)})
         model = RandomForestModel(lags=[1, 2, 3])
         model.fit(ts, X=X)
@@ -77,6 +75,7 @@ class TestRandomForest:
 
 
 # --- registry ---
+
 
 class TestRegistry:
     def test_list_models(self):
@@ -100,10 +99,12 @@ class TestRegistry:
 
         class NaiveModel(BaseModel):
             name = "Naive"
+
             def fit(self, y, X=None):
                 self._last = float(y.iloc[-1])
                 self._fitted = True
                 return self
+
             def predict(self, horizon, X_future=None):
                 return np.full(horizon, self._last)
 
@@ -114,16 +115,19 @@ class TestRegistry:
 
 # --- BaseModel helpers ---
 
+
 class TestBaseModelHelpers:
     def _make_naive(self, ts):
         from estadistica_ambiental.predictive.base import BaseModel
 
         class NaiveModel(BaseModel):
             name = "NaiveHelper"
+
             def fit(self, y, X=None):
                 self._last = float(y.iloc[-1])
                 self._fitted = True
                 return self
+
             def predict(self, horizon, X_future=None):
                 return np.full(horizon, self._last)
 
@@ -145,11 +149,13 @@ class TestBaseModelHelpers:
 
     def test_optimization_result_penalty_sets_fallback(self):
         from estadistica_ambiental.predictive.base import OPTIMIZER_PENALTY, OptimizationResult
+
         r = OptimizationResult(best_params={}, best_score=OPTIMIZER_PENALTY, n_trials=0)
         assert r.fallback is True
 
 
 # --- backtesting ---
+
 
 class TestBacktesting:
     def test_walk_forward_returns_dict(self, ts):
@@ -166,7 +172,7 @@ class TestBacktesting:
     def test_compare_backtests(self, ts):
         results = {
             "arima": walk_forward(ARIMAModel(order=(1, 1, 0)), ts, horizon=3, n_splits=3),
-            "rf":    walk_forward(RandomForestModel(lags=[1, 2, 3]), ts, horizon=3, n_splits=3),
+            "rf": walk_forward(RandomForestModel(lags=[1, 2, 3]), ts, horizon=3, n_splits=3),
         }
         df = compare_backtests(results)
         assert "rmse" in df.columns
@@ -192,8 +198,10 @@ class TestBacktesting:
 
         class AlwaysFailModel(BaseModel):
             name = "Failing"
+
             def fit(self, y, X=None):
                 raise RuntimeError("fallo intencional")
+
             def predict(self, horizon, X_future=None):
                 return np.zeros(horizon)
 

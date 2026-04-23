@@ -53,15 +53,18 @@ def oni_df(oni_file):
 
 @pytest.fixture
 def env_df():
-    return pd.DataFrame({
-        "fecha": pd.date_range("2020-01-01", periods=24, freq="ME"),
-        "caudal": np.random.default_rng(0).normal(50, 10, 24),
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2020-01-01", periods=24, freq="ME"),
+            "caudal": np.random.default_rng(0).normal(50, 10, 24),
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # load_oni con archivo local
 # ---------------------------------------------------------------------------
+
 
 class TestLoadOni:
     def test_returns_dataframe(self, oni_file):
@@ -87,6 +90,7 @@ class TestLoadOni:
         # Simular fallo de red → debe devolver DataFrame vacío
         def mock_read_csv(*args, **kwargs):
             raise OSError("sin red")
+
         monkeypatch.setattr("estadistica_ambiental.features.climate.pd.read_csv", mock_read_csv)
         df = load_oni(start_year=2020)
         assert isinstance(df, pd.DataFrame)
@@ -99,6 +103,7 @@ class TestLoadOni:
 # ---------------------------------------------------------------------------
 # enso_dummy
 # ---------------------------------------------------------------------------
+
 
 class TestEnsoDummy:
     def test_returns_dataframe(self, env_df, oni_df):
@@ -123,13 +128,12 @@ class TestEnsoDummy:
 # enso_lagged
 # ---------------------------------------------------------------------------
 
+
 class TestEnsoLagged:
     def test_adds_oni_lagged(self, env_df, oni_df):
-        result = enso_lagged(env_df, oni_df, date_col="fecha",
-                             linea_tematica="oferta_hidrica")
+        result = enso_lagged(env_df, oni_df, date_col="fecha", linea_tematica="oferta_hidrica")
         assert any("oni" in c for c in result.columns)
 
     def test_preserves_row_count(self, env_df, oni_df):
-        result = enso_lagged(env_df, oni_df, date_col="fecha",
-                             linea_tematica="calidad_aire")
+        result = enso_lagged(env_df, oni_df, date_col="fecha", linea_tematica="calidad_aire")
         assert len(result) == len(env_df)

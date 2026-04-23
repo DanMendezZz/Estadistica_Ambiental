@@ -76,7 +76,7 @@ def load_openaq(
         params = {
             "parameter_id": _openaq_param_id(parameter),
             "date_from": f"{date_from}T00:00:00Z",
-            "date_to":   f"{date_to}T23:59:59Z",
+            "date_to": f"{date_to}T23:59:59Z",
             "limit": limit,
         }
     else:
@@ -85,7 +85,7 @@ def load_openaq(
             "countries_id": 170,  # Colombia
             "parameters_id": _openaq_param_id(parameter),
             "date_from": f"{date_from}T00:00:00Z",
-            "date_to":   f"{date_to}T23:59:59Z",
+            "date_to": f"{date_to}T23:59:59Z",
             "limit": limit,
         }
 
@@ -96,7 +96,7 @@ def load_openaq(
             params["page"] = page
             resp = requests.get(url, headers=_OPENAQ_HEADERS, params=params, timeout=30)
             resp.raise_for_status()
-            body    = resp.json()
+            body = resp.json()
             results = body.get("results", [])
             all_data.extend(results)
             total = body.get("meta", {}).get("found", len(all_data))
@@ -110,18 +110,22 @@ def load_openaq(
             return pd.DataFrame()
         rows = []
         for m in data:
-            rows.append({
-                "fecha":     pd.to_datetime(m.get("datetime", {}).get("utc"), utc=True),
-                "estacion":  m.get("locationId"),
-                "parametro": parameter,
-                "valor":     m.get("value"),
-                "unidad":    m.get("unit", "µg/m³"),
-                "lat":       m.get("coordinates", {}).get("latitude"),
-                "lon":       m.get("coordinates", {}).get("longitude"),
-            })
+            rows.append(
+                {
+                    "fecha": pd.to_datetime(m.get("datetime", {}).get("utc"), utc=True),
+                    "estacion": m.get("locationId"),
+                    "parametro": parameter,
+                    "valor": m.get("value"),
+                    "unidad": m.get("unit", "µg/m³"),
+                    "lat": m.get("coordinates", {}).get("latitude"),
+                    "lon": m.get("coordinates", {}).get("longitude"),
+                }
+            )
         df = pd.DataFrame(rows)
         df["fecha"] = pd.to_datetime(df["fecha"], utc=True).dt.tz_localize(None)
-        logger.info("OpenAQ: %d registros descargados (%s, %s → %s)", len(df), parameter, date_from, date_to)
+        logger.info(
+            "OpenAQ: %d registros descargados (%s, %s → %s)", len(df), parameter, date_from, date_to
+        )
         return df.sort_values("fecha").reset_index(drop=True)
     except Exception as e:
         logger.error("Error consultando OpenAQ: %s", e)
@@ -139,6 +143,7 @@ def _openaq_param_id(param: str) -> int:
 # Portal: http://rmcab.ambientebogota.gov.co/
 # API REST disponible (requiere token gratuito de la SDA)
 # ---------------------------------------------------------------------------
+
 
 def load_rmcab(
     station: str,
@@ -174,7 +179,10 @@ def load_rmcab(
             "RMCAB requiere token SDA. Descarga manual en: "
             "http://rmcab.ambientebogota.gov.co/Report/stationreport\n"
             "Estación: %s | Variable: %s | %s → %s",
-            station, variable, date_from, date_to,
+            station,
+            variable,
+            date_from,
+            date_to,
         )
         return pd.DataFrame(columns=["fecha", "estacion", "variable", "valor", "unidad"])
 
@@ -217,10 +225,7 @@ def load_rmcab(
 # Datos abiertos disponibles en: https://www.datos.gov.co/ (descarga CSV)
 # ---------------------------------------------------------------------------
 
-_SIATA_DATOS_GOV = (
-    "https://www.datos.gov.co/api/views/ms2k-yccr/rows.csv"
-    "?accessType=DOWNLOAD"
-)
+_SIATA_DATOS_GOV = "https://www.datos.gov.co/api/views/ms2k-yccr/rows.csv?accessType=DOWNLOAD"
 
 
 def load_siata_aire(
@@ -254,6 +259,7 @@ def load_siata_aire(
     else:
         try:
             import requests
+
             logger.info("Intentando descarga SIATA desde datos.gov.co...")
             resp = requests.get(_SIATA_DATOS_GOV, timeout=60)
             resp.raise_for_status()
@@ -261,7 +267,8 @@ def load_siata_aire(
         except Exception as e:
             logger.warning(
                 "No se pudo descargar SIATA automáticamente: %s\n"
-                "Descarga manual en: https://www.datos.gov.co/", e
+                "Descarga manual en: https://www.datos.gov.co/",
+                e,
             )
             return pd.DataFrame(columns=["fecha", "estacion", "variable", "valor", "unidad"])
 
@@ -305,6 +312,7 @@ def load_siata_aire(
 # Portal: http://dhime.ideam.gov.co/
 # Requiere registro gratuito; descarga manual de CSV/XLSX
 # ---------------------------------------------------------------------------
+
 
 def load_ideam_dhime(
     path: str,
@@ -387,6 +395,7 @@ def load_ideam_dhime(
 # Portal: http://smbyc.ideam.gov.co/
 # ---------------------------------------------------------------------------
 
+
 def load_smbyc_alertas(path: str) -> pd.DataFrame:
     """Carga alertas tempranas de deforestación del SMByC desde archivo local.
 
@@ -405,6 +414,7 @@ def load_smbyc_alertas(path: str) -> pd.DataFrame:
     """
     try:
         import geopandas as gpd
+
         gdf = gpd.read_file(path)
         logger.info("SMByC: %d alertas cargadas (geopandas)", len(gdf))
         return gdf
@@ -426,6 +436,7 @@ def load_smbyc_alertas(path: str) -> pd.DataFrame:
 # Datos abiertos.gov.co — Portal general de datos ambientales Colombia
 # ---------------------------------------------------------------------------
 
+
 def list_datasets_co(
     query: str = "calidad aire",
     limit: int = 10,
@@ -441,6 +452,7 @@ def list_datasets_co(
     """
     try:
         import requests
+
         resp = requests.get(
             "https://www.datos.gov.co/api/views.json",
             params={"q": query, "limit": limit},
@@ -450,13 +462,15 @@ def list_datasets_co(
         data = resp.json()
         rows = []
         for item in data:
-            rows.append({
-                "name":         item.get("name", ""),
-                "description":  item.get("description", "")[:150],
-                "url":          f"https://www.datos.gov.co/d/{item.get('id', '')}",
-                "organization": item.get("attribution", ""),
-                "updated":      item.get("rowsUpdatedAt", ""),
-            })
+            rows.append(
+                {
+                    "name": item.get("name", ""),
+                    "description": item.get("description", "")[:150],
+                    "url": f"https://www.datos.gov.co/d/{item.get('id', '')}",
+                    "organization": item.get("attribution", ""),
+                    "updated": item.get("rowsUpdatedAt", ""),
+                }
+            )
         return pd.DataFrame(rows)
     except Exception as e:
         logger.warning("No se pudo consultar datos.gov.co: %s", e)

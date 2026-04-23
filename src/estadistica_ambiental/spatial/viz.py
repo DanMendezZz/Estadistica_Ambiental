@@ -35,11 +35,14 @@ def map_stations(
 
     center_lat = df[lat_col].mean()
     center_lon = df[lon_col].mean()
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=zoom,
-                   tiles="CartoDB positron")
+    m = folium.Map(location=[center_lat, center_lon], zoom_start=zoom, tiles="CartoDB positron")
 
     for _, row in df.iterrows():
-        popup_text = f"{row.get(label_col, '')} — {row.get(value_col, '')}" if value_col else str(row.get(label_col, ""))
+        popup_text = (
+            f"{row.get(label_col, '')} — {row.get(value_col, '')}"
+            if value_col
+            else str(row.get(label_col, ""))
+        )
         folium.CircleMarker(
             location=[row[lat_col], row[lon_col]],
             radius=6,
@@ -113,13 +116,13 @@ def plot_kriging_map(
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=figsize)
-    img = ax.pcolormesh(grid_lon, grid_lat, z_values,
-                        cmap="YlOrRd", shading="auto")
+    img = ax.pcolormesh(grid_lon, grid_lat, z_values, cmap="YlOrRd", shading="auto")
     fig.colorbar(img, ax=ax, label=title)
 
     if points_df is not None:
-        ax.scatter(points_df[lon_col], points_df[lat_col],
-                   c="black", s=20, zorder=5, label="Estaciones")
+        ax.scatter(
+            points_df[lon_col], points_df[lat_col], c="black", s=20, zorder=5, label="Estaciones"
+        )
         ax.legend(fontsize=8)
 
     ax.set_xlabel("Longitud")

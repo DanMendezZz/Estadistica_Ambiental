@@ -40,11 +40,11 @@ def morans_i(
     moran = Moran(gdf[value_col], w)
 
     return {
-        "I":           round(float(moran.I), 4),
-        "EI":          round(float(moran.EI), 4),
-        "p_norm":      round(float(moran.p_norm), 6),
-        "p_sim":       round(float(moran.p_sim), 6),
-        "z_norm":      round(float(moran.z_norm), 4),
+        "I": round(float(moran.I), 4),
+        "EI": round(float(moran.EI), 4),
+        "p_norm": round(float(moran.p_norm), 6),
+        "p_sim": round(float(moran.p_sim), 6),
+        "z_norm": round(float(moran.z_norm), 4),
         "significant": float(moran.p_sim) < significance,
         "interpretation": _interpret_moran(float(moran.I), float(moran.p_sim), significance),
     }
@@ -75,7 +75,7 @@ def local_morans_i(gdf, value_col: str, weight_type: str = "queen"):
     lisa = Moran_Local(gdf[value_col], w)
 
     result = gdf.copy()
-    result["lisa_q"] = lisa.q        # 1=HH, 2=LH, 3=LL, 4=HL
+    result["lisa_q"] = lisa.q  # 1=HH, 2=LH, 3=LL, 4=HL
     result["lisa_p"] = lisa.p_sim
     result["lisa_sig"] = lisa.p_sim < 0.05
     return result

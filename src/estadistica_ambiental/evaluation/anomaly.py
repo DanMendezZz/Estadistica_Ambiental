@@ -50,8 +50,7 @@ def detect_anomalies(
 
     if len(y_true) != len(y_pred):
         raise ValueError(
-            f"y_true y y_pred deben tener la misma longitud "
-            f"({len(y_true)} vs {len(y_pred)})."
+            f"y_true y y_pred deben tener la misma longitud ({len(y_true)} vs {len(y_pred)})."
         )
 
     error = y_true - y_pred
@@ -69,10 +68,10 @@ def detect_anomalies(
 
     df = pd.DataFrame(
         {
-            "y_true":     y_true,
-            "y_pred":     y_pred,
-            "error":      error,
-            "error_rel":  error_rel,
+            "y_true": y_true,
+            "y_pred": y_pred,
+            "error": error,
+            "error_rel": error_rel,
             "is_anomaly": is_anomaly,
         },
         index=idx,
@@ -102,13 +101,13 @@ def anomaly_summary(anomaly_df: pd.DataFrame, threshold: float = 2.0) -> dict:
             - threshold_value: umbral exacto aplicado en detect_anomalies
             - max_error_rel:   error relativo máximo observado
     """
-    n_total     = len(anomaly_df)
+    n_total = len(anomaly_df)
     n_anomalies = int(anomaly_df["is_anomaly"].sum())
-    pct         = n_anomalies / n_total * 100 if n_total > 0 else 0.0
+    pct = n_anomalies / n_total * 100 if n_total > 0 else 0.0
 
     err_rel = anomaly_df["error_rel"].values
     mean_er = float(np.nanmean(err_rel))
-    std_er  = float(np.nanstd(err_rel))   # ddof=0, igual que detect_anomalies
+    std_er = float(np.nanstd(err_rel))  # ddof=0, igual que detect_anomalies
 
     # Preferir el umbral exacto almacenado en attrs; recalcular si no está
     threshold_val = anomaly_df.attrs.get(
@@ -117,11 +116,11 @@ def anomaly_summary(anomaly_df: pd.DataFrame, threshold: float = 2.0) -> dict:
     )
 
     return {
-        "n_total":        n_total,
-        "n_anomalies":    n_anomalies,
-        "pct_anomalies":  round(pct, 2),
+        "n_total": n_total,
+        "n_anomalies": n_anomalies,
+        "pct_anomalies": round(pct, 2),
         "mean_error_rel": round(mean_er, 4),
-        "std_error_rel":  round(std_er, 4),
+        "std_error_rel": round(std_er, 4),
         "threshold_value": round(float(threshold_val), 4),
-        "max_error_rel":  round(float(np.nanmax(err_rel)), 4),
+        "max_error_rel": round(float(np.nanmax(err_rel)), 4),
     }

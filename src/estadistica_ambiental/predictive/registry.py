@@ -14,20 +14,21 @@ from estadistica_ambiental.predictive.classical import (
 from estadistica_ambiental.predictive.ml import LightGBMModel, RandomForestModel, XGBoostModel
 
 _REGISTRY: Dict[str, Type[BaseModel]] = {
-    "arima":        ARIMAModel,
-    "sarima":       SARIMAModel,
-    "sarimax":      SARIMAXModel,
-    "ets":          ETSModel,
-    "xgboost":      XGBoostModel,
-    "random_forest":RandomForestModel,
-    "lightgbm":     LightGBMModel,
+    "arima": ARIMAModel,
+    "sarima": SARIMAModel,
+    "sarimax": SARIMAXModel,
+    "ets": ETSModel,
+    "xgboost": XGBoostModel,
+    "random_forest": RandomForestModel,
+    "lightgbm": LightGBMModel,
 }
 
 # Modelos deep learning — se registran solo si PyTorch está disponible
 try:
     from estadistica_ambiental.predictive.deep import GRUModel, LSTMModel
+
     _REGISTRY["lstm"] = LSTMModel
-    _REGISTRY["gru"]  = GRUModel
+    _REGISTRY["gru"] = GRUModel
 except ImportError:
     pass
 

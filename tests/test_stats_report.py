@@ -13,11 +13,13 @@ from estadistica_ambiental.reporting.stats_report import stats_report
 def env_df():
     np.random.seed(0)
     n = 60
-    return pd.DataFrame({
-        "fecha": pd.date_range("2020-01-01", periods=n, freq="ME"),
-        "pm25": np.random.gamma(3, 5, n),
-        "temperatura": np.random.normal(15, 3, n),
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2020-01-01", periods=n, freq="ME"),
+            "pm25": np.random.gamma(3, 5, n),
+            "temperatura": np.random.normal(15, 3, n),
+        }
+    )
 
 
 class TestStatsReport:
@@ -28,6 +30,7 @@ class TestStatsReport:
 
     def test_returns_path(self, tmp_path, env_df):
         from pathlib import Path
+
         out = tmp_path / "stats.html"
         result = stats_report(env_df, output=str(out))
         assert isinstance(result, Path)
@@ -62,10 +65,12 @@ class TestStatsReport:
 
     def test_short_series_stationarity_skipped(self, tmp_path):
         # Series < 20 puntos → _section_stationarity las salta sin error
-        df = pd.DataFrame({
-            "fecha": pd.date_range("2020-01-01", periods=10, freq="ME"),
-            "pm25": np.random.default_rng(1).normal(20, 5, 10),
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2020-01-01", periods=10, freq="ME"),
+                "pm25": np.random.default_rng(1).normal(20, 5, 10),
+            }
+        )
         out = tmp_path / "short.html"
         stats_report(df, output=str(out), date_col="fecha")
         assert out.exists()

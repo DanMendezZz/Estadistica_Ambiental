@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_VECTOR_EXTS  = {".shp", ".gpkg", ".geojson", ".json"}
-_RASTER_EXTS  = {".tif", ".tiff", ".nc", ".nc4"}
+_VECTOR_EXTS = {".shp", ".gpkg", ".geojson", ".json"}
+_RASTER_EXTS = {".tif", ".tiff", ".nc", ".nc4"}
 
 
 def load_vector(
@@ -72,16 +72,21 @@ def load_raster(
     with rasterio.open(path) as src:
         data = src.read(band)
         result = {
-            "data":      data,
+            "data": data,
             "transform": src.transform,
-            "crs":       src.crs,
-            "shape":     src.shape,
-            "nodata":    src.nodata,
-            "bounds":    src.bounds,
-            "res":       src.res,
+            "crs": src.crs,
+            "shape": src.shape,
+            "nodata": src.nodata,
+            "bounds": src.bounds,
+            "res": src.res,
         }
-    logger.info("Raster '%s': shape=%s | CRS=%s | nodata=%s",
-                path.name, result["shape"], result["crs"], result["nodata"])
+    logger.info(
+        "Raster '%s': shape=%s | CRS=%s | nodata=%s",
+        path.name,
+        result["shape"],
+        result["crs"],
+        result["nodata"],
+    )
     return result
 
 
@@ -109,8 +114,7 @@ def load_netcdf_spatial(
     if time_slice and "time" in ds.dims:
         ds = ds.sel(time=time_slice)
 
-    logger.info("NetCDF '%s': variables=%s | dims=%s",
-                path.name, list(ds.data_vars), dict(ds.dims))
+    logger.info("NetCDF '%s': variables=%s | dims=%s", path.name, list(ds.data_vars), dict(ds.dims))
     return ds
 
 

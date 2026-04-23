@@ -60,7 +60,7 @@ def walk_forward(
             train_end = min_train + fold_idx * step
 
         test_start = train_end + gap
-        test_end   = min(test_start + horizon, n)
+        test_end = min(test_start + horizon, n)
 
         if test_end > n or test_start >= n:
             break
@@ -84,27 +84,33 @@ def walk_forward(
             logger.warning("Fold %d falló: %s", fold_idx, e)
             continue
 
-        folds.append({"fold": fold_idx, "train_size": len(y_train),
-                      "test_size": len(y_test), **metrics})
+        folds.append(
+            {"fold": fold_idx, "train_size": len(y_train), "test_size": len(y_test), **metrics}
+        )
         all_actual.extend(actual)
         all_pred.extend(preds)
 
     if not folds:
         return {"metrics": {}, "folds": [], "predictions": pd.DataFrame()}
 
-    folds_df   = pd.DataFrame(folds)
+    folds_df = pd.DataFrame(folds)
     avg_metrics = folds_df.drop(columns=["fold", "train_size", "test_size"]).mean().to_dict()
     avg_metrics = {k: round(v, 4) for k, v in avg_metrics.items()}
 
-    preds_df = pd.DataFrame({
-        "actual":    all_actual,
-        "predicted": all_pred,
-    })
+    preds_df = pd.DataFrame(
+        {
+            "actual": all_actual,
+            "predicted": all_pred,
+        }
+    )
 
-    logger.info("%s backtesting: %d folds | RMSE=%.4f | MAE=%.4f",
-                model.name, len(folds),
-                avg_metrics.get("rmse", float("nan")),
-                avg_metrics.get("mae", float("nan")))
+    logger.info(
+        "%s backtesting: %d folds | RMSE=%.4f | MAE=%.4f",
+        model.name,
+        len(folds),
+        avg_metrics.get("rmse", float("nan")),
+        avg_metrics.get("mae", float("nan")),
+    )
 
     return {"metrics": avg_metrics, "folds": folds_df, "predictions": preds_df}
 

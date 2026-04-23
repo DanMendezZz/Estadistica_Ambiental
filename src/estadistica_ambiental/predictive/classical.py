@@ -53,6 +53,7 @@ class SARIMAXModel(BaseModel):
 
     def fit(self, y: pd.Series, X: Optional[pd.DataFrame] = None) -> "SARIMAXModel":
         from statsmodels.tsa.statespace.sarimax import SARIMAX
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             model = SARIMAX(
@@ -111,6 +112,7 @@ class SARIMAXModel(BaseModel):
 
 class ARIMAModel(SARIMAXModel):
     """ARIMA puro (sin estacionalidad ni exógenas)."""
+
     name = "ARIMA"
 
     def __init__(self, order: Tuple[int, int, int] = (1, 1, 1)):
@@ -132,13 +134,12 @@ class ARIMAModel(SARIMAXModel):
         }
 
     def build_model(self, params: dict) -> "ARIMAModel":
-        return ARIMAModel(
-            order=(params.get("p", 1), params.get("d", 1), params.get("q", 1))
-        )
+        return ARIMAModel(order=(params.get("p", 1), params.get("d", 1), params.get("q", 1)))
 
 
 class SARIMAModel(SARIMAXModel):
     """SARIMA sin exógenas."""
+
     name = "SARIMA"
 
     def __init__(
@@ -186,8 +187,12 @@ class ETSModel(BaseModel):
         seasonal_periods: int = 12,
         damped_trend: bool = False,
     ):
-        super().__init__(trend=trend, seasonal=seasonal,
-                         seasonal_periods=seasonal_periods, damped_trend=damped_trend)
+        super().__init__(
+            trend=trend,
+            seasonal=seasonal,
+            seasonal_periods=seasonal_periods,
+            damped_trend=damped_trend,
+        )
         self.trend = trend
         self.seasonal = seasonal
         self.seasonal_periods = seasonal_periods
@@ -196,6 +201,7 @@ class ETSModel(BaseModel):
 
     def fit(self, y: pd.Series, X: Optional[pd.DataFrame] = None) -> "ETSModel":
         from statsmodels.tsa.holtwinters import ExponentialSmoothing
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             model = ExponentialSmoothing(
@@ -218,15 +224,15 @@ class ETSModel(BaseModel):
     @property
     def warm_starts(self):
         return [
-            {"trend": "add",  "seasonal": "add",  "damped_trend": False},
-            {"trend": "mul",  "seasonal": "mul",  "damped_trend": False},
-            {"trend": "add",  "seasonal": "add",  "damped_trend": True},
+            {"trend": "add", "seasonal": "add", "damped_trend": False},
+            {"trend": "mul", "seasonal": "mul", "damped_trend": False},
+            {"trend": "add", "seasonal": "add", "damped_trend": True},
         ]
 
     def suggest_params(self, trial) -> dict:
         return {
-            "trend":        trial.suggest_categorical("trend", ["add", "mul", None]),
-            "seasonal":     trial.suggest_categorical("seasonal", ["add", "mul", None]),
+            "trend": trial.suggest_categorical("trend", ["add", "mul", None]),
+            "seasonal": trial.suggest_categorical("seasonal", ["add", "mul", None]),
             "damped_trend": trial.suggest_categorical("damped_trend", [True, False]),
         }
 

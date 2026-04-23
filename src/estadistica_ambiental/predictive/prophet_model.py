@@ -66,6 +66,7 @@ class ProphetModel(BaseModel):
                 self._model.add_regressor(col)
 
         import warnings
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self._model.fit(df)
@@ -92,16 +93,16 @@ class ProphetModel(BaseModel):
     def warm_starts(self):
         return [
             {"changepoint_prior_scale": 0.05, "seasonality_prior_scale": 10.0},
-            {"changepoint_prior_scale": 0.10, "seasonality_prior_scale":  5.0},
+            {"changepoint_prior_scale": 0.10, "seasonality_prior_scale": 5.0},
             {"changepoint_prior_scale": 0.01, "seasonality_prior_scale": 20.0},
         ]
 
     def suggest_params(self, trial) -> dict:
         return {
-            "changepoint_prior_scale":  trial.suggest_float(
+            "changepoint_prior_scale": trial.suggest_float(
                 "changepoint_prior_scale", 0.001, 0.5, log=True
             ),
-            "seasonality_prior_scale":  trial.suggest_float(
+            "seasonality_prior_scale": trial.suggest_float(
                 "seasonality_prior_scale", 0.01, 20.0, log=True
             ),
         }

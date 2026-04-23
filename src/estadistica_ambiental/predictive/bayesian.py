@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 def _check_pymc():
     try:
         import pymc as pm
+
         return pm
     except ImportError:
         raise ImportError(
@@ -63,8 +64,7 @@ class BayesianARIMA(BaseModel):
     def fit(self, y: pd.Series, X: Optional[pd.DataFrame] = None) -> "BayesianARIMA":
         _check_pymc()
         raise NotImplementedError(
-            "BayesianARIMA está en desarrollo (Fase 10). "
-            "Usar SARIMAXModel para pronóstico clásico."
+            "BayesianARIMA está en desarrollo (Fase 10). Usar SARIMAXModel para pronóstico clásico."
         )
 
     def predict(self, horizon: int, X_future: Optional[pd.DataFrame] = None) -> np.ndarray:

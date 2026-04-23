@@ -16,10 +16,10 @@ import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-EPSG_MAGNA_SIRGAS   = 4686
-EPSG_CTM12          = 9377
-EPSG_WGS84          = 4326
-EPSG_WEB_MERCATOR   = 3857
+EPSG_MAGNA_SIRGAS = 4686
+EPSG_CTM12 = 9377
+EPSG_WGS84 = 4326
+EPSG_WEB_MERCATOR = 3857
 
 
 def reproject(gdf, from_epsg: int, to_epsg: int):
@@ -55,9 +55,9 @@ def bounding_box_colombia(buffer_deg: float = 0.0) -> Tuple[float, float, float,
     """Bounding box de Colombia en WGS84 (lon_min, lat_min, lon_max, lat_max)."""
     return (
         -82.0 - buffer_deg,
-        -4.5  - buffer_deg,
+        -4.5 - buffer_deg,
         -66.0 + buffer_deg,
-        13.0  + buffer_deg,
+        13.0 + buffer_deg,
     )
 
 

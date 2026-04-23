@@ -23,9 +23,14 @@ def ttest(
     a = df.loc[df[group_col] == cats[0], value_col].dropna().values
     b = df.loc[df[group_col] == cats[1], value_col].dropna().values
     stat, p = spstats.ttest_ind(a, b, equal_var=equal_var)
-    return {"test": "Welch t-test" if not equal_var else "Student t-test",
-            "groups": cats, "statistic": round(stat, 4), "pval": round(p, 6),
-            "significant": p < alpha, "alpha": alpha}
+    return {
+        "test": "Welch t-test" if not equal_var else "Student t-test",
+        "groups": cats,
+        "statistic": round(stat, 4),
+        "pval": round(p, 6),
+        "significant": p < alpha,
+        "alpha": alpha,
+    }
 
 
 def mannwhitney(
@@ -42,9 +47,14 @@ def mannwhitney(
     a = df.loc[df[group_col] == cats[0], value_col].dropna().values
     b = df.loc[df[group_col] == cats[1], value_col].dropna().values
     stat, p = spstats.mannwhitneyu(a, b, alternative="two-sided")
-    return {"test": "Mann-Whitney U", "groups": cats,
-            "statistic": round(stat, 4), "pval": round(p, 6),
-            "significant": p < alpha, "alpha": alpha}
+    return {
+        "test": "Mann-Whitney U",
+        "groups": cats,
+        "statistic": round(stat, 4),
+        "pval": round(p, 6),
+        "significant": p < alpha,
+        "alpha": alpha,
+    }
 
 
 def anova(
@@ -54,11 +64,18 @@ def anova(
     alpha: float = 0.05,
 ) -> dict:
     """ANOVA de una vía para múltiples grupos."""
-    groups = [df.loc[df[group_col] == g, value_col].dropna().values
-              for g in df[group_col].dropna().unique()]
+    groups = [
+        df.loc[df[group_col] == g, value_col].dropna().values
+        for g in df[group_col].dropna().unique()
+    ]
     stat, p = spstats.f_oneway(*groups)
-    return {"test": "ANOVA una vía", "statistic": round(stat, 4),
-            "pval": round(p, 6), "significant": p < alpha, "alpha": alpha}
+    return {
+        "test": "ANOVA una vía",
+        "statistic": round(stat, 4),
+        "pval": round(p, 6),
+        "significant": p < alpha,
+        "alpha": alpha,
+    }
 
 
 def kruskalwallis(
@@ -68,8 +85,15 @@ def kruskalwallis(
     alpha: float = 0.05,
 ) -> dict:
     """Kruskal-Wallis — alternativa no paramétrica a ANOVA."""
-    groups = [df.loc[df[group_col] == g, value_col].dropna().values
-              for g in df[group_col].dropna().unique()]
+    groups = [
+        df.loc[df[group_col] == g, value_col].dropna().values
+        for g in df[group_col].dropna().unique()
+    ]
     stat, p = spstats.kruskal(*groups)
-    return {"test": "Kruskal-Wallis", "statistic": round(stat, 4),
-            "pval": round(p, 6), "significant": p < alpha, "alpha": alpha}
+    return {
+        "test": "Kruskal-Wallis",
+        "statistic": round(stat, 4),
+        "pval": round(p, 6),
+        "significant": p < alpha,
+        "alpha": alpha,
+    }

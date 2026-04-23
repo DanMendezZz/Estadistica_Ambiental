@@ -26,12 +26,12 @@ logger = logging.getLogger(__name__)
 
 # Colores oficiales normativa ICA Res. 2254/2017
 ICA_COLORS: dict[str, str] = {
-    "Buena":            "#00E400",
-    "Aceptable":        "#FFFF00",
+    "Buena": "#00E400",
+    "Aceptable": "#FFFF00",
     "Dañina sensibles": "#FF7E00",
-    "Dañina":           "#FF0000",
-    "Muy dañina":       "#8F3F97",
-    "Peligrosa":        "#7E0023",
+    "Dañina": "#FF0000",
+    "Muy dañina": "#8F3F97",
+    "Peligrosa": "#7E0023",
 }
 
 # Breakpoints ICA por contaminante (µg/m³ o mg/m³ según indicado).
@@ -43,13 +43,13 @@ _ICA_BREAKPOINTS: dict[str, list[float]] = {
     # PM10 — promedio 24h (µg/m³)
     "pm10": [-np.inf, 54.0, 154.0, 254.0, 354.0, 424.0, np.inf],
     # Ozono O₃ — promedio 8h (µg/m³)
-    "o3":   [-np.inf, 100.0, 160.0, 215.0, 265.0, 800.0, np.inf],
+    "o3": [-np.inf, 100.0, 160.0, 215.0, 265.0, 800.0, np.inf],
     # NO₂ — promedio 1h (µg/m³)
-    "no2":  [-np.inf, 100.0, 190.0, 677.0, 1221.0, 2350.0, np.inf],
+    "no2": [-np.inf, 100.0, 190.0, 677.0, 1221.0, 2350.0, np.inf],
     # SO₂ — promedio 24h (µg/m³)
-    "so2":  [-np.inf, 50.0,  100.0, 360.0, 649.0, 1000.0, np.inf],
+    "so2": [-np.inf, 50.0, 100.0, 360.0, 649.0, 1000.0, np.inf],
     # CO — promedio 8h (mg/m³)
-    "co":   [-np.inf, 4.4,   9.4,   12.4,  15.4,   30.4,  np.inf],
+    "co": [-np.inf, 4.4, 9.4, 12.4, 15.4, 30.4, np.inf],
 }
 
 _ICA_LABELS: list[str] = list(ICA_COLORS.keys())
@@ -58,6 +58,7 @@ _ICA_LABELS: list[str] = list(ICA_COLORS.keys())
 # ---------------------------------------------------------------------------
 # Función 1: categorize_ica
 # ---------------------------------------------------------------------------
+
 
 def categorize_ica(
     series: pd.Series,
@@ -95,15 +96,12 @@ def categorize_ica(
         dtype: category
     """
     if standard != "res_2254_2017":
-        raise ValueError(
-            f"Norma '{standard}' no implementada. Norma soportada: 'res_2254_2017'."
-        )
+        raise ValueError(f"Norma '{standard}' no implementada. Norma soportada: 'res_2254_2017'.")
 
     pollutant_key = pollutant.lower().replace(".", "").replace("₂", "2").replace("₃", "3")
     if pollutant_key not in _ICA_BREAKPOINTS:
         logger.warning(
-            "Contaminante '%s' no reconocido; se usarán breakpoints de PM2.5. "
-            "Opciones válidas: %s",
+            "Contaminante '%s' no reconocido; se usarán breakpoints de PM2.5. Opciones válidas: %s",
             pollutant,
             list(_ICA_BREAKPOINTS),
         )
@@ -123,6 +121,7 @@ def categorize_ica(
 # ---------------------------------------------------------------------------
 # Función 2: flag_spatial_episodes
 # ---------------------------------------------------------------------------
+
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Distancia en km entre dos puntos geográficos (fórmula de Haversine)."""
@@ -153,7 +152,7 @@ def _build_neighbor_map(
     neighbors: dict[str, list[str]] = {s: [] for s in stations}
     for i, s1 in enumerate(stations):
         lat1, lon1 = coords[s1]
-        for s2 in stations[i + 1:]:
+        for s2 in stations[i + 1 :]:
             lat2, lon2 = coords[s2]
             if _haversine_km(lat1, lon1, lat2, lon2) <= radius_km:
                 neighbors[s1].append(s2)
@@ -234,8 +233,7 @@ def flag_spatial_episodes(
         .set_index(station_col)
     )
     coords: dict[str, tuple[float, float]] = {
-        s: (row[lat_col], row[lon_col])
-        for s, row in coords_df.iterrows()
+        s: (row[lat_col], row[lon_col]) for s, row in coords_df.iterrows()
     }
 
     # ── Paso 1: Cap absoluto (percentil 99.9 global) ───────────────────────────
@@ -246,7 +244,9 @@ def flag_spatial_episodes(
         result.loc[mask_cap, "flag_episode"] = "cap_absoluto"
         logger.info(
             "'%s': %d valores superan cap absoluto (%.2f). Marcados 'cap_absoluto'.",
-            value_col, n_cap, cap_value,
+            value_col,
+            n_cap,
+            cap_value,
         )
 
     # ── Tabla pivote para validación espacial rápida ───────────────────────────
@@ -255,8 +255,7 @@ def flag_spatial_episodes(
     neighbor_map = _build_neighbor_map(coords, active_stations, distance_km)
 
     pivot = (
-        result.loc[result["flag_episode"] != "cap_absoluto",
-                   [datetime_col, station_col, value_col]]
+        result.loc[result["flag_episode"] != "cap_absoluto", [datetime_col, station_col, value_col]]
         .groupby([datetime_col, station_col])[value_col]
         .mean()
         .unstack(station_col)
@@ -278,9 +277,7 @@ def flag_spatial_episodes(
         for mes in sorted(result.loc[mask_st, "_month"].unique()):
             mask_mes = mask_st & (result["_month"] == mes)
             mask_orig = (
-                mask_mes
-                & (result["flag_episode"] == "original")
-                & result[value_col].notna()
+                mask_mes & (result["flag_episode"] == "original") & result[value_col].notna()
             )
             serie_orig = result.loc[mask_orig, value_col]
             if len(serie_orig) < 10:
@@ -311,9 +308,7 @@ def flag_spatial_episodes(
                 ts_df.columns = ["orig_idx", datetime_col]
 
                 # Agrupar en episodios consecutivos (brecha > 1.5 h → nuevo ep.)
-                ts_df["gap_h"] = (
-                    ts_df[datetime_col].diff().dt.total_seconds().fillna(0) / 3600
-                )
+                ts_df["gap_h"] = ts_df[datetime_col].diff().dt.total_seconds().fillna(0) / 3600
                 ts_df["ep_id"] = (ts_df["gap_h"] > 1.5).cumsum()
 
                 for ep_id, ep_df in ts_df.groupby("ep_id"):
@@ -364,11 +359,7 @@ def flag_spatial_episodes(
             # ── Paso 3: IQR — marcar outliers no episódicos ────────────────────
             # Pre-determinar hard y soft antes de cualquier imputación para que
             # la mediana rolling no se calcule sobre los mismos valores a reemplazar
-            base_iqr = (
-                mask_mes
-                & (result["flag_episode"] == "original")
-                & result[value_col].notna()
-            )
+            base_iqr = mask_mes & (result["flag_episode"] == "original") & result[value_col].notna()
             hard_cond = (result[value_col] < hard_lower) | (result[value_col] > hard_upper)
             soft_cond = (result[value_col] < soft_lower) | (result[value_col] > soft_upper)
 
@@ -418,6 +409,7 @@ def flag_spatial_episodes(
 # ---------------------------------------------------------------------------
 # Función 3: correct_seasonal_bias
 # ---------------------------------------------------------------------------
+
 
 def correct_seasonal_bias(
     predictions: pd.Series,
@@ -474,9 +466,7 @@ def correct_seasonal_bias(
     """
     valid_by = ("month", "quarter", "week")
     if by not in valid_by:
-        raise ValueError(
-            f"Parámetro 'by' debe ser uno de {valid_by}. Recibido: '{by}'."
-        )
+        raise ValueError(f"Parámetro 'by' debe ser uno de {valid_by}. Recibido: '{by}'.")
 
     if not (len(predictions) == len(actuals) == len(time_col)):
         raise ValueError(
@@ -487,9 +477,9 @@ def correct_seasonal_bias(
     time_parsed = pd.to_datetime(time_col.values)
 
     _period_extractor = {
-        "month":   lambda t: t.month,
+        "month": lambda t: t.month,
         "quarter": lambda t: t.quarter,
-        "week":    lambda t: t.isocalendar()[1],
+        "week": lambda t: t.isocalendar()[1],
     }
     extractor = _period_extractor[by]
 
@@ -504,26 +494,24 @@ def correct_seasonal_bias(
         mask = periods == p
         b_vals = bias_raw[mask]
         valid = b_vals[~np.isnan(b_vals)]
-        rows.append({
-            "periodo":   int(p),
-            "sesgo":     float(np.mean(valid)) if len(valid) > 0 else 0.0,
-            "n_obs":     int(len(valid)),
-            "sesgo_std": float(np.std(valid, ddof=1)) if len(valid) > 1 else 0.0,
-        })
+        rows.append(
+            {
+                "periodo": int(p),
+                "sesgo": float(np.mean(valid)) if len(valid) > 0 else 0.0,
+                "n_obs": int(len(valid)),
+                "sesgo_std": float(np.std(valid, ddof=1)) if len(valid) > 1 else 0.0,
+            }
+        )
 
     bias_table = pd.DataFrame(rows).sort_values("periodo").reset_index(drop=True)
-    bias_map: dict[int, float] = dict(
-        zip(bias_table["periodo"].astype(int), bias_table["sesgo"])
-    )
+    bias_map: dict[int, float] = dict(zip(bias_table["periodo"].astype(int), bias_table["sesgo"]))
 
     # Aplicar corrección
     corrected_values = predictions.copy()
     for p in unique_periods:
         mask_p = periods == p
         sesgo = bias_map.get(int(p), 0.0)
-        corrected_values.iloc[np.where(mask_p)[0]] = (
-            predictions.iloc[np.where(mask_p)[0]] - sesgo
-        )
+        corrected_values.iloc[np.where(mask_p)[0]] = predictions.iloc[np.where(mask_p)[0]] - sesgo
 
     n_sobreestima = int((bias_table["sesgo"] > 0).sum())
     n_subestima = int((bias_table["sesgo"] < 0).sum())

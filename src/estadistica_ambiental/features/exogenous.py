@@ -44,7 +44,7 @@ def create_exog_matrix(
 ) -> Dict[str, pd.DataFrame]:
     """Divide las exógenas en train y future para SARIMAX."""
     data = df.set_index(date_col) if date_col in df.columns else df
-    X_train  = data[cols].iloc[:train_end_idx]
+    X_train = data[cols].iloc[:train_end_idx]
     X_future = data[cols].iloc[train_end_idx:]
     return {"train": X_train, "future": X_future}
 
@@ -66,7 +66,9 @@ def meteorological_features(
 
     if temp_col and humidity_col and temp_col in df.columns and humidity_col in df.columns:
         result["heat_index"] = (
-            -8.784695 + 1.61139411 * df[temp_col] + 2.338549 * df[humidity_col]
+            -8.784695
+            + 1.61139411 * df[temp_col]
+            + 2.338549 * df[humidity_col]
             - 0.14611605 * df[temp_col] * df[humidity_col]
         )
 

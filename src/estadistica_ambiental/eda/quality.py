@@ -23,11 +23,13 @@ logger = logging.getLogger(__name__)
 # Tipos y enums
 # ---------------------------------------------------------------------------
 
+
 class MissingPattern(str, Enum):
     """Clasificación heurística del mecanismo de datos faltantes."""
-    MCAR    = "MCAR"     # Missing Completely At Random — aleatorio, sin patrón
-    MAR     = "MAR"      # Missing At Random — relacionado con otras variables
-    MNAR    = "MNAR"     # Missing Not At Random — relacionado con el propio valor
+
+    MCAR = "MCAR"  # Missing Completely At Random — aleatorio, sin patrón
+    MAR = "MAR"  # Missing At Random — relacionado con otras variables
+    MNAR = "MNAR"  # Missing Not At Random — relacionado con el propio valor
     UNKNOWN = "desconocido"
 
 
@@ -36,8 +38,8 @@ class MissingInfo:
     col: str
     n_missing: int
     pct_missing: float
-    max_consecutive_gap: int       # máx. registros consecutivos faltantes
-    gap_lengths: List[int]         # lista de longitudes de todos los gaps
+    max_consecutive_gap: int  # máx. registros consecutivos faltantes
+    gap_lengths: List[int]  # lista de longitudes de todos los gaps
     pattern: MissingPattern
     pattern_note: str = ""
 
@@ -45,41 +47,41 @@ class MissingInfo:
 @dataclass
 class OutlierInfo:
     col: str
-    n_iqr: int                     # outliers por IQR (1.5×)
-    n_zscore: int                  # outliers por z-score (|z|>3)
+    n_iqr: int  # outliers por IQR (1.5×)
+    n_zscore: int  # outliers por z-score (|z|>3)
     pct_iqr: float
     pct_zscore: float
-    worst_values: List[float]      # los 5 valores más extremos
+    worst_values: List[float]  # los 5 valores más extremos
 
 
 @dataclass
 class FreezeInfo:
     col: str
-    n_sequences: int               # cuántos episodios de congelamiento
-    max_length: int                # longitud del episodio más largo
-    total_frozen: int              # total de registros en episodios
+    n_sequences: int  # cuántos episodios de congelamiento
+    max_length: int  # longitud del episodio más largo
+    total_frozen: int  # total de registros en episodios
 
 
 @dataclass
 class TemporalGapInfo:
-    inferred_freq: Optional[str]   # frecuencia inferida ('H', 'D', 'M', etc.)
-    expected_n: int                # registros esperados según frecuencia
-    actual_n: int                  # registros presentes
-    completeness_pct: float        # actual / expected × 100
-    n_gaps: int                    # número de saltos temporales
-    max_gap_periods: int           # salto más largo en periodos
-    gap_summary: Dict[str, int]    # {longitud_gap: n_veces}
+    inferred_freq: Optional[str]  # frecuencia inferida ('H', 'D', 'M', etc.)
+    expected_n: int  # registros esperados según frecuencia
+    actual_n: int  # registros presentes
+    completeness_pct: float  # actual / expected × 100
+    n_gaps: int  # número de saltos temporales
+    max_gap_periods: int  # salto más largo en periodos
+    gap_summary: Dict[str, int]  # {longitud_gap: n_veces}
 
 
 @dataclass
 class QualityReport:
     n_rows: int
     n_cols: int
-    missing:       Dict[str, MissingInfo]  = field(default_factory=dict)
-    outliers:      Dict[str, OutlierInfo]  = field(default_factory=dict)
-    freezes:       Dict[str, FreezeInfo]   = field(default_factory=dict)
+    missing: Dict[str, MissingInfo] = field(default_factory=dict)
+    outliers: Dict[str, OutlierInfo] = field(default_factory=dict)
+    freezes: Dict[str, FreezeInfo] = field(default_factory=dict)
     temporal_gaps: Optional[TemporalGapInfo] = None
-    cross_issues:  List[str]               = field(default_factory=list)
+    cross_issues: List[str] = field(default_factory=list)
 
     def summary(self) -> str:
         lines = [f"=== Reporte de calidad EDA ({self.n_rows} filas × {self.n_cols} cols) ==="]
@@ -100,7 +102,9 @@ class QualityReport:
             tg = self.temporal_gaps
             lines.append("\nCompletitud temporal:")
             lines.append(f"  Frecuencia inferida: {tg.inferred_freq or 'no inferida'}")
-            lines.append(f"  Esperados: {tg.expected_n} | Presentes: {tg.actual_n} | {tg.completeness_pct:.1f}%")
+            lines.append(
+                f"  Esperados: {tg.expected_n} | Presentes: {tg.actual_n} | {tg.completeness_pct:.1f}%"
+            )
             lines.append(f"  Gaps: {tg.n_gaps} | Mayor gap: {tg.max_gap_periods} periodos")
 
         # Outliers
@@ -142,6 +146,7 @@ class QualityReport:
 # Función principal
 # ---------------------------------------------------------------------------
 
+
 def assess_quality(
     df: pd.DataFrame,
     date_col: Optional[str] = None,
@@ -163,12 +168,13 @@ def assess_quality(
     num_cols = _get_numeric_cols(df, numeric_cols)
     report = QualityReport(n_rows=len(df), n_cols=len(df.columns))
 
-    report.missing  = {c: _analyze_missing(df[c], c) for c in df.columns}
-    report.outliers = {c: _analyze_outliers(df[c], c)
-                       for c in num_cols if df[c].notna().sum() >= 4}
-    report.freezes  = {c: info
-                       for c in num_cols
-                       if (info := _analyze_freeze(df[c], c, freeze_min_length)).n_sequences > 0}
+    report.missing = {c: _analyze_missing(df[c], c) for c in df.columns}
+    report.outliers = {c: _analyze_outliers(df[c], c) for c in num_cols if df[c].notna().sum() >= 4}
+    report.freezes = {
+        c: info
+        for c in num_cols
+        if (info := _analyze_freeze(df[c], c, freeze_min_length)).n_sequences > 0
+    }
 
     if date_col and date_col in df.columns:
         report.temporal_gaps = _analyze_temporal_gaps(df[date_col])
@@ -188,6 +194,7 @@ def assess_quality(
 # ---------------------------------------------------------------------------
 # Análisis de faltantes
 # ---------------------------------------------------------------------------
+
 
 def _analyze_missing(series: pd.Series, col: str) -> MissingInfo:
     mask = series.isna()
@@ -258,6 +265,7 @@ def _classify_missing_pattern(series: pd.Series, pct_missing: float) -> Tuple[Mi
 # Análisis de outliers (solo estadístico — NO elimina)
 # ---------------------------------------------------------------------------
 
+
 def _analyze_outliers(series: pd.Series, col: str) -> OutlierInfo:
     valid = series.dropna()
     n = len(valid)
@@ -295,6 +303,7 @@ def _analyze_outliers(series: pd.Series, col: str) -> OutlierInfo:
 # Detección de congelamiento de sensor
 # ---------------------------------------------------------------------------
 
+
 def _analyze_freeze(series: pd.Series, col: str, min_length: int) -> FreezeInfo:
     """Detecta secuencias de valores idénticos consecutivos (sensor bloqueado)."""
     valid = series.dropna()
@@ -328,12 +337,18 @@ def _analyze_freeze(series: pd.Series, col: str, min_length: int) -> FreezeInfo:
 # Análisis de completitud temporal
 # ---------------------------------------------------------------------------
 
+
 def _analyze_temporal_gaps(date_series: pd.Series) -> TemporalGapInfo:
     dates = pd.to_datetime(date_series, errors="coerce").dropna().sort_values()
     if len(dates) < 2:
         return TemporalGapInfo(
-            inferred_freq=None, expected_n=len(dates), actual_n=len(dates),
-            completeness_pct=100.0, n_gaps=0, max_gap_periods=0, gap_summary={},
+            inferred_freq=None,
+            expected_n=len(dates),
+            actual_n=len(dates),
+            completeness_pct=100.0,
+            n_gaps=0,
+            max_gap_periods=0,
+            gap_summary={},
         )
 
     freq = pd.infer_freq(dates)
@@ -387,10 +402,10 @@ def _analyze_temporal_gaps(date_series: pd.Series) -> TemporalGapInfo:
 # ---------------------------------------------------------------------------
 
 _CROSS_RULES: List[Tuple[str, str, str]] = [
-    ("pm25", "pm10",  "PM2.5 > PM10 en {n} filas (PM2.5 es subconjunto de PM10)"),
-    ("pm10", "pm25",  None),  # se maneja en la regla anterior
-    ("dbo",  "dqo",   "DBO > DQO en {n} filas (DBO es subconjunto de DQO)"),
-    ("od",   "od",    None),
+    ("pm25", "pm10", "PM2.5 > PM10 en {n} filas (PM2.5 es subconjunto de PM10)"),
+    ("pm10", "pm25", None),  # se maneja en la regla anterior
+    ("dbo", "dqo", "DBO > DQO en {n} filas (DBO es subconjunto de DQO)"),
+    ("od", "od", None),
 ]
 
 
@@ -428,6 +443,7 @@ def _cross_column_checks(df: pd.DataFrame) -> List[str]:
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
+
 
 def _get_numeric_cols(df: pd.DataFrame, cols: Optional[List[str]]) -> List[str]:
     if cols:

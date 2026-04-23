@@ -77,8 +77,16 @@ def compliance_report(
 
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     n_registros = len(df)
-    fecha_ini = str(pd.to_datetime(df[date_col], errors="coerce").min().date()) if date_col in df.columns else "—"
-    fecha_fin = str(pd.to_datetime(df[date_col], errors="coerce").max().date()) if date_col in df.columns else "—"
+    fecha_ini = (
+        str(pd.to_datetime(df[date_col], errors="coerce").min().date())
+        if date_col in df.columns
+        else "—"
+    )
+    fecha_fin = (
+        str(pd.to_datetime(df[date_col], errors="coerce").max().date())
+        if date_col in df.columns
+        else "—"
+    )
     estacion_info = df[estacion_col].iloc[0] if estacion_col and estacion_col in df.columns else "—"
 
     # ---- Construir secciones ----
@@ -92,25 +100,31 @@ def compliance_report(
         if custom_thresholds and var in custom_thresholds:
             umbral = custom_thresholds[var]
             exc = exceedance_probability(df[var], threshold=umbral)
-            custom_row = pd.DataFrame([{
-                "norma": "Umbral personalizado",
-                "umbral": umbral,
-                "tipo": "máximo",
-                "n_exceedances": exc["n_exceedances"],
-                "pct_exceed": exc["pct_exceed"],
-                "cumple": exc["n_exceedances"] == 0,
-                "return_period_days": exc["return_period_days"],
-            }])
+            custom_row = pd.DataFrame(
+                [
+                    {
+                        "norma": "Umbral personalizado",
+                        "umbral": umbral,
+                        "tipo": "máximo",
+                        "n_exceedances": exc["n_exceedances"],
+                        "pct_exceed": exc["pct_exceed"],
+                        "cumple": exc["n_exceedances"] == 0,
+                        "return_period_days": exc["return_period_days"],
+                    }
+                ]
+            )
             rep = pd.concat([rep, custom_row], ignore_index=True)
         all_exceedance_dfs[var] = rep
 
-    body = "\n".join([
-        _section_meta(n_registros, fecha_ini, fecha_fin, estacion_info, linea_tematica),
-        _section_semaforo(all_exceedance_dfs),
-        _section_tabla_exceedances(all_exceedance_dfs),
-        _section_series(df, variables, date_col, all_exceedance_dfs),
-        _section_ficha_dominio(linea_tematica),
-    ])
+    body = "\n".join(
+        [
+            _section_meta(n_registros, fecha_ini, fecha_fin, estacion_info, linea_tematica),
+            _section_semaforo(all_exceedance_dfs),
+            _section_tabla_exceedances(all_exceedance_dfs),
+            _section_series(df, variables, date_col, all_exceedance_dfs),
+            _section_ficha_dominio(linea_tematica),
+        ]
+    )
 
     content = _TEMPLATE.format(title=html.escape(title), body=body, generated=now)
     out_path.write_text(content, encoding="utf-8")
@@ -121,6 +135,7 @@ def compliance_report(
 # ---------------------------------------------------------------------------
 # Secciones del reporte
 # ---------------------------------------------------------------------------
+
 
 def _section_meta(n_registros, fecha_ini, fecha_fin, estacion, linea):
     linea_str = linea.replace("_", " ").title() if linea else "General"
@@ -175,8 +190,10 @@ def _section_tabla_exceedances(all_dfs: Dict[str, pd.DataFrame]) -> str:
     rows = ""
     for var, rep in all_dfs.items():
         if rep.empty:
-            rows += f"<tr><td><strong>{html.escape(var)}</strong></td>" \
-                    f"<td colspan='5'>Sin norma colombiana registrada</td></tr>"
+            rows += (
+                f"<tr><td><strong>{html.escape(var)}</strong></td>"
+                f"<td colspan='5'>Sin norma colombiana registrada</td></tr>"
+            )
             continue
         for _, row in rep.iterrows():
             cumple_icon = "✅" if row["cumple"] else "❌"
@@ -318,7 +335,7 @@ def _section_ficha_dominio(linea_tematica: Optional[str]) -> str:
     if not resumen.strip():
         return ""
     return f"""<section>
-    <h2>Contexto de dominio — {html.escape(linea_tematica.replace('_', ' ').title())}</h2>
+    <h2>Contexto de dominio — {html.escape(linea_tematica.replace("_", " ").title())}</h2>
     <p style="font-size:.88rem;color:#444;line-height:1.6">{resumen}</p>
     <p style="font-size:.8rem;color:#888">
       Fuente: <code>docs/fuentes/{linea_tematica}.md</code>

@@ -26,8 +26,8 @@ class KrigingInterpolator:
         value_col: str = "valor",
     ):
         self.variogram_model = variogram_model
-        self.lat_col   = lat_col
-        self.lon_col   = lon_col
+        self.lat_col = lat_col
+        self.lon_col = lon_col
         self.value_col = value_col
         self._ok = None
 

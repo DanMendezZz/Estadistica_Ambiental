@@ -29,17 +29,20 @@ def csv_file(tmp_path):
 
 @pytest.fixture
 def sample_df():
-    return pd.DataFrame({
-        "fecha": pd.date_range("2023-01-01", periods=4, freq="D"),
-        "estacion": ["Kennedy"] * 4,
-        "pm25": [15.2, 18.7, None, 22.1],
-        "temperatura": [14.5, 13.1, 12.9, 15.0],
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2023-01-01", periods=4, freq="D"),
+            "estacion": ["Kennedy"] * 4,
+            "pm25": [15.2, 18.7, None, 22.1],
+            "temperatura": [14.5, 13.1, 12.9, 15.0],
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # load_csv
 # ---------------------------------------------------------------------------
+
 
 class TestLoadCsv:
     def test_returns_dataframe(self, csv_file):
@@ -68,6 +71,7 @@ class TestLoadCsv:
 
     def test_nonexistent_date_col_warns(self, csv_file, caplog):
         import logging
+
         with caplog.at_level(logging.WARNING):
             load_csv(csv_file, date_col="no_existe")
         assert "no_existe" in caplog.text
@@ -76,6 +80,7 @@ class TestLoadCsv:
 # ---------------------------------------------------------------------------
 # load (dispatcher)
 # ---------------------------------------------------------------------------
+
 
 class TestLoad:
     def test_dispatches_csv(self, csv_file):
@@ -98,6 +103,7 @@ class TestLoad:
 # load_parquet
 # ---------------------------------------------------------------------------
 
+
 class TestLoadParquet:
     def test_roundtrip(self, tmp_path, sample_df):
         p = tmp_path / "datos.parquet"
@@ -111,6 +117,7 @@ class TestLoadParquet:
 # load_excel
 # ---------------------------------------------------------------------------
 
+
 class TestLoadExcel:
     def test_roundtrip(self, tmp_path, sample_df):
         p = tmp_path / "datos.xlsx"
@@ -123,9 +130,11 @@ class TestLoadExcel:
 # load TSV
 # ---------------------------------------------------------------------------
 
+
 class TestLoadTsv:
     def test_tsv_dispatched(self, tmp_path):
         from estadistica_ambiental.io.loaders import load
+
         content = "fecha\tpm25\n2023-01-01\t15.2\n2023-01-02\t18.7\n"
         f = tmp_path / "datos.tsv"
         f.write_text(content, encoding="utf-8")
@@ -137,17 +146,20 @@ class TestLoadTsv:
 # _detect_encoding / _parse_dates helpers
 # ---------------------------------------------------------------------------
 
+
 class TestHelpers:
     def test_invalid_date_col_logs_warning(self, csv_file, caplog):
         import logging
 
         from estadistica_ambiental.io.loaders import load_csv
+
         with caplog.at_level(logging.WARNING):
             load_csv(csv_file, date_col="columna_inexistente")
         assert "columna_inexistente" in caplog.text
 
     def test_load_csv_invalid_dates_warns(self, tmp_path, caplog):
         import logging
+
         content = "fecha,pm25\nnot_a_date,15.2\n2023-01-02,18.7\n"
         f = tmp_path / "bad_dates.csv"
         f.write_text(content, encoding="utf-8")

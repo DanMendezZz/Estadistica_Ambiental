@@ -17,11 +17,11 @@ def add_calendar_features(
     estructura cíclica (e.g. hora 23 ≈ hora 0).
     """
     import numpy as np
+
     result = df.copy()
     dates = pd.to_datetime(result[date_col], errors="coerce")
 
-    _periods = {"hour": 24, "dayofweek": 7, "month": 12,
-                "quarter": 4, "dayofyear": 365}
+    _periods = {"hour": 24, "dayofweek": 7, "month": 12, "quarter": 4, "dayofyear": 365}
 
     for feat in features:
         vals = getattr(dates.dt, feat)
