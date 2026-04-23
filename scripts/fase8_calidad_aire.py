@@ -66,10 +66,26 @@ POLLUTANT = "pm25"
 # 1. CARGA Y VALIDACIÓN
 # ===========================================================================
 
+def _load_parquet_fast(path: Path, parametro: str = "pm25") -> pd.DataFrame:
+    """Carga parquet con Polars si disponible, fallback a pandas."""
+    try:
+        import polars as pl
+        lf = pl.scan_parquet(str(path))
+        if "parametro" in lf.schema:
+            lf = lf.filter(pl.col("parametro") == parametro)
+        return lf.sort("fecha").collect().to_pandas()
+    except ImportError:
+        logger.info(
+            "polars no disponible — usando pandas "
+            "(instalar con: pip install 'estadistica-ambiental[fast]')"
+        )
+        return pd.read_parquet(path)
+
+
 def cargar_datos() -> tuple[pd.DataFrame, pd.Series]:
     """Carga el parquet, filtra la estación focal y agrega a diario."""
     logger.info("Cargando datos desde %s", PARQUET.name)
-    df_raw = pd.read_parquet(PARQUET)
+    df_raw = _load_parquet_fast(PARQUET)
 
     # Estación focal
     df = df_raw[df_raw["estacion"] == ESTACION].copy()
