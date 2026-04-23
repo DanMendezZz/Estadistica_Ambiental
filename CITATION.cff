@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "Si usas este software, por favor cítalo usando estos metadatos."
+title: "Estadística Ambiental Colombia"
+authors:
+  - family-names: Méndez
+    given-names: Dan
+version: 1.0.0
+date-released: 2026-04-22
+license: MIT
+repository-code: https://github.com/DanMendezZz/Estadistica_Ambiental
+abstract: >
+  Plantilla Python para el ciclo estadístico completo aplicado a datos ambientales
+  colombianos. 16 líneas temáticas, normas Res. 2254/2017, 2115/2007, 631/2015.
+references:
+  - type: software
+    title: boa-sarima-forecaster
+    authors:
+      - family-names: Cardelo
+        given-names: Tomás
+    url: https://github.com/TomCardeLo/boa-sarima-forecaster
