@@ -23,6 +23,10 @@ def ts():
 
 
 class TestXGBoost:
+    @pytest.fixture(autouse=True)
+    def _skip_if_no_xgboost(self):
+        pytest.importorskip("xgboost")
+
     def test_fit_predict(self, ts):
         model = XGBoostModel(lags=[1, 2, 3])
         model.fit(ts)
@@ -38,6 +42,10 @@ class TestXGBoost:
 
 
 class TestXGBoostWithExog:
+    @pytest.fixture(autouse=True)
+    def _skip_if_no_xgboost(self):
+        pytest.importorskip("xgboost")
+
     def test_fit_with_exogenous(self, ts):
         X = pd.DataFrame({"temp": np.random.default_rng(1).normal(15, 3, len(ts))}, index=ts.index)
         model = XGBoostModel(lags=[1, 2, 3])
