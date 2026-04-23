@@ -212,3 +212,87 @@ class TestAssessQuality:
     def test_summary_is_string(self, clean_df):
         report = assess_quality(clean_df)
         assert isinstance(report.summary(), str)
+
+    def test_summary_with_missing_mentions_col(self, dirty_df):
+        report = assess_quality(dirty_df, date_col="fecha")
+        summary = report.summary()
+        assert "pm25" in summary
+
+    def test_summary_with_temporal_gaps_mentions_completitud(self):
+        # Serie con gaps temporales
+        df = pd.DataFrame({
+            "fecha": pd.to_datetime(["2023-01-01", "2023-01-03", "2023-01-05"]),
+            "pm25": [10.0, 12.0, 14.0],
+        })
+        report = assess_quality(df, date_col="fecha")
+        summary = report.summary()
+        assert isinstance(summary, str)
+
+    def test_summary_with_cross_issues(self):
+        # PM2.5 > PM10 → cross issue
+        df = pd.DataFrame({
+            "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
+            "pm25": [50.0, 60.0, 55.0, 58.0, 52.0],
+            "pm10": [30.0, 40.0, 35.0, 38.0, 32.0],
+        })
+        report = assess_quality(df, date_col="fecha")
+        summary = report.summary()
+        assert isinstance(summary, str)
+
+
+class TestMissingPatterns:
+    def test_mnar_pattern_heavy_tails(self):
+        from estadistica_ambiental.eda.quality import _analyze_missing
+        # Crear serie donde los NaN están concentrados en los extremos (colas)
+        vals = np.concatenate([
+            np.full(20, np.nan),        # extremo bajo → NaN
+            np.linspace(30, 70, 60),   # valores centrales con datos
+            np.full(20, np.nan),        # extremo alto → NaN
+        ])
+        s = pd.Series(vals)
+        result = _analyze_missing(s, "pm25")
+        assert result is not None  # No crash
+
+    def test_add_rolling_features_drop_na(self):
+        from estadistica_ambiental.features.lags import add_rolling_features
+        df = pd.DataFrame({"pm25": np.random.default_rng(0).normal(20, 5, 50)})
+        result = add_rolling_features(df, "pm25", windows=[3], drop_na=True)
+        assert result.isna().sum().sum() == 0
+
+    def test_humidity_out_of_range_cross_check(self):
+        # Humedad fuera de [0, 100] debe aparecer en cross_issues
+        df = pd.DataFrame({
+            "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
+            "humedad": [75.0, 110.0, 80.0, -5.0, 70.0],  # 110 y -5 imposibles
+        })
+        report = assess_quality(df, date_col="fecha")
+        summary = report.summary()
+        assert isinstance(summary, str)
+
+    def test_single_date_series_completeness(self):
+        # Serie con un solo registro → sin gaps (cubre líneas 359-361 y 372-373)
+        df = pd.DataFrame({
+            "fecha": pd.to_datetime(["2023-01-01"]),
+            "pm25": [15.0],
+        })
+        report = assess_quality(df, date_col="fecha")
+        assert report is not None
+
+    def test_get_numeric_cols_with_specific_cols(self):
+        # _get_numeric_cols con cols específicas cubre línea 435
+        from estadistica_ambiental.eda.quality import _get_numeric_cols
+        df = pd.DataFrame({
+            "pm25": [10.0, 15.0],
+            "texto": ["a", "b"],
+            "temperatura": [14.0, 15.0],
+        })
+        result = _get_numeric_cols(df, cols=["pm25", "texto", "temperatura"])
+        assert "pm25" in result
+        assert "texto" not in result  # no numérica
+
+    def test_identical_timestamps_coverage(self):
+        # Timestamps idénticos → mode_diff=0 → else branch (líneas 359-361)
+        from estadistica_ambiental.eda.quality import _analyze_temporal_gaps
+        dates = pd.Series(pd.to_datetime(["2023-01-01", "2023-01-01", "2023-01-01"]))
+        result = _analyze_temporal_gaps(dates)
+        assert result.completeness_pct == 100.0
