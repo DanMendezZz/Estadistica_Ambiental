@@ -141,6 +141,23 @@ def evaluate(
     return result
 
 
+# Sentido de optimización por métrica (True = mayor es mejor)
+METRIC_DIRECTION: dict[str, bool] = {
+    "mae":          False,
+    "rmse":         False,
+    "mse":          False,
+    "r2":           True,
+    "smape":        False,
+    "mape":         False,
+    "mase":         False,
+    "nrmse":        False,
+    "nse":          True,
+    "kge":          True,
+    "pbias":        False,
+    "hit_rate_ica": True,
+}
+
+
 def compare_models(results: dict) -> pd.DataFrame:
     """Tabla comparativa de modelos. results = {model_name: metrics_dict}."""
     return pd.DataFrame(results).T.sort_values("rmse")
