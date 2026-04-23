@@ -1,10 +1,11 @@
 # Estadística Ambiental Colombia
 
-> **Plantilla Python de ciclo estadístico completo para datos ambientales colombianos**  
+> **Base de conocimiento Python para el ciclo estadístico completo aplicado a datos ambientales colombianos**  
 > EDA → Descriptiva → Inferencial → Predictiva → Cumplimiento normativo
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-233%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-427%20passed-brightgreen)]()
+[![Cobertura](https://img.shields.io/badge/cobertura-80%25-brightgreen)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![Normas CO](https://img.shields.io/badge/Normas-Res.%202254%2F2017%20%7C%202115%2F2007%20%7C%20631%2F2015-green)]()
 
@@ -19,8 +20,9 @@ El repositorio resuelve un problema concreto: **no hay que partir de cero en cad
 - Un **ciclo estadístico estructurado** y reproducible adaptado al dominio ambiental colombiano
 - **Normas colombianas centralizadas** (Res. 2254/2017, 2115/2007, 631/2015, índices IDEAM) para verificar cumplimiento directamente desde el código
 - **Conectores a fuentes oficiales** (IDEAM DHIME, RMCAB Bogotá, SIATA Medellín, OpenAQ, datos.gov.co)
-- **Fichas de conocimiento de dominio** para las 16 líneas temáticas, generadas desde bases de conocimiento especializadas y listas para contextualizarse en cualquier análisis
-- **Catálogo de modelos** comparables entre sí: desde SARIMA clásico hasta XGBoost y modelos bayesianos espaciales
+- **16 fichas de conocimiento de dominio** generadas desde bases de conocimiento especializadas, listas para contextualizar cualquier análisis
+- **16 scripts ejecutables** que recorren el ciclo completo por línea temática y generan reportes HTML listos para entregar
+- **Catálogo de 10 modelos** comparables entre sí: desde SARIMA clásico hasta XGBoost y modelos bayesianos espaciales
 
 Está pensado para investigadores y analistas que trabajan en o para entidades como el **Ministerio de Ambiente y Desarrollo Sostenible**, **CAR Cundinamarca**, **IDEAM**, **CORNARE**, **CORANTIOQUIA** y otras Corporaciones Autónomas Regionales.
 
@@ -38,6 +40,7 @@ La gestión ambiental en Colombia opera bajo un marco normativo robusto y datos 
 | Reportes de excedencias para entidades reguladoras | `reporting/compliance_report.py` — HTML con semáforo normativo |
 | Influencia del ENSO (El Niño/La Niña) en variables hídricas | `features/climate.py` — lag diferenciado por línea temática |
 | Acceso a datos oficiales dispersos | `io/connectors.py` — RMCAB, SIATA, DHIME, OpenAQ, datos.gov.co |
+| Entender el contexto antes de analizar | `docs/intake_lider.md` — cuestionario de 18 preguntas para líderes de área |
 
 ---
 
@@ -118,7 +121,43 @@ Datos brutos (CSV / NetCDF / SHP / XLSX / API)
 └─────────────────────────────────────────────────────┘
                      │
                      ▼
-        Reporte HTML (pronóstico + cumplimiento normativo)
+     Reportes HTML (pronóstico · cumplimiento normativo · estadística)
+```
+
+---
+
+## Ejecutar el ciclo completo por línea temática
+
+Los 16 scripts en `scripts/` recorren el ciclo estadístico completo con datos reales o sintéticos y generan 6 artefactos listos para entregar:
+
+```bash
+python scripts/fase8_calidad_aire.py
+```
+
+**Salidas generadas:**
+
+| Artefacto | Descripción |
+|---|---|
+| `eda_red_car.html` | Perfilado interactivo de la serie (ydata-profiling) |
+| `descriptiva.csv` | Tabla con media, mediana, asimetría, curtosis, cuantiles |
+| `inferencial.json` | ADF + KPSS + Mann-Kendall + excedencias normativas |
+| `backtesting.csv` | Resultados walk-forward por modelo (MAE, RMSE, R²) |
+| `cumplimiento.html` | Semáforo normativo Res. 2254/2017 + OMS 2021 |
+| `forecast.html` | Serie real vs. pronóstico con Chart.js interactivo |
+
+Scripts disponibles:
+
+```
+scripts/
+├── fase8_calidad_aire.py          fase8_humedales.py
+├── fase8_calidad_aire_multimodel.py  fase8_paramos.py
+├── fase8_oferta_hidrica.py        fase8_pomca.py
+├── fase8_recurso_hidrico.py       fase8_pueea.py
+├── fase8_cambio_climatico.py      fase8_rondas_hidricas.py
+├── fase8_areas_protegidas.py      fase8_ordenamiento_territorial.py
+├── fase8_gestion_riesgo.py        fase8_sistemas_informacion.py
+├── fase8_predios_conservacion.py  fase8_direccion_directiva.py
+└── build_notebooks.py             # Regenera los 16 notebooks temáticos
 ```
 
 ---
@@ -173,6 +212,20 @@ compliance_report(
 # series temporales con línea de norma superpuesta y contexto de dominio.
 ```
 
+### Reporte estadístico descriptivo + inferencial
+
+```python
+from estadistica_ambiental.reporting.stats_report import stats_report
+
+stats_report(
+    df,
+    variable="pm25",
+    linea_tematica="calidad_aire",
+    output="reports/estadistica_pm25.html",
+)
+# Genera HTML con descriptiva completa, ADF+KPSS, Mann-Kendall y excedencias.
+```
+
 ---
 
 ## Conectores a fuentes de datos colombianas
@@ -193,6 +246,21 @@ df_aire = load_openaq(location_id=225433, parameter="pm25", date_from="2024-01-0
 # Ejemplo: buscar datasets hídricos en datos.gov.co
 datasets = list_datasets_co(query="calidad agua rio bogota")
 ```
+
+---
+
+## Datos incluidos
+
+El repositorio incluye un conjunto de datos reales y datos sintéticos para poder ejecutar todos los scripts sin necesidad de credenciales externas:
+
+| Dataset | Tipo | Tamaño | Descripción |
+|---|---|---|---|
+| `calidad_aire_CAR_2016_2026.parquet` | Real | 8.7 MB | PM2.5 horario (10 años), red de monitoreo CAR Cundinamarca — estación focal Mochuelo |
+| `calidad_aire_CAR_2016_2026.csv` | Real | 85 MB | Mismo dataset en CSV descomprimido |
+| `oferta_hidrica_sintetica.csv` | Sintético | 185 KB | Caudales diarios para demostración |
+| `recurso_hidrico_sintetico.csv` | Sintético | 4.2 KB | Parámetros de calidad de agua |
+| `areas_protegidas_sintetica.csv` | Sintético | 1.4 KB | Cobertura boscosa temporal |
+| `pomca_sintetica.csv` | Sintético | 543 KB | Caudales en cuenca |
 
 ---
 
@@ -219,7 +287,7 @@ pip install -e ".[netcdf]"   # netCDF4, h5netcdf — datos IDEAM / Copernicus
 
 ```bash
 python -m pytest tests/ -q
-# 233 passed, 1 skipped
+# 427 passed, 1 skipped, 80% coverage
 ```
 
 ---
@@ -296,6 +364,16 @@ df = enso_lagged(df, oni, date_col="fecha", linea_tematica="oferta_hidrica")
 # → agrega columnas: oni_lag4, fase_lag4, intensidad_lag4, enso_lag4_niño, enso_lag4_niña
 ```
 
+### 6. Detección de anomalías
+
+```python
+from estadistica_ambiental.evaluation.anomaly import detect_anomalies, anomaly_summary
+
+flags = detect_anomalies(ts)
+print(anomaly_summary(flags))
+# → tabla con fechas, valores y severidad de cada anomalía detectada
+```
+
 ---
 
 ## Estructura del proyecto
@@ -317,7 +395,8 @@ estadistica_ambiental/
 │   ├── preprocessing/
 │   │   ├── imputation.py      # 8 métodos (linear, Kalman, MICE...)
 │   │   ├── outliers.py        # Flags IQR/z-score (sin clipping automático)
-│   │   └── resampling.py      # Alineación de frecuencias
+│   │   ├── resampling.py      # Alineación de frecuencias
+│   │   └── air_quality.py     # flag_spatial_episodes, categorize_ica, correct_seasonal_bias
 │   ├── descriptive/
 │   │   ├── univariate.py      # summarize() con medidas de forma
 │   │   ├── bivariate.py       # Pearson, Spearman, Kendall, chi²
@@ -353,28 +432,34 @@ estadistica_ambiental/
 │   ├── evaluation/
 │   │   ├── metrics.py         # MAE, RMSE, R², sMAPE + NSE, KGE, PBIAS
 │   │   ├── backtesting.py     # Walk-forward (expanding / sliding window)
-│   │   └── comparison.py      # Ranking multi-criterio, select_best()
+│   │   ├── comparison.py      # Ranking multi-criterio, select_best()
+│   │   └── anomaly.py         # detect_anomalies(), anomaly_summary()
 │   └── reporting/
 │       ├── forecast_report.py  # HTML con pronóstico vs. serie real
-│       └── compliance_report.py # HTML con semáforo de cumplimiento normativo
+│       ├── compliance_report.py # HTML con semáforo de cumplimiento normativo
+│       └── stats_report.py    # HTML con descriptiva + ADF/KPSS + Mann-Kendall
 │
 ├── docs/
-│   ├── fuentes/               # 16 fichas técnicas de dominio (una por línea)
+│   ├── fuentes/               # 16 fichas técnicas de dominio (una por línea) ✅
 │   ├── metodologia.md         # Descripción del ciclo estadístico
 │   ├── modelos.md             # Catálogo de modelos con cuándo usar cada uno
-│   └── decisiones.md          # ADR-001 a ADR-009 — decisiones de arquitectura
+│   ├── decisiones.md          # ADR-001 a ADR-010 — decisiones de arquitectura
+│   ├── intake_lider.md        # Cuestionario de onboarding para líderes de área (18 preguntas)
+│   └── intake_output_template.md  # Template de respuesta estructurada
 │
 ├── notebooks/
 │   ├── 00_plantilla_ciclo_completo.ipynb  # Plantilla maestra (10 secciones)
 │   ├── 01_eda.ipynb / 02_descriptiva.ipynb / ...
-│   └── lineas_tematicas/                  # 15 notebooks por línea temática
-│       ├── bloque_a_gestion/
-│       ├── bloque_b_transversales/
-│       └── bloque_c_tecnicas/
+│   └── lineas_tematicas/                  # 16 notebooks por línea temática
+│       ├── bloque_a_gestion/              # 13 notebooks
+│       ├── bloque_b_transversales/        # 2 notebooks
+│       └── bloque_c_tecnicas/             # 1 notebook (geoespacial)
 │
-├── tests/                     # 233 tests (pytest, cobertura > 70%)
+├── tests/                     # 427 tests (pytest, cobertura 80%)
+│   └── test_regression_pr6.py # 21 tests de regresión — 10 bugs corregidos
 ├── scripts/
-│   └── build_notebooks.py     # Genera los 15 notebooks temáticos automáticamente
+│   ├── build_notebooks.py     # Genera los 16 notebooks temáticos
+│   └── fase8_*.py             # 16 scripts de ciclo completo por línea
 └── pyproject.toml             # Dependencias, ruff, pytest, coverage
 ```
 
@@ -428,7 +513,7 @@ print(ficha[:3000])
 
 ## Decisiones de arquitectura (ADRs)
 
-El archivo [`docs/decisiones.md`](docs/decisiones.md) registra las 9 decisiones técnicas clave:
+El archivo [`docs/decisiones.md`](docs/decisiones.md) registra las 10 decisiones técnicas clave:
 
 | ADR | Decisión |
 |---|---|
@@ -441,18 +526,37 @@ El archivo [`docs/decisiones.md`](docs/decisiones.md) registra las 9 decisiones 
 | ADR-007 | Lags ENSO diferenciados por línea temática (literatura hidrológica colombiana) |
 | ADR-008 | `compliance_report()` como artefacto separado del reporte predictivo |
 | ADR-009 | Conectores a fuentes colombianas como módulo `io/connectors.py` |
+| ADR-010 | 10 bugs corregidos en PR #6 con tests de regresión dedicados |
 
 ---
 
-## Para investigadores que quieran usar este repositorio
+## Para investigadores y analistas de campo
 
-Si trabajas en una entidad ambiental colombiana o en investigación relacionada:
+### Flujo de onboarding con un líder de área
 
-1. **Clona el repo** e instala las dependencias base con `pip install -e ".[dev]"`
-2. **Lee la ficha de tu línea temática** en `docs/fuentes/<linea>.md` para entender las variables, normas y fuentes disponibles
-3. **Abre el notebook** correspondiente en `notebooks/lineas_tematicas/` — ya tiene el ciclo completo preconfigurado
+Antes de abrir un notebook, el cuestionario `docs/intake_lider.md` recopila en 18 preguntas el contexto institucional, las variables disponibles, las normas aplicables y las preguntas analíticas prioritarias. Esto evita iterar sobre modelos sin entender el dominio.
+
+```
+Líder de área
+  → Completa intake_lider.md (18 preguntas)
+      ↓
+Dan + Claude
+  → Activan línea temática + cargan datos reales
+  → Ejecutan notebook correspondiente (ej. calidad_aire.ipynb)
+      ↓
+  Iteran: mejoran datos → ajustan modelo → generan reporte
+      ↓
+  Entregan HTML con pronóstico + recomendación normativa
+```
+
+### Pasos rápidos para un analista nuevo
+
+1. **Clona el repo** e instala con `pip install -e ".[dev]"`
+2. **Lee la ficha de tu línea** en `docs/fuentes/<linea>.md`
+3. **Abre el notebook** en `notebooks/lineas_tematicas/` — tiene el ciclo completo preconfigurado con datos sintéticos
 4. **Reemplaza los datos sintéticos** por tus datos reales (CSV del DHIME, RMCAB, o tu sistema interno)
 5. **Ajusta el modelo** según el diagnóstico de estacionariedad y la estacionalidad de tu variable
+6. **Ejecuta el script** `scripts/fase8_<linea>.py` para regenerar todos los reportes en un solo paso
 
 Para agregar una línea temática nueva o adaptar el código a otra entidad, el punto de entrada es `scripts/build_notebooks.py` para los notebooks y `config.py` para los umbrales normativos.
 

@@ -65,3 +65,24 @@ jobs:
               body: 'La auditoría semanal de seguridad detectó vulnerabilidades en las dependencias.\nRevisar el workflow "Scheduled checks" para detalles.',
               labels: ['security', 'dependencies']
             })
+
+  # ─────────────────────────────────────────────
+  # JOB 3: Drift con versiones pre-release
+  # Informativo — detecta breaking changes antes de que lleguen a estable
+  # ─────────────────────────────────────────────
+  dependency-drift-pre:
+    name: Dependency drift check (pre-release)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pre-release versions
+        run: pip install -e ".[dev]" --pre --upgrade
+
+      - name: Run tests
+        run: python -m pytest tests/ -q --tb=line

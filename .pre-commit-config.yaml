@@ -31,3 +31,13 @@ repos:
     hooks:
       - id: nbqa-ruff
         args: [--fix]
+
+  # Detecta rutas absolutas de Windows hardcodeadas
+  - repo: local
+    hooks:
+      - id: no-absolute-windows-paths
+        name: No rutas absolutas de Windows
+        language: pygrep
+        entry: "[A-Z]:[/\\\\]"
+        exclude: "\\.(png|jpg|gif|ico|svg|woff|woff2|ttf|eot|pdf|exe|dll|so|dylib)$"
+        types: [text]
