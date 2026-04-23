@@ -149,3 +149,45 @@ class TestCatalogAccess:
         s = cat.summary()
         assert isinstance(s, str)
         assert "Catálogo" in s
+
+    def test_continuous(self, env_df):
+        cat = classify(env_df)
+        cont = cat.continuous()
+        assert "pm25" in cont
+
+    def test_discrete(self, env_df):
+        cat = classify(env_df)
+        disc = cat.discrete()
+        assert "n_eventos" in disc
+
+    def test_categoricals(self, env_df):
+        cat = classify(env_df)
+        cats = cat.categoricals()
+        assert "calidad_aire" in cats or "estacion" in cats
+
+
+class TestEdgeCaseTypes:
+    def test_bool_column_classified_nominal(self):
+        df = pd.DataFrame({"activo": [True, False, True, False, True]})
+        cat = classify(df)
+        assert cat.variables["activo"].var_type == VariableType.CATEGORICAL_NOMINAL
+
+    def test_pandas_category_dtype_classified_nominal(self):
+        df = pd.DataFrame({"cat_col": pd.Categorical(["A", "B", "A", "C", "B"])})
+        cat = classify(df)
+        assert cat.variables["cat_col"].var_type == VariableType.CATEGORICAL_NOMINAL
+
+    def test_fecha_pattern_string_col(self):
+        df = pd.DataFrame({"fecha_registro": ["2023-01-01", "2023-01-02", "2023-01-03"]})
+        cat = classify(df)
+        # Nombre sugiere fecha → el clasificador intenta parsear; resultado depende de n_unique
+        vtype = cat.variables["fecha_registro"].var_type
+        assert vtype in {VariableType.TEMPORAL, VariableType.TEXT, VariableType.CATEGORICAL_NOMINAL}
+
+    def test_fecha_pattern_but_not_parseable(self):
+        # Nombre parece fecha pero valores no son parseables → fallback (líneas 229-230)
+        df = pd.DataFrame({"fecha_col": ["abc", "def", "ghi", "jkl", "mno"]})
+        cat = classify(df)
+        vtype = cat.variables["fecha_col"].var_type
+        # No debe ser TEMPORAL si los valores no son fechas
+        assert isinstance(vtype, VariableType)

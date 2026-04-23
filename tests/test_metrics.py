@@ -78,6 +78,39 @@ class TestMetrics:
         assert df.index[0] == "A"  # menor RMSE primero
 
 
+class TestAnomalyDetect:
+    def test_length_mismatch_raises(self):
+        from estadistica_ambiental.evaluation.anomaly import detect_anomalies
+        with pytest.raises(ValueError, match="misma longitud"):
+            detect_anomalies(np.array([1.0, 2.0]), np.array([1.0]))
+
+    def test_absolute_mode(self, noisy):
+        from estadistica_ambiental.evaluation.anomaly import detect_anomalies
+        y, yhat = noisy
+        result = detect_anomalies(y, yhat, relative=False)
+        assert "is_anomaly" in result.columns
+
+
+class TestRankModels:
+    def test_rank_models_returns_df(self, noisy):
+        from estadistica_ambiental.evaluation.comparison import rank_models
+        y, yhat = noisy
+        results = {
+            "A": {"metrics": evaluate(y, yhat), "folds": [], "predictions": pd.DataFrame()},
+            "B": {"metrics": evaluate(y, yhat + 1), "folds": [], "predictions": pd.DataFrame()},
+        }
+        df = rank_models(results, domain="general")
+        assert "rank" in df.columns
+
+    def test_fit_distribution_handles_failures(self, noisy):
+        from estadistica_ambiental.inference.distributions import fit_distribution
+        y, _ = noisy
+        # Incluir ceros para forzar fallo en lognorm (cubre líneas 68-69)
+        series = pd.Series(np.concatenate([[0.0], np.abs(y)]))
+        result = fit_distribution(series, distributions=["norm", "lognorm"])
+        assert isinstance(result, pd.DataFrame)
+
+
 # --- optimization ---
 
 class TestBayesOpt:
@@ -140,6 +173,19 @@ class TestSARIMAX:
         model.fit(ts)
         assert model.aic < float("inf")
 
+    def test_summary_property_after_fit(self, ts):
+        model = SARIMAXModel(order=(1, 1, 1))
+        model.fit(ts)
+        s = model.summary
+        assert s is not None
+
+    def test_sarima_model_init(self, ts):
+        from estadistica_ambiental.predictive.classical import SARIMAModel
+        model = SARIMAModel(order=(1, 1, 1), seasonal_order=(1, 1, 1, 12))
+        model.fit(ts)
+        preds = model.predict(3)
+        assert len(preds) == 3
+
 
 class TestETS:
     def test_fit_predict(self, ts):
@@ -147,3 +193,7 @@ class TestETS:
         model.fit(ts)
         preds = model.predict(6)
         assert len(preds) == 6
+
+    def test_predict_before_fit_raises(self):
+        with pytest.raises(RuntimeError):
+            ETSModel().predict(3)

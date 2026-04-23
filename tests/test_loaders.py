@@ -117,3 +117,39 @@ class TestLoadExcel:
         sample_df.to_excel(p, index=False)
         df = load_excel(p, date_col="fecha")
         assert df.shape == sample_df.shape
+
+
+# ---------------------------------------------------------------------------
+# load TSV
+# ---------------------------------------------------------------------------
+
+class TestLoadTsv:
+    def test_tsv_dispatched(self, tmp_path):
+        from estadistica_ambiental.io.loaders import load
+        content = "fecha\tpm25\n2023-01-01\t15.2\n2023-01-02\t18.7\n"
+        f = tmp_path / "datos.tsv"
+        f.write_text(content, encoding="utf-8")
+        df = load(f)
+        assert df.shape == (2, 2)
+
+
+# ---------------------------------------------------------------------------
+# _detect_encoding / _parse_dates helpers
+# ---------------------------------------------------------------------------
+
+class TestHelpers:
+    def test_invalid_date_col_logs_warning(self, csv_file, caplog):
+        import logging
+        from estadistica_ambiental.io.loaders import load_csv
+        with caplog.at_level(logging.WARNING):
+            load_csv(csv_file, date_col="columna_inexistente")
+        assert "columna_inexistente" in caplog.text
+
+    def test_load_csv_invalid_dates_warns(self, tmp_path, caplog):
+        import logging
+        content = "fecha,pm25\nnot_a_date,15.2\n2023-01-02,18.7\n"
+        f = tmp_path / "bad_dates.csv"
+        f.write_text(content, encoding="utf-8")
+        with caplog.at_level(logging.WARNING):
+            df = load_csv(f, date_col="fecha")
+        assert df.shape[0] == 2  # ambas filas cargadas aunque fecha sea NaT

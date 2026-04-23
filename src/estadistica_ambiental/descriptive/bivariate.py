@@ -52,7 +52,10 @@ def correlation_table(
                 rows.append({"var1": c1, "var2": c2,
                              "correlation": round(r, 4), "pval": round(p, 6),
                              "n": len(common)})
-    return pd.DataFrame(rows).sort_values("correlation", key=abs, ascending=False)
+    result = pd.DataFrame(rows)
+    if result.empty:
+        return result
+    return result.sort_values("correlation", key=abs, ascending=False)
 
 
 def contingency_table(
