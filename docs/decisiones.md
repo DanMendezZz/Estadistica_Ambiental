@@ -2,6 +2,10 @@
 
 > Cada decisión técnica o de arquitectura relevante se registra aquí.
 > Formato: `## ADR-NNN — Título`, fecha, contexto, decisión, consecuencias.
+>
+> **Nota sobre fechas:** ADR-001 a ADR-010 fueron documentados el 2026-04-22 durante
+> el sprint inicial de construcción del repositorio (Fases 0-8). La fecha refleja
+> cuándo se formalizó la decisión, no necesariamente cuándo se tomó.
 
 ---
 
