@@ -96,11 +96,15 @@ def evaluate(
     y_pred: np.ndarray,
     domain: str = "general",
     y_train: Optional[np.ndarray] = None,
+    ica_breakpoints: Optional[dict] = None,
 ) -> dict:
     """Calcula todas las métricas relevantes según el dominio.
 
     Args:
         domain: 'general' | 'hydrology' | 'air_quality'
+        y_train: serie de entrenamiento para MASE (opcional).
+        ica_breakpoints: puntos de corte ICA custom para hit_rate_ica.
+            Solo aplica con domain='air_quality'.
     """
     y_true = np.asarray(y_true, dtype=float)
     y_pred = np.asarray(y_pred, dtype=float)
@@ -113,6 +117,7 @@ def evaluate(
         "rmse":  round(rmse(y_true, y_pred), 4),
         "r2":    round(r2(y_true, y_pred), 4),
         "mase":  round(mase(y_true, y_pred, y_train), 4),
+        "nrmse": round(nrmse(y_true, y_pred), 4),
     }
 
     if domain in ("air_quality", "general") and (y_true >= 0).all():
@@ -124,9 +129,74 @@ def evaluate(
         result["kge"]   = round(kge(y_true, y_pred), 4)
         result["pbias"] = round(pbias(y_true, y_pred), 4)
 
+    if domain == "air_quality":
+        result["hit_rate_ica"] = round(
+            hit_rate_ica(y_true, y_pred, breakpoints=ica_breakpoints), 2
+        )
+
     return result
 
 
 def compare_models(results: dict) -> pd.DataFrame:
     """Tabla comparativa de modelos. results = {model_name: metrics_dict}."""
     return pd.DataFrame(results).T.sort_values("rmse")
+
+
+# ---------------------------------------------------------------------------
+# Métricas escala-invariante y calidad del aire
+# ---------------------------------------------------------------------------
+
+def nrmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """RMSE normalizado por desviación estándar. Estable con ceros y negativos.
+
+    NRMSE = RMSE / std(y_true). Rango (0, inf), escala-invariante.
+    NRMSE < 1.0 indica mejor desempeño que el modelo de la media.
+    Reemplaza sMAPE cuando la serie contiene valores cercanos a cero.
+    """
+    std_y = float(np.std(y_true)) + 1e-8
+    return float(rmse(y_true, y_pred) / std_y)
+
+
+# Puntos de corte ICA por defecto — Resolución 2254/2017, PM2.5 (µg/m³)
+_ICA_BREAKPOINTS_DEFAULT: dict = {
+    "Buena":        (  -np.inf,  12.0),
+    "Aceptable":    (    12.0,   37.0),
+    "Danina_sens":  (    37.0,   55.0),
+    "Danina":       (    55.0,  150.0),
+    "Muy_danina":   (   150.0,  250.0),
+    "Peligrosa":    (   250.0,   np.inf),
+}
+
+
+def _categorize_ica(values: np.ndarray, breakpoints: dict) -> np.ndarray:
+    """Asigna categoría ICA a cada valor del arreglo."""
+    cats = np.full(len(values), "", dtype=object)
+    for label, (lo, hi) in breakpoints.items():
+        mask = (values > lo) & (values <= hi)
+        cats[mask] = label
+    return cats
+
+
+def hit_rate_ica(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    breakpoints: Optional[dict] = None,
+) -> float:
+    """Porcentaje de predicciones en la misma categoría ICA que el valor real.
+
+    Args:
+        y_true: valores reales de concentración (µg/m³).
+        y_pred: valores predichos de concentración (µg/m³).
+        breakpoints: dict con {categoria: (min_excl, max_incl)} o None para
+            usar Res. 2254/2017 (PM2.5). Ejemplo:
+            {"Buena": (-inf, 12), "Aceptable": (12, 37), ...}
+
+    Returns:
+        float entre 0.0 y 100.0 (porcentaje de coincidencias de categoría).
+    """
+    bp = breakpoints if breakpoints is not None else _ICA_BREAKPOINTS_DEFAULT
+    y_true = np.asarray(y_true, dtype=float)
+    y_pred = np.asarray(y_pred, dtype=float)
+    cats_true = _categorize_ica(y_true, bp)
+    cats_pred = _categorize_ica(y_pred, bp)
+    return float(np.mean(cats_true == cats_pred) * 100)
