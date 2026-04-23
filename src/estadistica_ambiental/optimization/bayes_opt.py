@@ -142,11 +142,15 @@ def optimize_model(
     # Envoltorio del objetivo con conteo de fallos consecutivos
     fallos_consecutivos = [0]
 
+    penalty = OPTIMIZER_PENALTY if direction == "minimize" else -OPTIMIZER_PENALTY
+
     def objetivo_robusto(trial: optuna.Trial) -> float:
         try:
             valor = objective(trial)
             fallos_consecutivos[0] = 0  # reiniciar contador en éxito
             return valor
+        except optuna.TrialPruned:
+            raise
         except Exception as exc:
             fallos_consecutivos[0] += 1
             logger.warning(
@@ -158,11 +162,10 @@ def optimize_model(
                 exc,
             )
             if fallos_consecutivos[0] >= max_fallos:
-                # Abortar el estudio lanzando StopIteration (Optuna lo captura)
                 raise optuna.exceptions.OptunaError(
                     f"Demasiados fallos consecutivos ({max_fallos}) para '{model_name}'"
                 ) from exc
-            return OPTIMIZER_PENALTY
+            return penalty
 
     # Intentar la optimización completa
     fallback_activado = False
@@ -207,22 +210,26 @@ def optimize_model(
             model_name,
             exc,
         )
-        best_p = warm_starts[0] if warm_starts else {}
-        best_s = OPTIMIZER_PENALTY
+        if study is not None and study.best_trial is not None:
+            best_p = study.best_params
+            best_s = study.best_value
+        else:
+            best_p = warm_starts[0] if warm_starts else {}
+            best_s = penalty
         fallback_activado = True
 
     # Construir el modelo final si el spec lo soporta
     modelo_final = None
-    if hasattr(model_spec, "build_model") and best_p:
+    if hasattr(model_spec, "build_model"):
         try:
-            modelo_final = model_spec.build_model(best_p)
+            modelo_final = model_spec.build_model(best_p or {})
         except Exception as exc:
             logger.warning("build_model falló para '%s': %s", model_name, exc)
 
     resultado = OptimizationResult(
         best_params=best_p,
         best_score=best_s,
-        n_trials=n_trials,
+        n_trials=len(study.trials) if study is not None else 0,
         model=modelo_final,
         study=study,
         model_name=model_name,

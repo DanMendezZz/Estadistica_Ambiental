@@ -337,9 +337,12 @@ def flag_spatial_episodes(
                             if vals_vec.empty:
                                 continue
                             # Umbral dinámico del vecino en el mismo mes
+                            # Solo valores 'original' — excluye cap_absoluto y
+                            # medianas ya imputadas de iteraciones anteriores
                             mask_vec_mes = (
                                 (result[station_col] == vecino)
                                 & (result["_month"] == mes)
+                                & (result["flag_episode"] == "original")
                                 & result[value_col].notna()
                             )
                             serie_vec = result.loc[mask_vec_mes, value_col]
@@ -360,58 +363,39 @@ def flag_spatial_episodes(
                         n_episodios += len(orig_indices)
 
             # ── Paso 3: IQR — marcar outliers no episódicos ────────────────────
-            # Recalcular serie limpia (solo 'original', sin extremos marcados)
-            mask_clean = (
+            # Pre-determinar hard y soft antes de cualquier imputación para que
+            # la mediana rolling no se calcule sobre los mismos valores a reemplazar
+            base_iqr = (
                 mask_mes
                 & (result["flag_episode"] == "original")
                 & result[value_col].notna()
             )
-            serie_clean = result.loc[mask_clean, value_col]
-            if serie_clean.empty:
-                continue
-            mediana_local = (
-                serie_clean.rolling(5, center=True, min_periods=1).median()
-            )
+            hard_cond = (result[value_col] < hard_lower) | (result[value_col] > hard_upper)
+            soft_cond = (result[value_col] < soft_lower) | (result[value_col] > soft_upper)
 
-            # iqr_hard: extremos no confirmados como episodio
-            mask_hard = (
-                mask_mes
-                & (result["flag_episode"] == "original")
-                & result[value_col].notna()
-                & (
-                    (result[value_col] < hard_lower)
-                    | (result[value_col] > hard_upper)
-                )
-            )
+            mask_hard = base_iqr & hard_cond
+            mask_soft = base_iqr & soft_cond & ~hard_cond  # soft excluye hard
             idx_hard = result.index[mask_hard]
+            idx_soft = result.index[mask_soft]
+
+            if idx_hard.empty and idx_soft.empty:
+                continue
+
+            # Mediana local con outliers enmascarados (NaN) en la ventana
+            serie_clean = result.loc[base_iqr, value_col].copy()
+            all_outliers = idx_hard.union(idx_soft)
+            serie_clean.loc[serie_clean.index.isin(all_outliers)] = np.nan
+            if serie_clean.notna().sum() == 0:
+                continue
+            mediana_local = serie_clean.rolling(5, center=True, min_periods=1).median()
+
             if len(idx_hard) > 0:
                 result.loc[idx_hard, value_col] = mediana_local.reindex(idx_hard)
                 result.loc[idx_hard, "flag_episode"] = "iqr_hard"
                 n_iqr_hard += len(idx_hard)
 
-            # iqr_soft: moderados (fuera de 1.5 pero dentro de iqr_multiplier)
-            mask_soft = (
-                mask_mes
-                & (result["flag_episode"] == "original")
-                & result[value_col].notna()
-                & (
-                    (result[value_col] < soft_lower)
-                    | (result[value_col] > soft_upper)
-                )
-            )
-            idx_soft = result.index[mask_soft]
             if len(idx_soft) > 0:
-                mask_clean2 = (
-                    mask_mes
-                    & (result["flag_episode"] == "original")
-                    & result[value_col].notna()
-                )
-                med2 = (
-                    result.loc[mask_clean2, value_col]
-                    .rolling(5, center=True, min_periods=1)
-                    .median()
-                )
-                result.loc[idx_soft, value_col] = med2.reindex(idx_soft)
+                result.loc[idx_soft, value_col] = mediana_local.reindex(idx_soft)
                 result.loc[idx_soft, "flag_episode"] = "iqr_soft"
                 n_iqr_soft += len(idx_soft)
 

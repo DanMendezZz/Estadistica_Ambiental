@@ -23,6 +23,7 @@ def walk_forward(
     X: Optional[pd.DataFrame] = None,
     domain: str = "general",
     strategy: str = "expanding",
+    pollutant: str = "pm25",
 ) -> Dict:
     """Walk-forward backtesting con ventana expansiva o deslizante.
 
@@ -35,6 +36,8 @@ def walk_forward(
         X: Exógenas (si el modelo las soporta).
         domain: 'general' | 'hydrology' | 'air_quality' para métricas.
         strategy: 'expanding' (crece) | 'sliding' (tamaño fijo).
+        pollutant: Contaminante para breakpoints ICA ('pm25', 'pm10', 'o3',
+            'no2', 'so2', 'co'). Solo aplica con domain='air_quality'.
 
     Returns:
         Dict con 'metrics' (promedio), 'folds' (lista por fold) y 'predictions'.
@@ -73,7 +76,7 @@ def walk_forward(
             model.fit(y_train, X_train)
             preds = model.predict(len(y_test), X_test)
             actual = y_test.values
-            metrics = evaluate(actual, preds, domain=domain)
+            metrics = evaluate(actual, preds, domain=domain, pollutant=pollutant)
         except Exception as e:
             logger.warning("Fold %d falló: %s", fold_idx, e)
             continue
