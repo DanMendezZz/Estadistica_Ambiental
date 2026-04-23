@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-BASE = Path("D:/Dan/98. IA/Estadistica_Ambiental/notebooks")
+BASE = Path(__file__).resolve().parent.parent / "notebooks"
 
 LINEAS = [
     # (path_relativo, nombre_display, variable_ejemplo, unidad, linea_tematica_key, modelos_sugeridos)

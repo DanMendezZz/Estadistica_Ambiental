@@ -3,9 +3,14 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 Versiones: [Semver](https://semver.org/lang/es/).
 
+> **Nota sobre versiones iniciales:** Las versiones v0.1.0 → v1.0.0 corresponden a las
+> Fases 0-8 del plan de desarrollo, construidas durante un sprint intensivo interno
+> el 2026-04-22. No representan releases incrementales independientes sino una
+> consolidación retrospectiva. A partir de v1.1.0 las fechas son incrementales reales.
+
 ---
 
-## [1.0.0] — 2026-04-22
+## [1.0.0] — 2026-04-22 (primer release público — consolidación Fases 0-8)
 
 ### Agregado
 - API pública completa: `from estadistica_ambiental import *` expone 20 símbolos.

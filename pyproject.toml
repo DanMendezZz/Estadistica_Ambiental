@@ -17,26 +17,18 @@ dependencies = [
     "numpy>=1.26",
     "openpyxl>=3.1",
     "pyarrow>=14.0",
+    "requests>=2.31",
     "scipy>=1.11",
 
-    # EDA y perfilado
-    "ydata-profiling>=4.6",
-    "sweetviz>=2.3",
-    "missingno>=0.5",
+    # Visualización
     "matplotlib>=3.8",
     "seaborn>=0.13",
-    "plotly>=5.18",
 
     # Preprocesamiento e imputación
     "scikit-learn>=1.4",
 
     # Series de tiempo
     "statsmodels>=0.14",
-    "prophet>=1.1",
-
-    # ML
-    "xgboost>=2.0",
-    "lightgbm>=4.2",
 
     # Optimización
     "optuna>=3.5",
@@ -49,6 +41,19 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+ml = [
+    "xgboost>=2.0",
+    "lightgbm>=4.2",
+]
+prophet = [
+    "prophet>=1.1",
+]
+profile = [
+    "ydata-profiling>=4.6",
+    "sweetviz>=2.3",
+    "missingno>=0.5",
+    "plotly>=5.18",
+]
 deep = [
     "torch>=2.1",
     "lightning>=2.1",
