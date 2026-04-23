@@ -288,6 +288,68 @@ def sarima_search_space(
     }
 
 
+def optimize_sarima(
+    series: "pd.Series",
+    n_trials: int = 50,
+    max_p: int = 5,
+    max_q: int = 5,
+    seasonal_period: int = 12,
+    n_splits: int = 3,
+    horizon: int = 1,
+    gap: int = 0,
+    timeout: Optional[int] = None,
+) -> "OptimizationResult":
+    """Wrapper convenience para optimizar hiperparámetros SARIMA con Optuna.
+
+    Uso::
+
+        from estadistica_ambiental.optimization.bayes_opt import optimize_sarima
+        result = optimize_sarima(serie_caudal, n_trials=50)
+        mejor_modelo = result.model  # SARIMAModel listo para fit()
+
+    Args:
+        series: Serie temporal objetivo (pd.Series con DatetimeIndex).
+        n_trials: Evaluaciones de Optuna.
+        max_p: Máximo orden AR (p).
+        max_q: Máximo orden MA (q).
+        seasonal_period: Período estacional S (default 12 para datos mensuales).
+        n_splits: Folds del walk-forward dentro del objetivo.
+        horizon: Horizonte de pronóstico en el objetivo.
+        gap: Purga entre train y test (ver walk_forward).
+        timeout: Tiempo límite en segundos.
+
+    Returns:
+        OptimizationResult con best_params, best_score y model construido.
+    """
+    from estadistica_ambiental.evaluation.backtesting import walk_forward
+    from estadistica_ambiental.predictive.classical import SARIMAModel
+
+    spec = SARIMAModel(seasonal_order=(1, 1, 1, seasonal_period))
+
+    def objective(trial: optuna.Trial) -> float:
+        params = sarima_search_space(
+            trial, max_p=max_p, max_d=2, max_q=max_q,
+            max_P=2, max_D=1, max_Q=2,
+            seasonal_period=seasonal_period,
+        )
+        model = SARIMAModel(
+            order=(params["p"], params["d"], params["q"]),
+            seasonal_order=(params["P"], params["D"], params["Q"], params["s"]),
+        )
+        result = walk_forward(
+            model, series, horizon=horizon, n_splits=n_splits, gap=gap
+        )
+        return result["metrics"].get("nrmse", 1e6)
+
+    return optimize_model(
+        spec, objective,
+        n_trials=n_trials,
+        timeout=timeout,
+        direction="minimize",
+        study_name=f"sarima_s{seasonal_period}",
+    )
+
+
 def xgboost_search_space(trial: optuna.Trial) -> Dict[str, Any]:
     """Espacio de búsqueda estándar para XGBoost."""
     return {
