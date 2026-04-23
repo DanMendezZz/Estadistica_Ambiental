@@ -132,25 +132,25 @@ def evaluate(
         raise ValueError("No quedan observaciones válidas después de filtrar NaN.")
 
     result = {
-        "mae":   round(mae(y_true, y_pred), 4),
-        "rmse":  round(rmse(y_true, y_pred), 4),
-        "r2":    round(r2(y_true, y_pred), 4),
-        "mase":  round(mase(y_true, y_pred, y_train), 4),
-        "nrmse": round(nrmse(y_true, y_pred), 4),
+        "mae":   mae(y_true, y_pred),
+        "rmse":  rmse(y_true, y_pred),
+        "r2":    r2(y_true, y_pred),
+        "mase":  mase(y_true, y_pred, y_train),
+        "nrmse": nrmse(y_true, y_pred),
     }
 
     if domain in ("air_quality", "general") and (y_true >= 0).all():
-        result["smape"] = round(smape(y_true, y_pred), 4)
-        result["mape"]  = round(mape(y_true, y_pred), 4)
+        result["smape"] = smape(y_true, y_pred)
+        result["mape"]  = mape(y_true, y_pred)
 
     if domain == "hydrology":
-        result["nse"]   = round(nse(y_true, y_pred), 4)
-        result["kge"]   = round(kge(y_true, y_pred), 4)
-        result["pbias"] = round(pbias(y_true, y_pred), 4)
+        result["nse"]   = nse(y_true, y_pred)
+        result["kge"]   = kge(y_true, y_pred)
+        result["pbias"] = pbias(y_true, y_pred)
 
     if domain == "air_quality":
-        result["hit_rate_ica"] = round(
-            hit_rate_ica(y_true, y_pred, breakpoints=ica_breakpoints, pollutant=pollutant), 2
+        result["hit_rate_ica"] = hit_rate_ica(
+            y_true, y_pred, breakpoints=ica_breakpoints, pollutant=pollutant
         )
 
     return result
