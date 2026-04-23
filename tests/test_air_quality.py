@@ -16,6 +16,7 @@ from estadistica_ambiental.preprocessing.air_quality import (
 # Fixtures comunes
 # ---------------------------------------------------------------------------
 
+
 def _make_two_station_df(
     n_per_station: int = 200,
     spike_value: float = 500.0,
@@ -36,14 +37,14 @@ def _make_two_station_df(
         ("B", 4.65, -74.15, spike_vals),  # vecina cercana (< 10 km)
     ]:
         for ts, v in zip(dates, vals):
-            rows.append({"fecha": ts, "estacion": station, "pm25": v,
-                         "lat": lat, "lon": lon})
+            rows.append({"fecha": ts, "estacion": station, "pm25": v, "lat": lat, "lon": lon})
     return pd.DataFrame(rows)
 
 
 # ---------------------------------------------------------------------------
 # categorize_ica
 # ---------------------------------------------------------------------------
+
 
 class TestCategorizeIca:
     """Tests unitarios para categorize_ica()."""
@@ -53,8 +54,12 @@ class TestCategorizeIca:
         s = pd.Series([5.0, 20.0, 45.0, 60.0, 200.0, 300.0])
         result = categorize_ica(s, pollutant="pm25")
         expected = [
-            "Buena", "Aceptable", "Dañina sensibles",
-            "Dañina", "Muy dañina", "Peligrosa",
+            "Buena",
+            "Aceptable",
+            "Dañina sensibles",
+            "Dañina",
+            "Muy dañina",
+            "Peligrosa",
         ]
         assert list(result) == expected
 
@@ -117,13 +122,19 @@ class TestCategorizeIca:
 # flag_spatial_episodes
 # ---------------------------------------------------------------------------
 
+
 class TestFlagSpatialEpisodes:
     """Tests para flag_spatial_episodes()."""
 
     def test_output_has_flag_column(self):
         df = _make_two_station_df()
         result = flag_spatial_episodes(
-            df, "pm25", "estacion", "fecha", "lat", "lon",
+            df,
+            "pm25",
+            "estacion",
+            "fecha",
+            "lat",
+            "lon",
             min_consecutive_hours=4,
         )
         assert "flag_episode" in result.columns
@@ -132,13 +143,15 @@ class TestFlagSpatialEpisodes:
         # Sin valores extremos no debe haber episodios_criticos (picos sostenidos confirmados por vecinas)
         rng = np.random.default_rng(1)
         dates = pd.date_range("2023-01-01", periods=200, freq="h")
-        df = pd.DataFrame({
-            "fecha": list(dates) * 2,
-            "estacion": ["A"] * 200 + ["B"] * 200,
-            "pm25": rng.normal(20.0, 2.0, 400),
-            "lat": [4.60] * 200 + [4.65] * 200,
-            "lon": [-74.10] * 200 + [-74.15] * 200,
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": list(dates) * 2,
+                "estacion": ["A"] * 200 + ["B"] * 200,
+                "pm25": rng.normal(20.0, 2.0, 400),
+                "lat": [4.60] * 200 + [4.65] * 200,
+                "lon": [-74.10] * 200 + [-74.15] * 200,
+            }
+        )
         result = flag_spatial_episodes(df, "pm25", "estacion", "fecha", "lat", "lon")
         # cap_absoluto puede aparecer por la cola de una distribución normal (percentil 99.9)
         # pero episodio_critico requiere ≥4h consecutivas confirmadas por vecinas → no ocurre
@@ -156,12 +169,13 @@ class TestFlagSpatialEpisodes:
         vals_a[1] = 60_000.0
         vals_a[2] = 70_000.0  # estrictamente > quantile(0.999)
         vals_b = rng.normal(25.0, 5.0, n)
-        rows = (
-            [{"fecha": ts, "estacion": "A", "pm25": v, "lat": 4.60, "lon": -74.10}
-             for ts, v in zip(dates, vals_a)]
-            + [{"fecha": ts, "estacion": "B", "pm25": v, "lat": 4.65, "lon": -74.15}
-               for ts, v in zip(dates, vals_b)]
-        )
+        rows = [
+            {"fecha": ts, "estacion": "A", "pm25": v, "lat": 4.60, "lon": -74.10}
+            for ts, v in zip(dates, vals_a)
+        ] + [
+            {"fecha": ts, "estacion": "B", "pm25": v, "lat": 4.65, "lon": -74.15}
+            for ts, v in zip(dates, vals_b)
+        ]
         df = pd.DataFrame(rows)
         result = flag_spatial_episodes(df, "pm25", "estacion", "fecha", "lat", "lon")
         assert "cap_absoluto" in result["flag_episode"].values
@@ -170,7 +184,12 @@ class TestFlagSpatialEpisodes:
         # Los valores marcados como episodio_critico NO deben ser reemplazados
         df = _make_two_station_df(spike_value=500.0, spike_count=6)
         result = flag_spatial_episodes(
-            df, "pm25", "estacion", "fecha", "lat", "lon",
+            df,
+            "pm25",
+            "estacion",
+            "fecha",
+            "lat",
+            "lon",
             min_consecutive_hours=4,
         )
         episodios = result[result["flag_episode"] == "episodio_critico"]
@@ -204,7 +223,12 @@ class TestFlagSpatialEpisodes:
         # Outliers suaves (iqr_soft) deben tener valor imputado < spike original
         df = _make_two_station_df(spike_value=120.0, spike_count=2)
         result = flag_spatial_episodes(
-            df, "pm25", "estacion", "fecha", "lat", "lon",
+            df,
+            "pm25",
+            "estacion",
+            "fecha",
+            "lat",
+            "lon",
             min_consecutive_hours=4,
         )
         soft = result[result["flag_episode"] == "iqr_soft"]
@@ -215,6 +239,7 @@ class TestFlagSpatialEpisodes:
 # ---------------------------------------------------------------------------
 # correct_seasonal_bias
 # ---------------------------------------------------------------------------
+
 
 class TestCorrectSeasonalBias:
     """Tests para correct_seasonal_bias()."""
@@ -276,9 +301,7 @@ class TestCorrectSeasonalBias:
         # Si pred == actual, corrección debe ser cero
         dates = pd.date_range("2022-01-01", periods=365, freq="D")
         vals = pd.Series(np.random.default_rng(42).normal(30.0, 5.0, 365))
-        corrected, bias_table = correct_seasonal_bias(
-            vals.copy(), vals.copy(), pd.Series(dates)
-        )
+        corrected, bias_table = correct_seasonal_bias(vals.copy(), vals.copy(), pd.Series(dates))
         assert (bias_table["sesgo"].abs() < 1e-10).all()
         pd.testing.assert_series_equal(corrected, vals, check_names=False)
 

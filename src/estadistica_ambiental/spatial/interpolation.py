@@ -47,7 +47,7 @@ def idw(
         if np.any(dist == 0):
             result[i] = obs_val[dist == 0][0]
         else:
-            w = 1.0 / dist ** power
+            w = 1.0 / dist**power
             result[i] = np.sum(w * obs_val) / np.sum(w)
 
     return result.reshape(shape)

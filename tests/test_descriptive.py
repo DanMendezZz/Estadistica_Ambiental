@@ -22,17 +22,20 @@ from estadistica_ambiental.descriptive.univariate import frequency_table, summar
 @pytest.fixture
 def env_df():
     np.random.seed(0)
-    return pd.DataFrame({
-        "fecha":       pd.date_range("2020-01-01", periods=120, freq="ME"),
-        "estacion":    ["Kennedy", "Usme"] * 60,
-        "pm25":        np.random.gamma(3, 5, 120),
-        "pm10":        np.random.gamma(4, 6, 120),
-        "temperatura": np.random.normal(15, 3, 120),
-        "calidad":     np.random.choice(["buena", "moderada", "mala"], 120),
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2020-01-01", periods=120, freq="ME"),
+            "estacion": ["Kennedy", "Usme"] * 60,
+            "pm25": np.random.gamma(3, 5, 120),
+            "pm10": np.random.gamma(4, 6, 120),
+            "temperatura": np.random.normal(15, 3, 120),
+            "calidad": np.random.choice(["buena", "moderada", "mala"], 120),
+        }
+    )
 
 
 # --- univariate ---
+
 
 class TestSummarize:
     def test_returns_dataframe(self, env_df):
@@ -71,6 +74,7 @@ class TestFrequencyTable:
 
 # --- bivariate ---
 
+
 class TestCorrelation:
     def test_matrix_is_square(self, env_df):
         mat = correlation_matrix(env_df)
@@ -90,6 +94,7 @@ class TestCorrelation:
 
 
 # --- temporal ---
+
 
 class TestTemporal:
     def test_acf_includes_lag0(self, env_df):
@@ -113,18 +118,21 @@ class TestTemporal:
 
     def test_decompose_stl_returns_dataframe(self, env_df):
         from estadistica_ambiental.descriptive.temporal import decompose_stl
+
         result = decompose_stl(env_df["pm25"], period=12)
         assert isinstance(result, pd.DataFrame)
         assert set(["observed", "trend", "seasonal", "residual"]).issubset(result.columns)
 
     def test_decompose_stl_correct_length(self, env_df):
         from estadistica_ambiental.descriptive.temporal import decompose_stl
+
         n = env_df["pm25"].notna().sum()
         result = decompose_stl(env_df["pm25"], period=12)
         assert len(result) == n
 
 
 # --- correlation table — métodos alternativos ---
+
 
 class TestCorrelationMethods:
     def test_spearman_method(self, env_df):
@@ -141,10 +149,12 @@ class TestCorrelationMethods:
 
     def test_fewer_than_3_common_skipped(self):
         # Columnas con índices que no se superponen → < 3 comunes → se omiten
-        df = pd.DataFrame({
-            "a": pd.Series([1.0, 2.0, np.nan, np.nan, np.nan]),
-            "b": pd.Series([np.nan, np.nan, 3.0, 4.0, 5.0]),
-        })
+        df = pd.DataFrame(
+            {
+                "a": pd.Series([1.0, 2.0, np.nan, np.nan, np.nan]),
+                "b": pd.Series([np.nan, np.nan, 3.0, 4.0, 5.0]),
+            }
+        )
         tbl = correlation_table(df, method="pearson", min_abs_corr=0.0)
         # No hay pares con >= 3 observaciones comunes → tabla vacía
         assert len(tbl) == 0
@@ -152,29 +162,35 @@ class TestCorrelationMethods:
 
 # --- outliers ---
 
+
 class TestOutliers:
     def test_zscore_method(self, env_df):
         from estadistica_ambiental.preprocessing.outliers import flag_outliers
+
         result = flag_outliers(env_df, cols=["pm25"], method="zscore")
         assert "pm25_outlier" in result.columns
 
     def test_modified_zscore_method(self, env_df):
         from estadistica_ambiental.preprocessing.outliers import flag_outliers
+
         result = flag_outliers(env_df, cols=["pm25"], method="modified_zscore")
         assert "pm25_outlier" in result.columns
 
     def test_treat_clip(self, env_df):
         from estadistica_ambiental.preprocessing.outliers import flag_outliers
+
         result = flag_outliers(env_df, cols=["pm25"], method="iqr", treat=True, treatment="clip")
         # Valores no deben exceder los límites IQR
         assert result["pm25"].max() <= env_df["pm25"].max()
 
     def test_treat_nan(self, env_df):
         from estadistica_ambiental.preprocessing.outliers import flag_outliers
+
         result = flag_outliers(env_df, cols=["pm25"], method="iqr", treat=True, treatment="nan")
         assert isinstance(result, pd.DataFrame)
 
     def test_invalid_method_raises(self, env_df):
         from estadistica_ambiental.preprocessing.outliers import flag_outliers
+
         with pytest.raises(ValueError, match="method debe ser"):
             flag_outliers(env_df, cols=["pm25"], method="hampel")

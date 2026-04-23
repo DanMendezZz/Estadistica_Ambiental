@@ -22,6 +22,7 @@ from estadistica_ambiental.predictive.classical import ARIMAModel, ETSModel, SAR
 
 # --- fixtures ---
 
+
 @pytest.fixture
 def perfect():
     y = np.array([10.0, 15.0, 12.0, 18.0, 14.0])
@@ -46,6 +47,7 @@ def ts():
 
 
 # --- metrics ---
+
 
 class TestMetrics:
     def test_mae_perfect(self, perfect):
@@ -88,11 +90,13 @@ class TestMetrics:
 class TestAnomalyDetect:
     def test_length_mismatch_raises(self):
         from estadistica_ambiental.evaluation.anomaly import detect_anomalies
+
         with pytest.raises(ValueError, match="misma longitud"):
             detect_anomalies(np.array([1.0, 2.0]), np.array([1.0]))
 
     def test_absolute_mode(self, noisy):
         from estadistica_ambiental.evaluation.anomaly import detect_anomalies
+
         y, yhat = noisy
         result = detect_anomalies(y, yhat, relative=False)
         assert "is_anomaly" in result.columns
@@ -101,6 +105,7 @@ class TestAnomalyDetect:
 class TestRankModels:
     def test_rank_models_returns_df(self, noisy):
         from estadistica_ambiental.evaluation.comparison import rank_models
+
         y, yhat = noisy
         results = {
             "A": {"metrics": evaluate(y, yhat), "folds": [], "predictions": pd.DataFrame()},
@@ -111,6 +116,7 @@ class TestRankModels:
 
     def test_fit_distribution_handles_failures(self, noisy):
         from estadistica_ambiental.inference.distributions import fit_distribution
+
         y, _ = noisy
         # Incluir ceros para forzar fallo en lognorm (cubre líneas 68-69)
         series = pd.Series(np.concatenate([[0.0], np.abs(y)]))
@@ -119,6 +125,7 @@ class TestRankModels:
 
 
 # --- optimization ---
+
 
 class TestBayesOpt:
     def test_optimize_simple(self):
@@ -131,6 +138,7 @@ class TestBayesOpt:
 
     def test_sarima_search_space_keys(self):
         import optuna
+
         trial = optuna.trial.create_trial(
             params={"p": 1, "d": 1, "q": 1, "P": 0, "D": 0, "Q": 0},
             distributions={
@@ -148,6 +156,7 @@ class TestBayesOpt:
 
 
 # --- classical models ---
+
 
 class TestARIMA:
     def test_fit_predict(self, ts):
@@ -188,6 +197,7 @@ class TestSARIMAX:
 
     def test_sarima_model_init(self, ts):
         from estadistica_ambiental.predictive.classical import SARIMAModel
+
         model = SARIMAModel(order=(1, 1, 1), seasonal_order=(1, 1, 1, 12))
         model.fit(ts)
         preds = model.predict(3)

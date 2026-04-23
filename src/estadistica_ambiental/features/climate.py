@@ -20,8 +20,18 @@ logger = logging.getLogger(__name__)
 _ONI_URL = "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
 
 _SEASON_TO_MONTH = {
-    "DJF": 1, "JFM": 2, "FMA": 3, "MAM": 4, "AMJ": 5, "MJJ": 6,
-    "JJA": 7, "JAS": 8, "ASO": 9, "SON": 10, "OND": 11, "NDJ": 12,
+    "DJF": 1,
+    "JFM": 2,
+    "FMA": 3,
+    "MAM": 4,
+    "AMJ": 5,
+    "MJJ": 6,
+    "JJA": 7,
+    "JAS": 8,
+    "ASO": 9,
+    "SON": 10,
+    "OND": 11,
+    "NDJ": 12,
 }
 
 
@@ -38,12 +48,12 @@ def load_oni(
         DataFrame con columnas: fecha, oni, fase, intensidad.
     """
     if path and Path(path).exists():
-        df = pd.read_csv(path, sep=r"\s+", skiprows=1,
-                         names=["year", "season", "anom", "total"])
+        df = pd.read_csv(path, sep=r"\s+", skiprows=1, names=["year", "season", "anom", "total"])
     else:
         try:
-            df = pd.read_csv(_ONI_URL, sep=r"\s+", skiprows=1,
-                             names=["year", "season", "anom", "total"])
+            df = pd.read_csv(
+                _ONI_URL, sep=r"\s+", skiprows=1, names=["year", "season", "anom", "total"]
+            )
             logger.info("ONI descargado de NOAA")
         except Exception as e:
             logger.warning("No se pudo descargar ONI: %s. Devolviendo DataFrame vacío.", e)
@@ -92,7 +102,8 @@ def enso_dummy(df: pd.DataFrame, oni_df: pd.DataFrame, date_col: str) -> pd.Data
     oni_monthly["_merge_date"] = oni_monthly["fecha"].dt.to_period("M").dt.to_timestamp()
     result = result.merge(
         oni_monthly[["_merge_date", "oni", "fase", "intensidad"]],
-        on="_merge_date", how="left",
+        on="_merge_date",
+        how="left",
     ).drop(columns=["_merge_date"])
     dummies = pd.get_dummies(result["fase"], prefix="enso", drop_first=False)
     return pd.concat([result, dummies], axis=1)
@@ -123,8 +134,7 @@ def enso_lagged(
     """
     lag = lag_meses
     if lag is None:
-        lag = ENSO_LAG_MESES.get(linea_tematica or "default",
-                                  ENSO_LAG_MESES["default"])
+        lag = ENSO_LAG_MESES.get(linea_tematica or "default", ENSO_LAG_MESES["default"])
 
     logger.info("ENSO lag aplicado: %d meses (línea: %s)", lag, linea_tematica or "default")
 
@@ -138,12 +148,15 @@ def enso_lagged(
 
     suffix = f"_lag{lag}"
     result = result.merge(
-        oni_shifted[["_merge_date", "oni", "fase", "intensidad"]].rename(columns={
-            "oni": f"oni{suffix}",
-            "fase": f"fase{suffix}",
-            "intensidad": f"intensidad{suffix}",
-        }),
-        on="_merge_date", how="left",
+        oni_shifted[["_merge_date", "oni", "fase", "intensidad"]].rename(
+            columns={
+                "oni": f"oni{suffix}",
+                "fase": f"fase{suffix}",
+                "intensidad": f"intensidad{suffix}",
+            }
+        ),
+        on="_merge_date",
+        how="left",
     ).drop(columns=["_merge_date"])
 
     dummies = pd.get_dummies(result[f"fase{suffix}"], prefix=f"enso{suffix}", drop_first=False)

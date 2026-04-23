@@ -18,10 +18,13 @@ from estadistica_ambiental.reporting.forecast_report import (
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def sample_data():
-    y_true = pd.Series(np.random.default_rng(0).normal(20, 5, 30),
-                       index=pd.date_range("2023-01-01", periods=30, freq="D"))
+    y_true = pd.Series(
+        np.random.default_rng(0).normal(20, 5, 30),
+        index=pd.date_range("2023-01-01", periods=30, freq="D"),
+    )
     predictions = {
         "SARIMAX": np.random.default_rng(1).normal(20, 5, 30),
         "XGBoost": np.random.default_rng(2).normal(20, 5, 30),
@@ -36,6 +39,7 @@ def sample_data():
 # ---------------------------------------------------------------------------
 # forecast_report — función principal
 # ---------------------------------------------------------------------------
+
 
 class TestForecastReport:
     def test_creates_html_file(self, tmp_path, sample_data):
@@ -68,6 +72,7 @@ class TestForecastReport:
 
     def test_returns_path_object(self, tmp_path, sample_data):
         from pathlib import Path
+
         y_true, preds, mets = sample_data
         out = tmp_path / "report.html"
         result = forecast_report(y_true, preds, mets, output=str(out))
@@ -76,8 +81,7 @@ class TestForecastReport:
     def test_unit_in_output(self, tmp_path, sample_data):
         y_true, preds, mets = sample_data
         out = tmp_path / "report.html"
-        forecast_report(y_true, preds, mets, output=str(out),
-                        variable_name="PM2.5", unit="µg/m³")
+        forecast_report(y_true, preds, mets, output=str(out), variable_name="PM2.5", unit="µg/m³")
         content = out.read_text(encoding="utf-8")
         assert "µg/m³" in content
 
@@ -85,6 +89,7 @@ class TestForecastReport:
 # ---------------------------------------------------------------------------
 # _section_summary
 # ---------------------------------------------------------------------------
+
 
 class TestSectionSummary:
     def test_empty_metrics_returns_empty_string(self):
@@ -108,6 +113,7 @@ class TestSectionSummary:
 # _section_metrics_table
 # ---------------------------------------------------------------------------
 
+
 class TestSectionMetricsTable:
     def test_empty_metrics_returns_empty_string(self):
         assert _section_metrics_table({}) == ""
@@ -121,7 +127,7 @@ class TestSectionMetricsTable:
     def test_best_model_marked(self):
         metrics = {
             "Good": {"rmse": 1.0},
-            "Bad":  {"rmse": 5.0},
+            "Bad": {"rmse": 5.0},
         }
         result = _section_metrics_table(metrics)
         assert "best" in result
@@ -136,6 +142,7 @@ class TestSectionMetricsTable:
 # ---------------------------------------------------------------------------
 # _section_series
 # ---------------------------------------------------------------------------
+
 
 class TestSectionSeries:
     def test_contains_canvas(self):
@@ -166,6 +173,7 @@ class TestSectionSeries:
 # ---------------------------------------------------------------------------
 # _build_body
 # ---------------------------------------------------------------------------
+
 
 class TestBuildBody:
     def test_returns_string(self):

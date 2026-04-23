@@ -19,13 +19,24 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 # Paleta ambiental consistente
-_PALETTE = ["#1a5276", "#1e8449", "#a04000", "#7d3c98", "#17a589",
-            "#b7950b", "#2e86c1", "#cb4335", "#117a65", "#6e2f8e"]
+_PALETTE = [
+    "#1a5276",
+    "#1e8449",
+    "#a04000",
+    "#7d3c98",
+    "#17a589",
+    "#b7950b",
+    "#2e86c1",
+    "#cb4335",
+    "#117a65",
+    "#6e2f8e",
+]
 
 
 # ---------------------------------------------------------------------------
 # Series temporales
 # ---------------------------------------------------------------------------
+
 
 def plot_series(
     df: pd.DataFrame,
@@ -43,13 +54,17 @@ def plot_series(
         groups = df[group_col].dropna().unique()
         for i, grp in enumerate(groups):
             sub = df[df[group_col] == grp].sort_values(date_col)
-            ax.plot(sub[date_col], sub[value_col],
-                    label=str(grp), color=_PALETTE[i % len(_PALETTE)], linewidth=1.2)
+            ax.plot(
+                sub[date_col],
+                sub[value_col],
+                label=str(grp),
+                color=_PALETTE[i % len(_PALETTE)],
+                linewidth=1.2,
+            )
         ax.legend(fontsize=8, ncol=min(4, len(groups)))
     else:
         data = df.sort_values(date_col)
-        ax.plot(data[date_col], data[value_col],
-                color=_PALETTE[0], linewidth=1.2)
+        ax.plot(data[date_col], data[value_col], color=_PALETTE[0], linewidth=1.2)
 
     ax.set_title(title or f"{value_col} en el tiempo", fontweight="bold")
     ax.set_xlabel(date_col)
@@ -72,8 +87,7 @@ def plot_missing_heatmap(
     missing = num_df.isnull().astype(int)
 
     fig, ax = plt.subplots(figsize=figsize)
-    ax.imshow(missing.T, aspect="auto", cmap="RdYlGn_r",
-              vmin=0, vmax=1, interpolation="none")
+    ax.imshow(missing.T, aspect="auto", cmap="RdYlGn_r", vmin=0, vmax=1, interpolation="none")
 
     ax.set_yticks(range(len(missing.columns)))
     ax.set_yticklabels(missing.columns, fontsize=8)
@@ -83,8 +97,7 @@ def plot_missing_heatmap(
     # Porcentaje al lado derecho
     for i, col in enumerate(missing.columns):
         pct = missing[col].mean() * 100
-        ax.text(len(missing) + 1, i, f"{pct:.0f}%",
-                va="center", fontsize=7, color="#555")
+        ax.text(len(missing) + 1, i, f"{pct:.0f}%", va="center", fontsize=7, color="#555")
 
     fig.tight_layout()
     return fig
@@ -93,6 +106,7 @@ def plot_missing_heatmap(
 # ---------------------------------------------------------------------------
 # Distribuciones
 # ---------------------------------------------------------------------------
+
 
 def plot_histogram(
     df: pd.DataFrame,
@@ -105,6 +119,7 @@ def plot_histogram(
     """Histograma con KDE superpuesta, opcional por grupo."""
     try:
         from scipy.stats import gaussian_kde
+
         has_scipy = True
     except ImportError:
         has_scipy = False
@@ -116,8 +131,14 @@ def plot_histogram(
         groups = df[group_col].dropna().unique()
         for i, grp in enumerate(groups):
             vals = df.loc[df[group_col] == grp, col].dropna()
-            ax.hist(vals, bins=bins, alpha=0.45, color=_PALETTE[i % len(_PALETTE)],
-                    label=str(grp), density=True)
+            ax.hist(
+                vals,
+                bins=bins,
+                alpha=0.45,
+                color=_PALETTE[i % len(_PALETTE)],
+                label=str(grp),
+                density=True,
+            )
             if has_scipy and len(vals) > 5:
                 xs = np.linspace(vals.min(), vals.max(), 200)
                 ax.plot(xs, gaussian_kde(vals)(xs), color=_PALETTE[i % len(_PALETTE)], lw=1.5)
@@ -155,8 +176,11 @@ def plot_boxplot(
             patch.set_alpha(0.7)
         ax.tick_params(axis="x", rotation=30)
     else:
-        ax.boxplot(df[value_col].dropna(), patch_artist=True,
-                   boxprops={"facecolor": _PALETTE[0], "alpha": 0.7})
+        ax.boxplot(
+            df[value_col].dropna(),
+            patch_artist=True,
+            boxprops={"facecolor": _PALETTE[0], "alpha": 0.7},
+        )
 
     ax.set_title(title or f"Boxplot de {value_col}", fontweight="bold")
     ax.set_ylabel(value_col)
@@ -168,6 +192,7 @@ def plot_boxplot(
 # Correlaciones
 # ---------------------------------------------------------------------------
 
+
 def plot_correlation_heatmap(
     df: pd.DataFrame,
     method: str = "pearson",
@@ -175,12 +200,20 @@ def plot_correlation_heatmap(
     figsize: tuple = (8, 7),
 ) -> plt.Figure:
     """Heatmap de correlaciones con anotaciones numéricas."""
-    num_df = df[cols].select_dtypes(include="number") if cols else df.select_dtypes(include="number")
+    num_df = (
+        df[cols].select_dtypes(include="number") if cols else df.select_dtypes(include="number")
+    )
     if num_df.shape[1] < 2:
         logger.warning("Se necesitan al menos 2 columnas numéricas para correlación")
         fig, ax = plt.subplots()
-        ax.text(0.5, 0.5, "Insuficientes columnas numéricas",
-                ha="center", va="center", transform=ax.transAxes)
+        ax.text(
+            0.5,
+            0.5,
+            "Insuficientes columnas numéricas",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
         return fig
 
     corr = num_df.corr(method=method)
@@ -200,8 +233,7 @@ def plot_correlation_heatmap(
         for j in range(n):
             val = corr.iloc[i, j]
             color = "white" if abs(val) > 0.6 else "black"
-            ax.text(j, i, f"{val:.2f}", ha="center", va="center",
-                    fontsize=7, color=color)
+            ax.text(j, i, f"{val:.2f}", ha="center", va="center", fontsize=7, color=color)
 
     ax.set_title(f"Correlación {method.capitalize()}", fontweight="bold")
     fig.tight_layout()
@@ -211,6 +243,7 @@ def plot_correlation_heatmap(
 # ---------------------------------------------------------------------------
 # Estacionalidad y descomposición
 # ---------------------------------------------------------------------------
+
 
 def plot_seasonal_means(
     df: pd.DataFrame,
@@ -226,8 +259,20 @@ def plot_seasonal_means(
 
     if period == "month":
         data["period"] = data[date_col].dt.month
-        labels = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",
-                  "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+        labels = [
+            "Ene",
+            "Feb",
+            "Mar",
+            "Abr",
+            "May",
+            "Jun",
+            "Jul",
+            "Ago",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dic",
+        ]
         xlabel = "Mes"
     elif period == "weekday":
         data["period"] = data[date_col].dt.dayofweek
@@ -246,10 +291,23 @@ def plot_seasonal_means(
     periods = grouped["period"].values
     tick_labels = [labels[p] for p in periods] if len(labels) > max(periods) else periods
 
-    ax.bar(range(len(periods)), grouped["mean"], color=_PALETTE[0],
-           alpha=0.75, width=0.65, label="Media")
-    ax.errorbar(range(len(periods)), grouped["mean"], yerr=grouped["std"],
-                fmt="none", color="#555", capsize=4, linewidth=1)
+    ax.bar(
+        range(len(periods)),
+        grouped["mean"],
+        color=_PALETTE[0],
+        alpha=0.75,
+        width=0.65,
+        label="Media",
+    )
+    ax.errorbar(
+        range(len(periods)),
+        grouped["mean"],
+        yerr=grouped["std"],
+        fmt="none",
+        color="#555",
+        capsize=4,
+        linewidth=1,
+    )
 
     ax.set_xticks(range(len(periods)))
     ax.set_xticklabels(tick_labels, fontsize=9)
@@ -263,6 +321,7 @@ def plot_seasonal_means(
 # ---------------------------------------------------------------------------
 # Múltiples variables
 # ---------------------------------------------------------------------------
+
 
 def plot_multi_series(
     df: pd.DataFrame,
@@ -308,8 +367,14 @@ def plot_scatter(
         for i, cat in enumerate(cats):
             mask = df[color_col] == cat
             sub = df.loc[mask, [x_col, y_col]].dropna()
-            ax.scatter(sub[x_col], sub[y_col], label=str(cat),
-                       color=_PALETTE[i % len(_PALETTE)], alpha=0.6, s=25)
+            ax.scatter(
+                sub[x_col],
+                sub[y_col],
+                label=str(cat),
+                color=_PALETTE[i % len(_PALETTE)],
+                alpha=0.6,
+                s=25,
+            )
         ax.legend(fontsize=8)
     else:
         ax.scatter(data[x_col], data[y_col], color=_PALETTE[0], alpha=0.5, s=25)
@@ -330,6 +395,7 @@ def plot_scatter(
 # ---------------------------------------------------------------------------
 # Helper interno
 # ---------------------------------------------------------------------------
+
 
 def _format_date_axis(ax: plt.Axes, dates: pd.Series) -> None:
     """Auto-formato del eje de fechas según el rango temporal."""

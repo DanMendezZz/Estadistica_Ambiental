@@ -14,6 +14,7 @@ from estadistica_ambiental.inference.intervals import exceedance_report
 # exceedance_report
 # ===========================================================================
 
+
 class TestExceedanceReport:
     def test_pm25_returns_4_rows(self):
         """PM2.5 tiene 4 normas registradas (CO 24h, CO anual, OMS 24h, OMS anual)."""
@@ -53,7 +54,7 @@ class TestExceedanceReport:
 
     def test_od_min_threshold(self):
         """OD tiene umbral mínimo (excedencia = estar por debajo)."""
-        s = pd.Series([6.0, 2.0, 8.0, 1.5])   # 2.0 y 1.5 < 4.0 mg/L
+        s = pd.Series([6.0, 2.0, 8.0, 1.5])  # 2.0 y 1.5 < 4.0 mg/L
         rep = exceedance_report(s, variable="od")
         assert not rep.empty
         row = rep[rep["tipo"] == "mínimo"].iloc[0]
@@ -61,7 +62,7 @@ class TestExceedanceReport:
 
     def test_pct_exceed_calculation(self):
         """100 valores, 10 superan el umbral → pct_exceed ≈ 10%."""
-        vals = [50.0] * 10 + [5.0] * 90   # 10 > 37 µg/m³ (Res 2254 24h)
+        vals = [50.0] * 10 + [5.0] * 90  # 10 > 37 µg/m³ (Res 2254 24h)
         s = pd.Series(vals)
         rep = exceedance_report(s, variable="pm25")
         norma_24h = rep[rep["norma"].str.contains("24h") & rep["norma"].str.contains("2254")]
@@ -79,26 +80,31 @@ class TestExceedanceReport:
 # enso_lagged
 # ===========================================================================
 
+
 class TestEnsoLagged:
     @pytest.fixture
     def mock_oni(self):
         """ONI ficticio con 5 años de datos mensuales."""
         fechas = pd.date_range("2020-01-01", periods=60, freq="MS")
         oni_vals = np.sin(np.linspace(0, 4 * np.pi, 60)) * 1.5
-        return pd.DataFrame({
-            "fecha": fechas,
-            "oni": oni_vals,
-            "fase": [_classify_enso_intensity(v) for v in oni_vals],
-            "intensidad": [_classify_enso_intensity(v) for v in oni_vals],
-        })
+        return pd.DataFrame(
+            {
+                "fecha": fechas,
+                "oni": oni_vals,
+                "fase": [_classify_enso_intensity(v) for v in oni_vals],
+                "intensidad": [_classify_enso_intensity(v) for v in oni_vals],
+            }
+        )
 
     @pytest.fixture
     def sample_df(self):
         fechas = pd.date_range("2020-07-01", periods=30, freq="MS")
-        return pd.DataFrame({
-            "fecha": fechas,
-            "caudal": np.random.gamma(3, 10, 30),
-        })
+        return pd.DataFrame(
+            {
+                "fecha": fechas,
+                "caudal": np.random.gamma(3, 10, 30),
+            }
+        )
 
     def test_adds_oni_lag_column(self, sample_df, mock_oni):
         result = enso_lagged(sample_df, mock_oni, date_col="fecha", lag_meses=3)
@@ -117,14 +123,14 @@ class TestEnsoLagged:
     def test_linea_tematica_applies_correct_lag(self, sample_df, mock_oni):
         """oferta_hidrica usa lag=4 según config.ENSO_LAG_MESES."""
         expected_lag = ENSO_LAG_MESES["oferta_hidrica"]
-        result = enso_lagged(sample_df, mock_oni, date_col="fecha",
-                             linea_tematica="oferta_hidrica")
+        result = enso_lagged(sample_df, mock_oni, date_col="fecha", linea_tematica="oferta_hidrica")
         assert f"oni_lag{expected_lag}" in result.columns
 
     def test_lag_meses_overrides_linea_tematica(self, sample_df, mock_oni):
         """lag_meses explícito tiene precedencia sobre linea_tematica."""
-        result = enso_lagged(sample_df, mock_oni, date_col="fecha",
-                             linea_tematica="oferta_hidrica", lag_meses=1)
+        result = enso_lagged(
+            sample_df, mock_oni, date_col="fecha", linea_tematica="oferta_hidrica", lag_meses=1
+        )
         assert "oni_lag1" in result.columns
 
     def test_original_columns_preserved(self, sample_df, mock_oni):
@@ -138,25 +144,32 @@ class TestEnsoLagged:
 
 
 class TestEnsoClassification:
-    @pytest.mark.parametrize("oni,expected_fase", [
-        (2.0,  "niño"),
-        (0.8,  "niño"),
-        (0.3,  "neutro"),
-        (-0.3, "neutro"),
-        (-0.8, "niña"),
-        (-2.0, "niña"),
-    ])
+    @pytest.mark.parametrize(
+        "oni,expected_fase",
+        [
+            (2.0, "niño"),
+            (0.8, "niño"),
+            (0.3, "neutro"),
+            (-0.3, "neutro"),
+            (-0.8, "niña"),
+            (-2.0, "niña"),
+        ],
+    )
     def test_fase_classification(self, oni, expected_fase):
         from estadistica_ambiental.features.climate import _classify_enso
+
         assert _classify_enso(oni) == expected_fase
 
-    @pytest.mark.parametrize("oni,expected_intensity", [
-        (2.0,  "fuerte"),
-        (0.8,  "moderado"),
-        (0.3,  "neutro"),
-        (-0.8, "moderado"),
-        (-2.0, "fuerte"),
-    ])
+    @pytest.mark.parametrize(
+        "oni,expected_intensity",
+        [
+            (2.0, "fuerte"),
+            (0.8, "moderado"),
+            (0.3, "neutro"),
+            (-0.8, "moderado"),
+            (-2.0, "fuerte"),
+        ],
+    )
     def test_intensity_classification(self, oni, expected_intensity):
         assert _classify_enso_intensity(oni) == expected_intensity
 
@@ -171,20 +184,24 @@ class TestEnsoClassification:
 # compliance_report (integración)
 # ===========================================================================
 
+
 class TestComplianceReport:
     @pytest.fixture
     def air_quality_df(self):
         np.random.seed(42)
         n = 60
-        return pd.DataFrame({
-            "fecha":    pd.date_range("2023-01-01", periods=n, freq="D"),
-            "pm25":     np.random.gamma(4, 8, n),    # algunos superarán norma 37
-            "pm10":     np.random.gamma(5, 10, n),
-            "estacion": ["Kennedy"] * n,
-        })
+        return pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=n, freq="D"),
+                "pm25": np.random.gamma(4, 8, n),  # algunos superarán norma 37
+                "pm10": np.random.gamma(5, 10, n),
+                "estacion": ["Kennedy"] * n,
+            }
+        )
 
     def test_creates_html_file(self, air_quality_df, tmp_path):
         from estadistica_ambiental.reporting.compliance_report import compliance_report
+
         out = tmp_path / "test_compliance.html"
         result = compliance_report(
             air_quality_df,
@@ -194,10 +211,11 @@ class TestComplianceReport:
             output=str(out),
         )
         assert result.exists()
-        assert result.stat().st_size > 1000    # el HTML tiene contenido real
+        assert result.stat().st_size > 1000  # el HTML tiene contenido real
 
     def test_html_contains_variable_names(self, air_quality_df, tmp_path):
         from estadistica_ambiental.reporting.compliance_report import compliance_report
+
         out = tmp_path / "test_compliance2.html"
         compliance_report(
             air_quality_df,
@@ -207,10 +225,11 @@ class TestComplianceReport:
         )
         content = out.read_text(encoding="utf-8")
         assert "PM25" in content
-        assert "2254" in content    # menciona Res. 2254
+        assert "2254" in content  # menciona Res. 2254
 
     def test_html_contains_semaforo(self, air_quality_df, tmp_path):
         from estadistica_ambiental.reporting.compliance_report import compliance_report
+
         out = tmp_path / "test_compliance3.html"
         compliance_report(
             air_quality_df,
@@ -223,6 +242,7 @@ class TestComplianceReport:
 
     def test_custom_threshold_included(self, air_quality_df, tmp_path):
         from estadistica_ambiental.reporting.compliance_report import compliance_report
+
         out = tmp_path / "test_compliance4.html"
         compliance_report(
             air_quality_df,
@@ -236,12 +256,15 @@ class TestComplianceReport:
 
     def test_water_quality_variables(self, tmp_path):
         from estadistica_ambiental.reporting.compliance_report import compliance_report
-        df = pd.DataFrame({
-            "fecha": pd.date_range("2023-01-01", periods=30, freq="D"),
-            "od":    np.random.uniform(2, 10, 30),
-            "dbo5":  np.random.uniform(5, 150, 30),
-            "ph":    np.random.uniform(6, 9.5, 30),
-        })
+
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=30, freq="D"),
+                "od": np.random.uniform(2, 10, 30),
+                "dbo5": np.random.uniform(5, 150, 30),
+                "ph": np.random.uniform(6, 9.5, 30),
+            }
+        )
         out = tmp_path / "test_water.html"
         result = compliance_report(
             df,
@@ -255,6 +278,7 @@ class TestComplianceReport:
     def test_missing_variable_skipped(self, air_quality_df, tmp_path):
         """Variable que no existe en el df no rompe el reporte."""
         from estadistica_ambiental.reporting.compliance_report import compliance_report
+
         out = tmp_path / "test_skip.html"
         result = compliance_report(
             air_quality_df,

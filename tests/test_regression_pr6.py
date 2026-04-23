@@ -15,6 +15,7 @@ Bugs covered:
   bug_034  flag_spatial_episodes neighbor threshold contaminated by cap_absoluto
   merged_bug_007  rolling median computed over the very outliers being replaced
 """
+
 from __future__ import annotations
 
 import math
@@ -33,8 +34,10 @@ from estadistica_ambiental.preprocessing.air_quality import flag_spatial_episode
 # Shared helpers
 # ---------------------------------------------------------------------------
 
+
 class _NullSpec:
     """Minimal ModelSpec stub: no warm_starts, no build_model."""
+
     name = "null_test"
 
 
@@ -49,19 +52,22 @@ def _make_station_df(
     for station, values in station_values.items():
         lat, lon = station_coords[station]
         for i, v in enumerate(values):
-            rows.append({
-                "dt": base + pd.Timedelta(hours=i),
-                "station": station,
-                "value": v,
-                "lat": lat,
-                "lon": lon,
-            })
+            rows.append(
+                {
+                    "dt": base + pd.Timedelta(hours=i),
+                    "station": station,
+                    "value": v,
+                    "lat": lat,
+                    "lon": lon,
+                }
+            )
     return pd.DataFrame(rows)
 
 
 # ---------------------------------------------------------------------------
 # bug_029 — detect_anomalies silently zero anomalies with NaN
 # ---------------------------------------------------------------------------
+
 
 class TestBug029:
     def test_outlier_detected_despite_single_nan(self):
@@ -74,7 +80,7 @@ class TestBug029:
         # 20 perfect predictions (error_rel=0) + 1 NaN gap + 1 clear outlier
         n_bg = 20
         y_true = np.concatenate([np.arange(1.0, n_bg + 1), [np.nan], [100.0]])
-        y_pred = np.concatenate([np.arange(1.0, n_bg + 1), [5.0],    [1.0]])
+        y_pred = np.concatenate([np.arange(1.0, n_bg + 1), [5.0], [1.0]])
 
         out = detect_anomalies(y_true, y_pred)
 
@@ -103,6 +109,7 @@ class TestBug029:
 # bug_001 — anomaly_summary threshold_value inconsistent
 # ---------------------------------------------------------------------------
 
+
 class TestBug001:
     def test_threshold_value_matches_detect_anomalies(self):
         """threshold_value in summary must be the stored umbral (rounded to 4 dp).
@@ -113,7 +120,7 @@ class TestBug001:
         Tolerance = 5e-4 (one unit in the last decimal place after rounding).
         """
         y_true = np.array([1.0, 2.0, 3.0, 4.0, 100.0])
-        y_pred = np.array([1.0, 2.0, 3.0, 4.0,   1.0])
+        y_pred = np.array([1.0, 2.0, 3.0, 4.0, 1.0])
 
         df = detect_anomalies(y_true, y_pred, threshold=3.0)
         summary = anomaly_summary(df)
@@ -134,12 +141,12 @@ class TestBug001:
         summary = anomaly_summary(df)
 
         err_rel = df["error_rel"].values
-        expected_std_ddof0 = float(np.nanstd(err_rel))        # ddof=0 (numpy)
-        wrong_std_ddof1    = float(np.nanstd(err_rel, ddof=1)) # ddof=1 (pandas)
+        expected_std_ddof0 = float(np.nanstd(err_rel))  # ddof=0 (numpy)
+        wrong_std_ddof1 = float(np.nanstd(err_rel, ddof=1))  # ddof=1 (pandas)
 
         # Summary must be close to ddof=0, NOT to ddof=1
         diff_correct = abs(summary["std_error_rel"] - expected_std_ddof0)
-        diff_wrong   = abs(summary["std_error_rel"] - wrong_std_ddof1)
+        diff_wrong = abs(summary["std_error_rel"] - wrong_std_ddof1)
         assert diff_correct < 5e-4, (
             f"std_error_rel={summary['std_error_rel']} differs from ddof=0 value "
             f"{expected_std_ddof0} by {diff_correct:.6f}"
@@ -155,10 +162,11 @@ class TestBug001:
 # bug_010 — nrmse astronomical values with zero variance
 # ---------------------------------------------------------------------------
 
+
 class TestBug010:
     def test_nrmse_zero_variance_returns_nan(self):
         """A flat-lined y_true (zero std) must return nan, not rmse * 1e8."""
-        y_true = np.full(24, 150.0)   # sensor saturated at rail
+        y_true = np.full(24, 150.0)  # sensor saturated at rail
         y_pred = np.full(24, 148.0)
 
         result = nrmse(y_true, y_pred)
@@ -180,6 +188,7 @@ class TestBug010:
 # ---------------------------------------------------------------------------
 # bug_031 — evaluate uses PM2.5 breakpoints for every pollutant
 # ---------------------------------------------------------------------------
+
 
 class TestBug031:
     def test_pm10_breakpoints_differ_from_pm25(self):
@@ -211,6 +220,7 @@ class TestBug031:
 # ---------------------------------------------------------------------------
 # bug_003 — hit_rate_ica inflates accuracy with NaN
 # ---------------------------------------------------------------------------
+
 
 class TestBug003:
     def test_nan_pairs_not_counted_as_hit(self):
@@ -244,6 +254,7 @@ class TestBug003:
 # bug_028 — optimize_model swallows TrialPruned
 # ---------------------------------------------------------------------------
 
+
 class TestBug028:
     def test_trial_pruned_not_recorded_as_complete_with_penalty(self):
         """TrialPruned must reach Optuna so trials are PRUNED, not COMPLETE=1e6."""
@@ -267,7 +278,8 @@ class TestBug028:
             pytest.skip("study is None — cannot inspect trial states")
 
         complete_with_penalty = [
-            t for t in result.study.trials
+            t
+            for t in result.study.trials
             if t.state == optuna.trial.TrialState.COMPLETE
             and t.value is not None
             and abs(t.value - OPTIMIZER_PENALTY) < 1.0
@@ -282,9 +294,11 @@ class TestBug028:
 # bug_030 — OPTIMIZER_PENALTY wrong sign for direction='maximize'
 # ---------------------------------------------------------------------------
 
+
 class TestBug030:
     def test_all_fail_maximize_best_score_is_negative_penalty(self):
         """When all trials fail in a maximize study, best_score = -OPTIMIZER_PENALTY."""
+
         def always_fails(trial):
             trial.suggest_float("x", 0.0, 1.0)
             raise ValueError("simulated failure")
@@ -306,6 +320,7 @@ class TestBug030:
 
     def test_all_fail_minimize_best_score_is_positive_penalty(self):
         """Minimize direction: all-fail fallback must still be +OPTIMIZER_PENALTY."""
+
         def always_fails(trial):
             trial.suggest_float("x", 0.0, 1.0)
             raise ValueError("simulated failure")
@@ -324,6 +339,7 @@ class TestBug030:
 # ---------------------------------------------------------------------------
 # merged_bug_017 — fallback discards good work, wrong n_trials
 # ---------------------------------------------------------------------------
+
 
 class TestMergedBug017:
     def test_fallback_uses_study_best_when_available(self):
@@ -352,6 +368,7 @@ class TestMergedBug017:
 
     def test_n_trials_reflects_actual_count(self):
         """n_trials must equal len(study.trials), not the requested budget."""
+
         def obj(trial):
             return trial.suggest_float("x", 0.0, 1.0)
 
@@ -372,6 +389,7 @@ class TestMergedBug017:
 
         class SpecWithBuild:
             name = "with_build"
+
             def build_model(self, params):
                 built[0] = True
                 return object()
@@ -394,6 +412,7 @@ class TestMergedBug017:
 # ---------------------------------------------------------------------------
 # bug_034 — neighbor threshold contaminated by cap_absoluto
 # ---------------------------------------------------------------------------
+
 
 class TestBug034:
     def _make_episode_df(self) -> pd.DataFrame:
@@ -421,10 +440,12 @@ class TestBug034:
 
         rows = []
         for i, t in enumerate(times):
-            rows.append({"dt": t, "station": "sensor_A", "value": val_a[i],
-                         "lat": 4.600, "lon": -74.080})
-            rows.append({"dt": t, "station": "sensor_B", "value": val_b[i],
-                         "lat": 4.627, "lon": -74.065})
+            rows.append(
+                {"dt": t, "station": "sensor_A", "value": val_a[i], "lat": 4.600, "lon": -74.080}
+            )
+            rows.append(
+                {"dt": t, "station": "sensor_B", "value": val_b[i], "lat": 4.627, "lon": -74.065}
+            )
         return pd.DataFrame(rows)
 
     def test_cap_absoluto_values_are_flagged_and_preserved(self):
@@ -447,9 +468,7 @@ class TestBug034:
             min_neighbor_stations=1,
         )
         # The 5000 spike in sensor_A must have been tagged cap_absoluto
-        spike_rows = result[
-            (result["station"] == "sensor_A") & (result["value"] == 5000.0)
-        ]
+        spike_rows = result[(result["station"] == "sensor_A") & (result["value"] == 5000.0)]
         assert not spike_rows.empty
         assert (spike_rows["flag_episode"] == "cap_absoluto").all()
 
@@ -477,6 +496,7 @@ class TestBug034:
 # merged_bug_007 — rolling median over the very outliers being replaced
 # ---------------------------------------------------------------------------
 
+
 class TestMergedBug007:
     def _make_short_cluster_df(self) -> pd.DataFrame:
         """
@@ -497,13 +517,15 @@ class TestMergedBug007:
         values[51] = 510.0
         values[52] = 505.0
 
-        return pd.DataFrame({
-            "dt": times,
-            "station": "solo",
-            "value": values,
-            "lat": 4.60,
-            "lon": -74.08,
-        })
+        return pd.DataFrame(
+            {
+                "dt": times,
+                "station": "solo",
+                "value": values,
+                "lat": 4.60,
+                "lon": -74.08,
+            }
+        )
 
     def test_imputed_values_not_contaminated_by_outliers(self):
         """

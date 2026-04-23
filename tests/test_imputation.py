@@ -12,6 +12,7 @@ from estadistica_ambiental.preprocessing.imputation import impute
 # Fixture
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def df_with_gaps():
     np.random.seed(0)
@@ -19,16 +20,19 @@ def df_with_gaps():
     vals = np.random.normal(20, 5, n)
     idx_na = [5, 10, 20, 21, 22, 40]
     vals[idx_na] = np.nan
-    return pd.DataFrame({
-        "fecha": pd.date_range("2023-01-01", periods=n, freq="D"),
-        "pm25": vals,
-        "temperatura": np.random.normal(15, 3, n),
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2023-01-01", periods=n, freq="D"),
+            "pm25": vals,
+            "temperatura": np.random.normal(15, 3, n),
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # Métodos básicos
 # ---------------------------------------------------------------------------
+
 
 class TestImpute:
     def test_linear_removes_nans(self, df_with_gaps):

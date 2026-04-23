@@ -48,13 +48,14 @@ def flag_outliers(
         n = int(mask.sum())
 
         if n > 0:
-            logger.info("'%s': %d outliers detectados por %s [%.2f, %.2f]",
-                        col, n, method, lo, hi)
+            logger.info("'%s': %d outliers detectados por %s [%.2f, %.2f]", col, n, method, lo, hi)
 
         if treat and n > 0:
             if treatment == "clip":
                 result[col] = s.clip(lower=lo, upper=hi)
-                logger.warning("'%s': %d valores recortados a [%.2f, %.2f] — ADR-002", col, n, lo, hi)
+                logger.warning(
+                    "'%s': %d valores recortados a [%.2f, %.2f] — ADR-002", col, n, lo, hi
+                )
             elif treatment == "nan":
                 result.loc[mask, col] = np.nan
                 logger.warning("'%s': %d valores reemplazados por NaN — ADR-002", col, n)

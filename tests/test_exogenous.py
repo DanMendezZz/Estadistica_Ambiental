@@ -16,60 +16,74 @@ from estadistica_ambiental.features.exogenous import (
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def target_df():
-    return pd.DataFrame({
-        "fecha": pd.date_range("2023-01-01", periods=30, freq="D"),
-        "pm25": np.random.default_rng(0).normal(20, 5, 30),
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2023-01-01", periods=30, freq="D"),
+            "pm25": np.random.default_rng(0).normal(20, 5, 30),
+        }
+    )
 
 
 @pytest.fixture
 def exog_df():
-    return pd.DataFrame({
-        "fecha": pd.date_range("2023-01-01", periods=30, freq="D"),
-        "temperatura": np.random.default_rng(1).normal(15, 3, 30),
-        "humedad": np.random.default_rng(2).normal(75, 10, 30),
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2023-01-01", periods=30, freq="D"),
+            "temperatura": np.random.default_rng(1).normal(15, 3, 30),
+            "humedad": np.random.default_rng(2).normal(75, 10, 30),
+        }
+    )
 
 
 @pytest.fixture
 def meteo_df():
     np.random.seed(42)
     n = 50
-    return pd.DataFrame({
-        "temp": np.random.normal(20, 5, n),
-        "viento": np.abs(np.random.normal(3, 1, n)),
-        "humedad": np.random.normal(70, 10, n),
-        "lluvia": np.abs(np.random.normal(2, 3, n)),
-    })
+    return pd.DataFrame(
+        {
+            "temp": np.random.normal(20, 5, n),
+            "viento": np.abs(np.random.normal(3, 1, n)),
+            "humedad": np.random.normal(70, 10, n),
+            "lluvia": np.abs(np.random.normal(2, 3, n)),
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # align_exogenous
 # ---------------------------------------------------------------------------
 
+
 class TestAlignExogenous:
     def test_returns_dataframe(self, target_df, exog_df):
         result = align_exogenous(
-            target_df, exog_df,
-            date_col_target="fecha", date_col_exog="fecha",
+            target_df,
+            exog_df,
+            date_col_target="fecha",
+            date_col_exog="fecha",
             exog_cols=["temperatura", "humedad"],
         )
         assert isinstance(result, pd.DataFrame)
 
     def test_exog_cols_added(self, target_df, exog_df):
         result = align_exogenous(
-            target_df, exog_df,
-            date_col_target="fecha", date_col_exog="fecha",
+            target_df,
+            exog_df,
+            date_col_target="fecha",
+            date_col_exog="fecha",
             exog_cols=["temperatura"],
         )
         assert "temperatura" in result.columns
 
     def test_same_row_count(self, target_df, exog_df):
         result = align_exogenous(
-            target_df, exog_df,
-            date_col_target="fecha", date_col_exog="fecha",
+            target_df,
+            exog_df,
+            date_col_target="fecha",
+            date_col_exog="fecha",
         )
         assert len(result) == len(target_df)
 
@@ -77,6 +91,7 @@ class TestAlignExogenous:
 # ---------------------------------------------------------------------------
 # create_exog_matrix
 # ---------------------------------------------------------------------------
+
 
 class TestCreateExogMatrix:
     def test_returns_train_and_future_keys(self, target_df):
@@ -107,6 +122,7 @@ class TestCreateExogMatrix:
 # ---------------------------------------------------------------------------
 # meteorological_features
 # ---------------------------------------------------------------------------
+
 
 class TestMeteorologicalFeatures:
     def test_heat_index_created(self, meteo_df):

@@ -139,9 +139,7 @@ def optimize_model(
 
     model_name: str = getattr(model_spec, "name", "desconocido")
     warm_starts: List[Dict[str, Any]] = (
-        list(model_spec.warm_starts)
-        if hasattr(model_spec, "warm_starts")
-        else []
+        list(model_spec.warm_starts) if hasattr(model_spec, "warm_starts") else []
     )
 
     # Envoltorio del objetivo con conteo de fallos consecutivos
@@ -259,6 +257,7 @@ def best_params(study: optuna.Study) -> Dict[str, Any]:
 def optimization_history(study: optuna.Study) -> "pd.DataFrame":
     """Historial de trials como DataFrame (requiere optuna visualización)."""
     import pandas as pd
+
     rows = [
         {"trial": t.number, "value": t.value, **t.params}
         for t in study.trials
@@ -270,6 +269,7 @@ def optimization_history(study: optuna.Study) -> "pd.DataFrame":
 # ---------------------------------------------------------------------------
 # Espacios de búsqueda predefinidos
 # ---------------------------------------------------------------------------
+
 
 def sarima_search_space(
     trial: optuna.Trial,
@@ -333,21 +333,25 @@ def optimize_sarima(
 
     def objective(trial: optuna.Trial) -> float:
         params = sarima_search_space(
-            trial, max_p=max_p, max_d=2, max_q=max_q,
-            max_P=2, max_D=1, max_Q=2,
+            trial,
+            max_p=max_p,
+            max_d=2,
+            max_q=max_q,
+            max_P=2,
+            max_D=1,
+            max_Q=2,
             seasonal_period=seasonal_period,
         )
         model = SARIMAModel(
             order=(params["p"], params["d"], params["q"]),
             seasonal_order=(params["P"], params["D"], params["Q"], params["s"]),
         )
-        result = walk_forward(
-            model, series, horizon=horizon, n_splits=n_splits, gap=gap
-        )
+        result = walk_forward(model, series, horizon=horizon, n_splits=n_splits, gap=gap)
         return result["metrics"].get("nrmse", 1e6)
 
     return optimize_model(
-        spec, objective,
+        spec,
+        objective,
         n_trials=n_trials,
         timeout=timeout,
         direction="minimize",
@@ -358,11 +362,11 @@ def optimize_sarima(
 def xgboost_search_space(trial: optuna.Trial) -> Dict[str, Any]:
     """Espacio de búsqueda estándar para XGBoost."""
     return {
-        "n_estimators":    trial.suggest_int("n_estimators", 50, 500),
-        "max_depth":       trial.suggest_int("max_depth", 3, 10),
-        "learning_rate":   trial.suggest_float("learning_rate", 1e-3, 0.3, log=True),
-        "subsample":       trial.suggest_float("subsample", 0.5, 1.0),
-        "colsample_bytree":trial.suggest_float("colsample_bytree", 0.5, 1.0),
-        "reg_alpha":       trial.suggest_float("reg_alpha", 1e-5, 10.0, log=True),
-        "reg_lambda":      trial.suggest_float("reg_lambda", 1e-5, 10.0, log=True),
+        "n_estimators": trial.suggest_int("n_estimators", 50, 500),
+        "max_depth": trial.suggest_int("max_depth", 3, 10),
+        "learning_rate": trial.suggest_float("learning_rate", 1e-3, 0.3, log=True),
+        "subsample": trial.suggest_float("subsample", 0.5, 1.0),
+        "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
+        "reg_alpha": trial.suggest_float("reg_alpha", 1e-5, 10.0, log=True),
+        "reg_lambda": trial.suggest_float("reg_lambda", 1e-5, 10.0, log=True),
     }

@@ -38,14 +38,14 @@ def impute(
     targets = [c for c in targets if c in result.columns]
 
     _dispatch = {
-        "ffill":        _ffill,
-        "bfill":        _bfill,
-        "linear":       _linear,
-        "mean":         _mean,
-        "median":       _median,
+        "ffill": _ffill,
+        "bfill": _bfill,
+        "linear": _linear,
+        "mean": _mean,
+        "median": _median,
         "rolling_mean": _rolling_mean,
-        "kalman":       _kalman,
-        "mice":         _mice,
+        "kalman": _kalman,
+        "mice": _mice,
     }
     if method not in _dispatch:
         raise ValueError(f"Método '{method}' no soportado. Opciones: {list(_dispatch)}")
@@ -64,6 +64,7 @@ def impute(
 # ---------------------------------------------------------------------------
 # Métodos individuales
 # ---------------------------------------------------------------------------
+
 
 def _ffill(s: pd.Series, **_) -> pd.Series:
     return s.ffill()

@@ -16,19 +16,23 @@ from estadistica_ambiental.preprocessing.resampling import (
 # Fixture
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def hourly_df():
     n = 72  # 3 días horarios
-    return pd.DataFrame({
-        "fecha": pd.date_range("2023-01-01", periods=n, freq="h"),
-        "pm25": np.random.default_rng(0).normal(20, 5, n),
-        "lluvia": np.abs(np.random.default_rng(1).normal(1, 2, n)),
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2023-01-01", periods=n, freq="h"),
+            "pm25": np.random.default_rng(0).normal(20, 5, n),
+            "lluvia": np.abs(np.random.default_rng(1).normal(1, 2, n)),
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # resample
 # ---------------------------------------------------------------------------
+
 
 class TestResample:
     def test_mean_reduces_rows(self, hourly_df):
@@ -42,8 +46,7 @@ class TestResample:
         assert result["pm25"].sum() > hourly_df["pm25"].mean()
 
     def test_dict_agg(self, hourly_df):
-        result = resample(hourly_df, "fecha", freq="D",
-                          agg={"pm25": "mean", "lluvia": "sum"})
+        result = resample(hourly_df, "fecha", freq="D", agg={"pm25": "mean", "lluvia": "sum"})
         assert "pm25" in result.columns
         assert "lluvia" in result.columns
 
@@ -65,6 +68,7 @@ class TestResample:
 # align_frequencies
 # ---------------------------------------------------------------------------
 
+
 class TestAlignFrequencies:
     def test_returns_list(self, hourly_df):
         result = align_frequencies([hourly_df, hourly_df], ["fecha", "fecha"], target_freq="D")
@@ -81,19 +85,24 @@ class TestAlignFrequencies:
 # fill_missing_timestamps
 # ---------------------------------------------------------------------------
 
+
 class TestFillMissingTimestamps:
     def test_fills_gaps(self):
-        df = pd.DataFrame({
-            "fecha": pd.to_datetime(["2023-01-01", "2023-01-03", "2023-01-05"]),
-            "val": [1.0, 3.0, 5.0],
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": pd.to_datetime(["2023-01-01", "2023-01-03", "2023-01-05"]),
+                "val": [1.0, 3.0, 5.0],
+            }
+        )
         result = fill_missing_timestamps(df, "fecha", freq="D")
         assert len(result) == 5
 
     def test_inserted_vals_are_nan(self):
-        df = pd.DataFrame({
-            "fecha": pd.to_datetime(["2023-01-01", "2023-01-03"]),
-            "val": [1.0, 3.0],
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": pd.to_datetime(["2023-01-01", "2023-01-03"]),
+                "val": [1.0, 3.0],
+            }
+        )
         result = fill_missing_timestamps(df, "fecha", freq="D")
         assert result["val"].isna().sum() == 1

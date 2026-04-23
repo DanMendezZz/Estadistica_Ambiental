@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 # Pesos por defecto según dominio
 _WEIGHTS = {
-    "general":     {"rmse": 0.35, "mae": 0.30, "r2": 0.20, "mase": 0.15},
-    "hydrology":   {"nse": 0.40, "kge": 0.30, "rmse": 0.20, "pbias": 0.10},
+    "general": {"rmse": 0.35, "mae": 0.30, "r2": 0.20, "mase": 0.15},
+    "hydrology": {"nse": 0.40, "kge": 0.30, "rmse": 0.20, "pbias": 0.10},
     "air_quality": {"rmse": 0.30, "nrmse": 0.20, "mae": 0.20, "hit_rate_ica": 0.30},
 }
 
@@ -57,7 +57,7 @@ def rank_models(
 
     df["score"] = scores.round(4)
     # na_option="bottom" por si todos los modelos tienen NaN en una métrica
-    df["rank"]  = df["score"].rank(method="min", na_option="bottom").astype(int)
+    df["rank"] = df["score"].rank(method="min", na_option="bottom").astype(int)
     df = df.sort_values("rank")
 
     best = df.index[0]

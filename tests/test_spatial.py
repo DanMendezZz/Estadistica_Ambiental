@@ -19,14 +19,17 @@ from estadistica_ambiental.spatial.projections import bounding_box_colombia, poi
 # spatial/interpolation — IDW (no requiere dependencias opcionales)
 # ---------------------------------------------------------------------------
 
+
 class TestIDW:
     @pytest.fixture
     def stations(self):
-        return pd.DataFrame({
-            "lat":   [4.0, 4.5, 5.0, 4.2],
-            "lon":  [-74.0, -74.5, -73.5, -73.8],
-            "pm25":  [15.0, 20.0, 18.0, 12.0],
-        })
+        return pd.DataFrame(
+            {
+                "lat": [4.0, 4.5, 5.0, 4.2],
+                "lon": [-74.0, -74.5, -73.5, -73.8],
+                "pm25": [15.0, 20.0, 18.0, 12.0],
+            }
+        )
 
     def test_returns_array(self, stations):
         grid_lat, grid_lon = np.meshgrid(
@@ -47,6 +50,7 @@ class TestIDW:
 # ---------------------------------------------------------------------------
 # spatial/projections
 # ---------------------------------------------------------------------------
+
 
 class TestProjections:
     def test_bounding_box_colombia(self):
@@ -70,13 +74,16 @@ class TestProjections:
 # features/lags
 # ---------------------------------------------------------------------------
 
+
 class TestLags:
     @pytest.fixture
     def df(self):
-        return pd.DataFrame({
-            "fecha": pd.date_range("2023-01-01", periods=20, freq="D"),
-            "pm25":  np.random.default_rng(0).normal(15, 3, 20),
-        })
+        return pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=20, freq="D"),
+                "pm25": np.random.default_rng(0).normal(15, 3, 20),
+            }
+        )
 
     def test_add_lags_creates_columns(self, df):
         result = add_lags(df, "pm25", lags=[1, 3, 7])
@@ -102,13 +109,16 @@ class TestLags:
 # features/calendar
 # ---------------------------------------------------------------------------
 
+
 class TestCalendar:
     @pytest.fixture
     def df(self):
-        return pd.DataFrame({
-            "fecha": pd.date_range("2023-01-01", periods=30, freq="D"),
-            "pm25":  range(30),
-        })
+        return pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=30, freq="D"),
+                "pm25": range(30),
+            }
+        )
 
     def test_cyclical_encoding(self, df):
         result = add_calendar_features(df, "fecha", features=("month",), cyclical=True)
@@ -127,6 +137,7 @@ class TestCalendar:
 # ---------------------------------------------------------------------------
 # features/exogenous
 # ---------------------------------------------------------------------------
+
 
 class TestExogenous:
     def test_heat_index_created(self):
@@ -149,6 +160,7 @@ class TestExogenous:
 # ---------------------------------------------------------------------------
 # evaluation/comparison
 # ---------------------------------------------------------------------------
+
 
 class TestComparison:
     @pytest.fixture
@@ -181,6 +193,7 @@ class TestComparison:
 # preprocessing/imputation
 # ---------------------------------------------------------------------------
 
+
 class TestImputation:
     @pytest.fixture
     def df_missing(self):
@@ -207,6 +220,7 @@ class TestImputation:
 # ---------------------------------------------------------------------------
 # preprocessing/outliers
 # ---------------------------------------------------------------------------
+
 
 class TestOutliers:
     @pytest.fixture
@@ -243,13 +257,16 @@ class TestOutliers:
 # preprocessing/resampling
 # ---------------------------------------------------------------------------
 
+
 class TestResampling:
     @pytest.fixture
     def daily_df(self):
-        return pd.DataFrame({
-            "fecha": pd.date_range("2023-01-01", periods=90, freq="D"),
-            "pm25":  np.random.default_rng(1).normal(15, 3, 90),
-        })
+        return pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=90, freq="D"),
+                "pm25": np.random.default_rng(1).normal(15, 3, 90),
+            }
+        )
 
     def test_resample_to_monthly(self, daily_df):
         result = resample(daily_df, "fecha", freq="ME")
@@ -260,10 +277,12 @@ class TestResampling:
         assert result["pm25"].iloc[0] > daily_df["pm25"].mean()
 
     def test_fill_missing_timestamps(self):
-        df = pd.DataFrame({
-            "fecha": ["2023-01-01", "2023-01-03", "2023-01-05"],
-            "val":   [1.0, 3.0, 5.0],
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": ["2023-01-01", "2023-01-03", "2023-01-05"],
+                "val": [1.0, 3.0, 5.0],
+            }
+        )
         result = fill_missing_timestamps(df, "fecha", freq="D")
         assert len(result) == 5
 
@@ -272,13 +291,16 @@ class TestResampling:
 # reporting/stats_report
 # ---------------------------------------------------------------------------
 
+
 class TestStatsReport:
     def test_creates_html(self, tmp_path):
-        df = pd.DataFrame({
-            "fecha": pd.date_range("2020-01-01", periods=60, freq="ME"),
-            "pm25":  np.random.default_rng(5).normal(15, 3, 60),
-            "temp":  np.random.default_rng(6).normal(14, 2, 60),
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2020-01-01", periods=60, freq="ME"),
+                "pm25": np.random.default_rng(5).normal(15, 3, 60),
+                "temp": np.random.default_rng(6).normal(14, 2, 60),
+            }
+        )
         out = tmp_path / "stats.html"
         path = stats_report(df, output=str(out), date_col="fecha")
         assert path.exists()

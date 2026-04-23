@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 # Métricas básicas
 # ---------------------------------------------------------------------------
 
+
 def mae(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return float(np.mean(np.abs(y_true - y_pred)))
 
@@ -71,6 +72,7 @@ def mase(
 # Métricas hidrológicas (estándar para caudal y variables hídricas)
 # ---------------------------------------------------------------------------
 
+
 def nse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """Nash-Sutcliffe Efficiency. Rango (-∞, 1]; 1=perfecto, <0=peor que media."""
     denom = np.sum((y_true - np.mean(y_true)) ** 2)
@@ -89,7 +91,7 @@ def kge(y_true: np.ndarray, y_pred: np.ndarray) -> float:
         logger.warning("kge: mean(y_true) ≈ 0 — beta indefinido. Retorna nan.")
         return float("nan")
     alpha = float(np.std(y_pred) / std_true)
-    beta  = float(np.mean(y_pred) / mean_true)
+    beta = float(np.mean(y_pred) / mean_true)
     return float(1 - np.sqrt((r - 1) ** 2 + (alpha - 1) ** 2 + (beta - 1) ** 2))
 
 
@@ -102,6 +104,7 @@ def pbias(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 # ---------------------------------------------------------------------------
 # Suite completa
 # ---------------------------------------------------------------------------
+
 
 def evaluate(
     y_true: np.ndarray,
@@ -132,20 +135,20 @@ def evaluate(
         raise ValueError("No quedan observaciones válidas después de filtrar NaN.")
 
     result = {
-        "mae":   mae(y_true, y_pred),
-        "rmse":  rmse(y_true, y_pred),
-        "r2":    r2(y_true, y_pred),
-        "mase":  mase(y_true, y_pred, y_train),
+        "mae": mae(y_true, y_pred),
+        "rmse": rmse(y_true, y_pred),
+        "r2": r2(y_true, y_pred),
+        "mase": mase(y_true, y_pred, y_train),
         "nrmse": nrmse(y_true, y_pred),
     }
 
     if domain in ("air_quality", "general") and (y_true >= 0).all():
         result["smape"] = smape(y_true, y_pred)
-        result["mape"]  = mape(y_true, y_pred)
+        result["mape"] = mape(y_true, y_pred)
 
     if domain == "hydrology":
-        result["nse"]   = nse(y_true, y_pred)
-        result["kge"]   = kge(y_true, y_pred)
+        result["nse"] = nse(y_true, y_pred)
+        result["kge"] = kge(y_true, y_pred)
         result["pbias"] = pbias(y_true, y_pred)
 
     if domain == "air_quality":
@@ -158,17 +161,17 @@ def evaluate(
 
 # Sentido de optimización por métrica (True = mayor es mejor)
 METRIC_DIRECTION: dict[str, bool] = {
-    "mae":          False,
-    "rmse":         False,
-    "mse":          False,
-    "r2":           True,
-    "smape":        False,
-    "mape":         False,
-    "mase":         False,
-    "nrmse":        False,
-    "nse":          True,
-    "kge":          True,
-    "pbias":        False,
+    "mae": False,
+    "rmse": False,
+    "mse": False,
+    "r2": True,
+    "smape": False,
+    "mape": False,
+    "mase": False,
+    "nrmse": False,
+    "nse": True,
+    "kge": True,
+    "pbias": False,
     "hit_rate_ica": True,
 }
 
@@ -181,6 +184,7 @@ def compare_models(results: dict) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # Métricas escala-invariante y calidad del aire
 # ---------------------------------------------------------------------------
+
 
 def nrmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """RMSE normalizado por desviación estándar. Estable con ceros y negativos.
@@ -199,12 +203,12 @@ def nrmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 # Puntos de corte ICA por defecto — Resolución 2254/2017, PM2.5 (µg/m³)
 # Solo se usa si air_quality._ICA_BREAKPOINTS no está disponible.
 _ICA_BREAKPOINTS_DEFAULT: dict = {
-    "Buena":        (  -np.inf,  12.0),
-    "Aceptable":    (    12.0,   37.0),
-    "Danina_sens":  (    37.0,   55.0),
-    "Danina":       (    55.0,  150.0),
-    "Muy_danina":   (   150.0,  250.0),
-    "Peligrosa":    (   250.0,   np.inf),
+    "Buena": (-np.inf, 12.0),
+    "Aceptable": (12.0, 37.0),
+    "Danina_sens": (37.0, 55.0),
+    "Danina": (55.0, 150.0),
+    "Muy_danina": (150.0, 250.0),
+    "Peligrosa": (250.0, np.inf),
 }
 
 
@@ -219,6 +223,7 @@ def _get_ica_breakpoints(pollutant: str) -> dict:
             _ICA_BREAKPOINTS,
             _ICA_LABELS,
         )
+
         key = pollutant.lower().replace(".", "").replace("₂", "2").replace("₃", "3")
         bins = _ICA_BREAKPOINTS.get(key, _ICA_BREAKPOINTS["pm25"])
         return {label: (bins[i], bins[i + 1]) for i, label in enumerate(_ICA_LABELS)}

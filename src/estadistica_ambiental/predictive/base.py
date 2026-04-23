@@ -20,6 +20,7 @@ OPTIMIZER_PENALTY: float = 1e6
 # Protocolo ModelSpec — contrato estructural para modelos del pipeline
 # ---------------------------------------------------------------------------
 
+
 @runtime_checkable
 class ModelSpec(Protocol):
     """Protocolo estructural que todo modelo optimizable debe satisfacer.
@@ -99,6 +100,7 @@ class ModelSpec(Protocol):
 # OptimizationResult — resultado estándar de una corrida de optimización
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class OptimizationResult:
     """Resultado estándar de una corrida de optimización bayesiana.
@@ -134,6 +136,7 @@ class OptimizationResult:
 # ---------------------------------------------------------------------------
 # BaseModel — clase base abstracta para todos los modelos del catálogo
 # ---------------------------------------------------------------------------
+
 
 class BaseModel(ABC):
     """Interfaz común para todos los modelos del catálogo.

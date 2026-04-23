@@ -23,17 +23,17 @@ def mann_kendall(series: pd.Series, alpha: float = 0.05) -> dict:
     s = series.dropna()
     result = mk.original_test(s, alpha=alpha)
     return {
-        "test":        "Mann-Kendall",
-        "trend":       result.trend,           # increasing / decreasing / no trend
-        "h":           result.h,               # True si hay tendencia significativa
-        "pval":        round(result.p, 6),
-        "z":           round(result.z, 4),
-        "tau":         round(result.Tau, 4),
-        "s":           result.s,
-        "var_s":       result.var_s,
-        "slope":       round(result.slope, 6), # Sen's slope
-        "intercept":   round(result.intercept, 4),
-        "alpha":       alpha,
+        "test": "Mann-Kendall",
+        "trend": result.trend,  # increasing / decreasing / no trend
+        "h": result.h,  # True si hay tendencia significativa
+        "pval": round(result.p, 6),
+        "z": round(result.z, 4),
+        "tau": round(result.Tau, 4),
+        "s": result.s,
+        "var_s": result.var_s,
+        "slope": round(result.slope, 6),  # Sen's slope
+        "intercept": round(result.intercept, 4),
+        "alpha": alpha,
     }
 
 
@@ -64,13 +64,13 @@ def pettitt_test(series: pd.Series, alpha: float = 0.05) -> dict:
     s = series.dropna()
     result = mk.pettitt_test(s, alpha=alpha)
     cp_idx = int(result.cp)
-    cp_date = s.index[cp_idx] if hasattr(s.index, '__getitem__') else cp_idx
+    cp_date = s.index[cp_idx] if hasattr(s.index, "__getitem__") else cp_idx
     return {
-        "test":            "Pettitt",
+        "test": "Pettitt",
         "change_point_idx": cp_idx,
         "change_point_date": str(cp_date),
-        "u":               result.U,
-        "pval":            round(result.p, 6),
-        "significant":     result.h,
-        "alpha":           alpha,
+        "u": result.U,
+        "pval": round(result.p, 6),
+        "significant": result.h,
+        "alpha": alpha,
     }

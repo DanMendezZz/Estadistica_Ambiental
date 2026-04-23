@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 def _check_torch():
     try:
         import torch
+
         return torch
     except ImportError:
         raise ImportError(
@@ -38,8 +39,13 @@ class _LSTMNet:
         class Net(nn.Module):
             def __init__(self):
                 super().__init__()
-                self.lstm = nn.LSTM(input_size, hidden_size, n_layers,
-                                    batch_first=True, dropout=dropout if n_layers > 1 else 0)
+                self.lstm = nn.LSTM(
+                    input_size,
+                    hidden_size,
+                    n_layers,
+                    batch_first=True,
+                    dropout=dropout if n_layers > 1 else 0,
+                )
                 self.fc = nn.Linear(hidden_size, 1)
 
             def forward(self, x):
@@ -89,8 +95,9 @@ class LSTMModel(BaseModel):
         epochs: int = 50,
         lr: float = 1e-3,
     ):
-        super().__init__(lookback=lookback, hidden_size=hidden_size,
-                         n_layers=n_layers, epochs=epochs)
+        super().__init__(
+            lookback=lookback, hidden_size=hidden_size, n_layers=n_layers, epochs=epochs
+        )
         self.lookback = lookback
         self.hidden_size = hidden_size
         self.n_layers = n_layers
@@ -106,13 +113,13 @@ class LSTMModel(BaseModel):
         _check_torch()
         vals = y.dropna().values.astype(float)
         self._scaler_mean = vals.mean()
-        self._scaler_std  = vals.std() if vals.std() > 0 else 1.0
+        self._scaler_std = vals.std() if vals.std() > 0 else 1.0
         scaled = (vals - self._scaler_mean) / self._scaler_std
 
         X_win, y_win = self._make_windows(scaled)
         self._net = _LSTMNet(self.lookback, self.hidden_size, self.n_layers, self.dropout)
         self._net.train_loop(X_win, y_win, self.epochs, self.lr)
-        self._history = scaled[-self.lookback:]
+        self._history = scaled[-self.lookback :]
         self._fitted = True
         logger.info("LSTM ajustado: %d pasos de lookback, %d epochs", self.lookback, self.epochs)
         return self
@@ -124,7 +131,7 @@ class LSTMModel(BaseModel):
         history = list(self._history)
         preds = []
         for _ in range(horizon):
-            window = np.array(history[-self.lookback:]).reshape(1, self.lookback, 1)
+            window = np.array(history[-self.lookback :]).reshape(1, self.lookback, 1)
             p = float(self._net.predict(window))
             preds.append(p)
             history.append(p)
@@ -133,7 +140,7 @@ class LSTMModel(BaseModel):
     def _make_windows(self, series: np.ndarray):
         X, y = [], []
         for i in range(len(series) - self.lookback):
-            X.append(series[i:i + self.lookback].reshape(self.lookback, 1))
+            X.append(series[i : i + self.lookback].reshape(self.lookback, 1))
             y.append(series[i + self.lookback])
         return np.array(X), np.array(y)
 
@@ -150,9 +157,14 @@ class GRUModel(LSTMModel):
         class GRUNet(nn.Module):
             def __init__(self, lookback, hidden_size, n_layers, dropout):
                 super().__init__()
-                self.gru = nn.GRU(lookback, hidden_size, n_layers,
-                                  batch_first=True, dropout=dropout if n_layers > 1 else 0)
-                self.fc  = nn.Linear(hidden_size, 1)
+                self.gru = nn.GRU(
+                    lookback,
+                    hidden_size,
+                    n_layers,
+                    batch_first=True,
+                    dropout=dropout if n_layers > 1 else 0,
+                )
+                self.fc = nn.Linear(hidden_size, 1)
 
             def forward(self, x):
                 out, _ = self.gru(x)

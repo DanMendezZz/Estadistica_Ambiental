@@ -32,7 +32,7 @@ def correlation_table(
     col_list = num.columns.tolist()
     rows = []
     for i, c1 in enumerate(col_list):
-        for c2 in col_list[i + 1:]:
+        for c2 in col_list[i + 1 :]:
             s1 = num[c1].dropna()
             s2 = num[c2].dropna()
             common = s1.index.intersection(s2.index)
@@ -48,9 +48,15 @@ def correlation_table(
             else:
                 raise ValueError("method debe ser pearson, spearman o kendall")
             if abs(r) >= min_abs_corr:
-                rows.append({"var1": c1, "var2": c2,
-                             "correlation": round(r, 4), "pval": round(p, 6),
-                             "n": len(common)})
+                rows.append(
+                    {
+                        "var1": c1,
+                        "var2": c2,
+                        "correlation": round(r, 4),
+                        "pval": round(p, 6),
+                        "n": len(common),
+                    }
+                )
     result = pd.DataFrame(rows)
     if result.empty:
         return result
@@ -74,7 +80,7 @@ def chi2_test(df: pd.DataFrame, col1: str, col2: str) -> dict:
     chi2, p, dof, expected = spstats.chi2_contingency(ct)
     return {
         "statistic": round(chi2, 4),
-        "pval":      round(p, 6),
-        "dof":       dof,
+        "pval": round(p, 6),
+        "dof": dof,
         "interpretation": "dependientes" if p < 0.05 else "independientes",
     }
