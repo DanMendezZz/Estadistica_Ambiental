@@ -1,0 +1,69 @@
+name: GitHub Pages — Showcase cumplimiento normativo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "scripts/generate_showcase.py"
+      - ".github/workflows/pages.yml"
+  schedule:
+    - cron: "0 6 * * 1"   # lunes 6am UTC — regenera con código actualizado
+  workflow_dispatch:       # ejecución manual desde la UI de GitHub
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Evita deploys concurrentes; espera a que termine el activo
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # ─────────────────────────────────────────────────────────
+  # JOB 1: Generar el HTML con compliance_report
+  # ─────────────────────────────────────────────────────────
+  generate:
+    name: Generar showcase HTML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar paquete (deps base)
+        run: pip install -e "."
+
+      - name: Generar showcase Kennedy RMCAB
+        run: python scripts/generate_showcase.py
+
+      - name: Verificar que el HTML se generó
+        run: |
+          test -f docs/showcase/index.html \
+            && echo "✓ docs/showcase/index.html generado ($(wc -c < docs/showcase/index.html) bytes)" \
+            || (echo "✗ docs/showcase/index.html no encontrado" && exit 1)
+
+      - name: Subir artefacto de Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/showcase/
+
+  # ─────────────────────────────────────────────────────────
+  # JOB 2: Deploy a GitHub Pages
+  # ─────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy a GitHub Pages
+    needs: generate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
