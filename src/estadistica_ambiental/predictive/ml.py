@@ -17,9 +17,10 @@ logger = logging.getLogger(__name__)
 
 
 def _make_lag_features(series: np.ndarray, lags: List[int]) -> pd.DataFrame:
-    s = pd.Series(series)
-    features = {f"lag_{l}": s.shift(l) for l in lags}
-    return pd.DataFrame(features).dropna()
+    max_lag = max(lags)
+    n = len(series)
+    data = {f"lag_{l}": series[max_lag - l: n - l] for l in lags}
+    return pd.DataFrame(data)
 
 
 class _SklearnModel(BaseModel):
