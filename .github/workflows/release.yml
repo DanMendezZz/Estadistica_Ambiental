@@ -111,13 +111,34 @@ jobs:
           prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') }}
 
   # ─────────────────────────────────────────────
-  # JOB 5: Publicar en PyPI (deshabilitado por defecto)
-  # Habilitar cuando el paquete esté listo para publicación pública.
+  # JOB 5: Publicar en TestPyPI (validación previa a PyPI)
+  # Requiere: secret TEST_PYPI_API_TOKEN en Settings > Secrets.
+  # ─────────────────────────────────────────────
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: github-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          skip-existing: true
+
+  # ─────────────────────────────────────────────
+  # JOB 6: Publicar en PyPI (deshabilitado — habilitar cuando esté listo)
   # Requiere: secret PYPI_API_TOKEN en Settings > Secrets.
   # ─────────────────────────────────────────────
   # publish-pypi:
   #   name: Publish to PyPI
-  #   needs: github-release
+  #   needs: publish-testpypi
   #   runs-on: ubuntu-latest
   #   environment: pypi
   #   steps:
