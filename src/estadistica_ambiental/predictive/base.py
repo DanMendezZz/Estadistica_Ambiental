@@ -127,7 +127,7 @@ class OptimizationResult:
     fallback: bool = False
 
     def __post_init__(self) -> None:
-        if self.best_score == OPTIMIZER_PENALTY and not self.fallback:
+        if abs(self.best_score) == OPTIMIZER_PENALTY and not self.fallback:
             # Marcar automáticamente como fallback si el score es la penalización
             object.__setattr__(self, "fallback", True)
 

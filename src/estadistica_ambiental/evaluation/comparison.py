@@ -55,10 +55,12 @@ def rank_models(
     scores = pd.Series(0.0, index=df.index)
     for metric, weight in w.items():
         if metric in df_norm.columns:
-            scores += weight * df_norm[metric]
+            # fillna(0) — métrica ausente no penaliza ni beneficia al modelo
+            scores += weight * df_norm[metric].fillna(0.0)
 
     df["score"] = scores.round(4)
-    df["rank"]  = df["score"].rank(method="min").astype(int)
+    # na_option="bottom" por si todos los modelos tienen NaN en una métrica
+    df["rank"]  = df["score"].rank(method="min", na_option="bottom").astype(int)
     df = df.sort_values("rank")
 
     best = df.index[0]
@@ -74,8 +76,9 @@ def _normalize(df: pd.DataFrame, cols: List[str]) -> pd.DataFrame:
             continue
         s = df[col].astype(float)
         lo, hi = s.min(), s.max()
-        if hi == lo:
-            result[col] = 0.0
+        # Columna toda NaN o sin varianza → no aporta información al ranking
+        if pd.isna(lo) or hi == lo:
+            result[col] = np.nan
             continue
         norm = (s - lo) / (hi - lo)
         # lower score = better; para higher-is-better, invertimos

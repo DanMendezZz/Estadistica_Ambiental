@@ -61,7 +61,8 @@ def detect_anomalies(
     else:
         error_rel = np.abs(error)
 
-    umbral = float(np.mean(error_rel) + threshold * np.std(error_rel))
+    # Usar nanmean/nanstd para que gaps NaN en series ambientales no anulen el umbral
+    umbral = float(np.nanmean(error_rel) + threshold * np.nanstd(error_rel))
     is_anomaly = error_rel > umbral
 
     idx = index if index is not None else pd.RangeIndex(len(y_true))
@@ -76,15 +77,20 @@ def detect_anomalies(
         },
         index=idx,
     )
+    # Guardar umbral y threshold para que anomaly_summary reporte valores exactos
+    df.attrs["umbral"] = umbral
+    df.attrs["threshold"] = threshold
 
     return df.sort_values("error_rel", ascending=False)
 
 
-def anomaly_summary(anomaly_df: pd.DataFrame) -> dict:
+def anomaly_summary(anomaly_df: pd.DataFrame, threshold: float = 2.0) -> dict:
     """Resumen estadístico del DataFrame producido por detect_anomalies().
 
     Args:
         anomaly_df: salida de detect_anomalies().
+        threshold:  mismo valor usado en detect_anomalies(); se usa solo como
+                    fallback si anomaly_df.attrs no tiene 'umbral' guardado.
 
     Returns:
         dict con:
@@ -92,26 +98,30 @@ def anomaly_summary(anomaly_df: pd.DataFrame) -> dict:
             - n_anomalies:     cantidad de anomalías detectadas
             - pct_anomalies:   porcentaje de anomalías sobre el total
             - mean_error_rel:  error relativo medio (toda la serie)
-            - std_error_rel:   desviación estándar del error relativo
-            - threshold_value: umbral aplicado (mean + threshold * std)
+            - std_error_rel:   desviación estándar del error relativo (ddof=0)
+            - threshold_value: umbral exacto aplicado en detect_anomalies
             - max_error_rel:   error relativo máximo observado
     """
     n_total     = len(anomaly_df)
     n_anomalies = int(anomaly_df["is_anomaly"].sum())
     pct         = n_anomalies / n_total * 100 if n_total > 0 else 0.0
 
+    err_rel = anomaly_df["error_rel"].values
+    mean_er = float(np.nanmean(err_rel))
+    std_er  = float(np.nanstd(err_rel))   # ddof=0, igual que detect_anomalies
+
+    # Preferir el umbral exacto almacenado en attrs; recalcular si no está
+    threshold_val = anomaly_df.attrs.get(
+        "umbral",
+        mean_er + anomaly_df.attrs.get("threshold", threshold) * std_er,
+    )
+
     return {
         "n_total":        n_total,
         "n_anomalies":    n_anomalies,
         "pct_anomalies":  round(pct, 2),
-        "mean_error_rel": round(float(anomaly_df["error_rel"].mean()), 4),
-        "std_error_rel":  round(float(anomaly_df["error_rel"].std()), 4),
-        "threshold_value": round(
-            float(
-                anomaly_df["error_rel"].mean()
-                + 2.0 * anomaly_df["error_rel"].std()
-            ),
-            4,
-        ),
-        "max_error_rel":  round(float(anomaly_df["error_rel"].max()), 4),
+        "mean_error_rel": round(mean_er, 4),
+        "std_error_rel":  round(std_er, 4),
+        "threshold_value": round(float(threshold_val), 4),
+        "max_error_rel":  round(float(np.nanmax(err_rel)), 4),
     }
