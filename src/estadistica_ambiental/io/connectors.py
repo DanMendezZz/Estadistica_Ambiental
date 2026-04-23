@@ -90,9 +90,21 @@ def load_openaq(
         }
 
     try:
-        resp = requests.get(url, headers=_OPENAQ_HEADERS, params=params, timeout=30)
-        resp.raise_for_status()
-        data = resp.json().get("results", [])
+        all_data: list = []
+        page = 1
+        while True:
+            params["page"] = page
+            resp = requests.get(url, headers=_OPENAQ_HEADERS, params=params, timeout=30)
+            resp.raise_for_status()
+            body    = resp.json()
+            results = body.get("results", [])
+            all_data.extend(results)
+            total = body.get("meta", {}).get("found", len(all_data))
+            logger.info("OpenAQ pág. %d: %d/%d registros descargados", page, len(all_data), total)
+            if len(results) < limit:
+                break
+            page += 1
+        data = all_data
         if not data:
             logger.warning("OpenAQ: sin datos para los parámetros solicitados.")
             return pd.DataFrame()
