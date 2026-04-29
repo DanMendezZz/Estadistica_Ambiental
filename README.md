@@ -543,6 +543,8 @@ Ver [`CITATION.cff`](CITATION.cff) para cita formal.
 
 ---
 
-**Dan Méndez** — Analista de Datos · Gestión Ambiental Institucional · Colombia · [@DanMendezZz](https://github.com/DanMendezZz)
+**Dan Méndez** · Científico de Datos Ambiental · Colombia  
+*Modelado estadístico y machine learning aplicado a datos de monitoreo ambiental colombiano.*  
+[GitHub @DanMendezZz](https://github.com/DanMendezZz) · [LinkedIn](https://www.linkedin.com/in/daniel-m%C3%A9ndez-44161b1b3/)
 
 *Construido para las entidades del Sistema Nacional Ambiental (SINA) de Colombia.*
