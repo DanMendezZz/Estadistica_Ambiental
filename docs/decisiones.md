@@ -208,4 +208,35 @@ La lógica de cálculo vive en `inference/intervals.py::exceedance_report()` (te
 
 ---
 
+## ADR-012 — ModelSpec Protocol: deuda técnica conocida y alcance del repositorio
+
+**Fecha:** 2026-04-29
+**Estado:** Aceptado como deuda técnica documentada
+
+**Contexto:** `predictive/base.py` define `ModelSpec` como `Protocol` runtime-checkable
+con tres métodos: `warm_starts`, `suggest_params` y `build_model`. `optimization/bayes_opt.py::optimize_model()`
+los consume. Sin embargo, ningún modelo concreto del registro (`SARIMAModel`, `XGBoostModel`,
+`RandomForestModel`, etc.) implementa esos métodos. El path `optimize_model(model_spec, ...)` con
+warm-starts y construcción del modelo final es código muerto en la versión actual.
+
+**Decisión:** **Mantener el estado actual con documentación explícita** por las siguientes razones:
+
+1. Este repositorio es una **base de conocimiento metodológico**, no un pipeline de producción.
+   Los modelos concretos funcionan a través de `walk_forward` + `evaluate` sin necesidad de `ModelSpec`.
+2. Implementar `ModelSpec` en cada clase concreta requeriría un sprint dedicado de refactoring
+   que no agrega valor a la función principal del repo (documentar metodología y mejores prácticas).
+3. La referencia correcta ya existe: `boa-sarima-forecaster` tiene `SARIMASpec`, `RandomForestSpec`,
+   `XGBoostSpec` implementados. El patrón de diseño queda documentado en el repo origen.
+
+**Acción tomada:** Agregar docstring en `predictive/base.py::ModelSpec` y en `bayes_opt.py::optimize_model()`
+que indiquen explícitamente que esta interfaz es una especificación de diseño (ver boa-sarima-forecaster)
+y que el flujo operacional usa `walk_forward` en su lugar.
+
+**Consecuencias:**
+- Quien clone el repo y llame `optimize_model(model_spec, ...)` obtendrá un error claro si el modelo
+  no implementa `ModelSpec`. No hay fallo silencioso.
+- Reevaluar si el repo evoluciona hacia un pipeline operacional con datos reales en producción.
+
+---
+
 <!-- Agregar nuevas decisiones arriba, manteniendo numeración incremental -->
