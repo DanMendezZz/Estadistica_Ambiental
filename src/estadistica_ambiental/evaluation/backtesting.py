@@ -95,7 +95,6 @@ def walk_forward(
 
     folds_df = pd.DataFrame(folds)
     avg_metrics = folds_df.drop(columns=["fold", "train_size", "test_size"]).mean().to_dict()
-    avg_metrics = {k: round(v, 4) for k, v in avg_metrics.items()}
 
     preds_df = pd.DataFrame(
         {
