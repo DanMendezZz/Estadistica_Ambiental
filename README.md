@@ -1,7 +1,8 @@
-# Estadística Ambiental Colombia
+# Estadística Ambiental
 
-> Base de conocimiento Python para el **ciclo estadístico completo** aplicado a datos ambientales colombianos —
+> Base de conocimiento Python para el **ciclo estadístico completo** aplicado a datos ambientales —
 > EDA, estadística descriptiva e inferencial, modelos predictivos y reportes de cumplimiento normativo.
+> Metodología de estándares internacionales (ISO, WMO, literatura peer-reviewed) con implementación de referencia para Colombia.
 
 > **Nota:** el repositorio cubre 16 líneas temáticas (páramos, humedales, calidad del aire, oferta hídrica,
 > áreas protegidas y más). Cada línea tiene su propia ficha de dominio, notebook plantilla y normas
@@ -54,6 +55,12 @@ que raramente aparecen juntas en un solo lugar:
 
 El repo no reemplaza el juicio del analista; **documenta el camino** para que no tenga que redescubrirlo
 cada vez.
+
+> **Alcance metodológico:** los métodos estadísticos implementados (SARIMA, Kriging, GWR, I de Moran,
+> XGBoost, Prophet, etc.) son estándares internacionales aplicables a cualquier contexto ambiental.
+> La capa de dominio — normas regulatorias, fuentes de datos, umbrales, índices — está calibrada para
+> Colombia y el Sistema Nacional Ambiental (SINA). Adaptar el repo a otro país implica únicamente
+> reemplazar las constantes de `config.py` con la normativa local.
 
 ---
 
