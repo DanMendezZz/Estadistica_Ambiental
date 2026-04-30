@@ -84,6 +84,20 @@ La capa geoespacial es el conjunto de herramientas, métodos y datos que permite
 
 **Nota:** Aunque el ecosistema Python integra estas herramientas, los documentos del notebook destacan fuertemente el uso del entorno estadístico R con librerías como `gstat`, `geoR` y `sp` para procesos complejos de Kriging e interpolación espacial, combinados con algoritmos integrados en QGIS/ArcGIS (K-means, DBSCAN).
 
+### Herramienta avanzada: SEN2SR (super-resolución Sentinel-2)
+
+**SEN2SR** ([ESAOpenSR/SEN2SR](https://github.com/ESAOpenSR/SEN2SR)) es una herramienta del proyecto OpenSR de la ESA que mejora la resolución espacial de imágenes Sentinel-2 de 10m/20m a 2.5m usando redes neuronales profundas preentrenadas.
+
+**Cuándo usarla:** cuando el análisis requiere precisión a escala de predio (ej. deforestación por parcela, cobertura vegetal en corredores biológicos), no de municipio. A escala nacional o departamental, la resolución nativa de Sentinel-2 es suficiente.
+
+**Requisitos:** PyTorch + GPU (CUDA >12). No está integrada en el módulo `spatial/` del repo porque su stack (tensores PyTorch) es incompatible directo con rasterio/geopandas. El flujo típico sería:
+
+```
+Sentinel-2 L2A → SEN2SR (2.5m) → exportar GeoTIFF → load_raster() → zonal_statistics()
+```
+
+**Referencia:** ESA OpenSR Project — https://github.com/ESAOpenSR/SEN2SR
+
 ---
 
 ## Problemas típicos y mitigaciones
