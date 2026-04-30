@@ -6,6 +6,10 @@ Previo a modelos espaciales para verificar que existe dependencia espacial.
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import geopandas
 
 logger = logging.getLogger(__name__)
 
