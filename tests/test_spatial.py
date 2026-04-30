@@ -165,6 +165,7 @@ class TestUniversalKriging:
 
     def test_import_error_without_pykrige(self, stations, monkeypatch):
         import builtins
+
         real_import = builtins.__import__
 
         def mock_import(name, *args, **kwargs):
@@ -173,7 +174,9 @@ class TestUniversalKriging:
             return real_import(name, *args, **kwargs)
 
         monkeypatch.setattr(builtins, "__import__", mock_import)
-        grid_lat, grid_lon = np.meshgrid(np.linspace(4, 5, 3), np.linspace(-74, -73, 3), indexing="ij")
+        grid_lat, grid_lon = np.meshgrid(
+            np.linspace(4, 5, 3), np.linspace(-74, -73, 3), indexing="ij"
+        )
         with pytest.raises(ImportError):
             universal_kriging(stations, "lat", "lon", "temp", grid_lat, grid_lon)
 
