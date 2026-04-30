@@ -47,6 +47,17 @@ def load_vector(
     gdf = gpd.read_file(**kwargs)
     logger.info("Cargado '%s': %d features | CRS=%s", path.name, len(gdf), gdf.crs)
 
+    invalid_mask = ~gdf.geometry.is_valid
+    if invalid_mask.any():
+        n_invalid = int(invalid_mask.sum())
+        logger.warning(
+            "%d geometría(s) inválida(s) en '%s'. Aplicando buffer(0) para corrección.",
+            n_invalid, path.name,
+        )
+        gdf.loc[invalid_mask, gdf.geometry.name] = (
+            gdf.loc[invalid_mask, gdf.geometry.name].buffer(0)
+        )
+
     if to_epsg and gdf.crs and gdf.crs.to_epsg() != to_epsg:
         gdf = gdf.to_crs(epsg=to_epsg)
         logger.info("Reproyectado a EPSG:%d", to_epsg)
