@@ -128,6 +128,8 @@ def universal_kriging(
     z, ss = uk.execute("grid", grid_lon[0, :], grid_lat[:, 0])
     logger.info(
         "Universal Kriging: %d puntos | variogram=%s | drift_order=%d",
-        len(points), variogram_model, drift_order,
+        len(points),
+        variogram_model,
+        drift_order,
     )
     return np.array(z), np.array(ss)

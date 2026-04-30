@@ -52,7 +52,9 @@ def intersection_area(
     if n1 * n2 > 100_000:
         logger.warning(
             "intersection_area: %d × %d = %d combinaciones potenciales — puede ser lento.",
-            n1, n2, n1 * n2,
+            n1,
+            n2,
+            n1 * n2,
         )
 
     gdf1_proj = gdf1[[id_col1, gdf1.geometry.name]].to_crs(epsg=_PROJ_COLOMBIA)
@@ -66,8 +68,13 @@ def intersection_area(
     if overlay.empty:
         logger.warning("No se encontraron traslapes entre las dos capas.")
         return gpd.GeoDataFrame(
-            columns=[id_col1, id_col2, "intersection_area_m2",
-                     f"pct_of_{id_col1}", f"pct_of_{id_col2}"],
+            columns=[
+                id_col1,
+                id_col2,
+                "intersection_area_m2",
+                f"pct_of_{id_col1}",
+                f"pct_of_{id_col2}",
+            ],
             geometry=[],
             crs=gdf1.crs,
         )
@@ -82,7 +89,9 @@ def intersection_area(
 
     logger.info(
         "intersection_area: %d traslapes encontrados entre '%s' y '%s'",
-        len(overlay), id_col1, id_col2,
+        len(overlay),
+        id_col1,
+        id_col2,
     )
     return overlay.to_crs(gdf1.crs)
 
@@ -157,9 +166,11 @@ def zonal_statistics(
             stat_results[s].append(_stat_funcs[s](values) if len(values) > 0 else np.nan)
 
     import pandas as pd
+
     stats_df = pd.DataFrame({k: v for k, v in stat_results.items()})
     result = zones_gdf.merge(stats_df, on=zone_id_col, how="left")
 
-    logger.info("zonal_statistics: %d zonas | stats=%s | raster='%s'",
-                len(zones_gdf), stats, raster_path)
+    logger.info(
+        "zonal_statistics: %d zonas | stats=%s | raster='%s'", len(zones_gdf), stats, raster_path
+    )
     return result
