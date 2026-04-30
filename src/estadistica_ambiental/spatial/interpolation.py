@@ -84,3 +84,50 @@ def ordinary_kriging(
     )
     z, ss = ok.execute("grid", grid_lon[0, :], grid_lat[:, 0])
     return np.array(z), np.array(ss)
+
+
+def universal_kriging(
+    points: pd.DataFrame,
+    lat_col: str,
+    lon_col: str,
+    value_col: str,
+    grid_lat: np.ndarray,
+    grid_lon: np.ndarray,
+    variogram_model: str = "linear",
+    drift_order: int = 1,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """Kriging universal con tendencia espacial (drift polinomial).
+
+    Extiende el Kriging ordinario modelando un drift determinístico.
+    Ideal para variables con gradiente espacial claro: temperatura,
+    elevación, presión antrópica sobre ecosistemas.
+
+    Args:
+        drift_order: 1=lineal (default), 2=cuadrático.
+        variogram_model: 'linear', 'spherical', 'exponential', 'gaussian'.
+
+    Returns:
+        (z_interpolated, z_variance) — ambos arrays 2D.
+    """
+    try:
+        from pykrige.uk import UniversalKriging
+    except ImportError:
+        raise ImportError("pip install pykrige  (o pip install estadistica-ambiental[spatial])")
+
+    drift_terms = ["regional_linear"] if drift_order == 1 else ["regional_linear", "point_log"]
+
+    uk = UniversalKriging(
+        x=points[lon_col].values,
+        y=points[lat_col].values,
+        z=points[value_col].values,
+        variogram_model=variogram_model,
+        drift_terms=drift_terms,
+        verbose=False,
+        enable_plotting=False,
+    )
+    z, ss = uk.execute("grid", grid_lon[0, :], grid_lat[:, 0])
+    logger.info(
+        "Universal Kriging: %d puntos | variogram=%s | drift_order=%d",
+        len(points), variogram_model, drift_order,
+    )
+    return np.array(z), np.array(ss)

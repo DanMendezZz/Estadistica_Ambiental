@@ -12,8 +12,171 @@ from estadistica_ambiental.preprocessing.imputation import impute
 from estadistica_ambiental.preprocessing.outliers import flag_outliers
 from estadistica_ambiental.preprocessing.resampling import fill_missing_timestamps, resample
 from estadistica_ambiental.reporting.stats_report import stats_report
-from estadistica_ambiental.spatial.interpolation import idw
+from estadistica_ambiental.spatial.interpolation import idw, universal_kriging
 from estadistica_ambiental.spatial.projections import bounding_box_colombia, points_to_geodataframe
+from estadistica_ambiental.spatial.autocorrelation import geary_c, getis_ord_g, morans_i
+from estadistica_ambiental.spatial.analysis import intersection_area, zonal_statistics
+
+# ---------------------------------------------------------------------------
+# spatial/analysis — intersection_area y zonal_statistics
+# ---------------------------------------------------------------------------
+
+
+class TestIntersectionArea:
+    @pytest.fixture
+    def two_overlapping_gdfs(self):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import box
+
+        gdf1 = gpd.GeoDataFrame(
+            {"id_ini": ["A", "B"], "geometry": [box(0, 0, 2, 2), box(3, 3, 5, 5)]},
+            crs="EPSG:4326",
+        )
+        gdf2 = gpd.GeoDataFrame(
+            {"id_ap": ["X", "Y"], "geometry": [box(1, 1, 3, 3), box(0, 0, 1, 1)]},
+            crs="EPSG:4326",
+        )
+        return gdf1, gdf2
+
+    def test_returns_geodataframe(self, two_overlapping_gdfs):
+        gdf1, gdf2 = two_overlapping_gdfs
+        result = intersection_area(gdf1, gdf2, "id_ini", "id_ap")
+        gpd = pytest.importorskip("geopandas")
+        assert isinstance(result, gpd.GeoDataFrame)
+
+    def test_columns_present(self, two_overlapping_gdfs):
+        gdf1, gdf2 = two_overlapping_gdfs
+        result = intersection_area(gdf1, gdf2, "id_ini", "id_ap")
+        assert "intersection_area_m2" in result.columns
+        assert "pct_of_id_ini" in result.columns
+        assert "pct_of_id_ap" in result.columns
+
+    def test_area_positive(self, two_overlapping_gdfs):
+        gdf1, gdf2 = two_overlapping_gdfs
+        result = intersection_area(gdf1, gdf2, "id_ini", "id_ap")
+        if len(result) > 0:
+            assert (result["intersection_area_m2"] >= 0).all()
+
+    def test_no_overlap_returns_empty(self):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import box
+
+        gdf1 = gpd.GeoDataFrame({"id_a": ["A"], "geometry": [box(0, 0, 1, 1)]}, crs="EPSG:4326")
+        gdf2 = gpd.GeoDataFrame({"id_b": ["B"], "geometry": [box(10, 10, 11, 11)]}, crs="EPSG:4326")
+        result = intersection_area(gdf1, gdf2, "id_a", "id_b")
+        assert len(result) == 0
+
+    def test_different_crs_aligned(self, two_overlapping_gdfs):
+        gdf1, gdf2 = two_overlapping_gdfs
+        gdf2_reproj = gdf2.to_crs(epsg=3857)
+        result = intersection_area(gdf1, gdf2_reproj, "id_ini", "id_ap")
+        gpd = pytest.importorskip("geopandas")
+        assert isinstance(result, gpd.GeoDataFrame)
+
+
+# ---------------------------------------------------------------------------
+# spatial/autocorrelation — geary_c y getis_ord_g
+# ---------------------------------------------------------------------------
+
+
+class TestGearyC:
+    @pytest.fixture
+    def spatial_gdf(self):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import box
+
+        geoms = [box(i, j, i + 1, j + 1) for i in range(4) for j in range(4)]
+        values = [float(i * 4 + j) for i in range(4) for j in range(4)]
+        return gpd.GeoDataFrame({"value": values, "geometry": geoms}, crs="EPSG:4326")
+
+    def test_returns_dict(self, spatial_gdf):
+        result = geary_c(spatial_gdf, "value")
+        assert isinstance(result, dict)
+
+    def test_required_keys(self, spatial_gdf):
+        result = geary_c(spatial_gdf, "value")
+        assert "C" in result
+        assert "p_sim" in result
+        assert "significant" in result
+        assert "interpretation" in result
+
+    def test_c_positive(self, spatial_gdf):
+        result = geary_c(spatial_gdf, "value")
+        assert result["C"] >= 0
+
+
+class TestGetisOrdG:
+    @pytest.fixture
+    def spatial_gdf(self):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import box
+
+        geoms = [box(i, j, i + 1, j + 1) for i in range(4) for j in range(4)]
+        values = [float(i * 4 + j) for i in range(4) for j in range(4)]
+        return gpd.GeoDataFrame({"value": values, "geometry": geoms}, crs="EPSG:4326")
+
+    def test_adds_columns(self, spatial_gdf):
+        result = getis_ord_g(spatial_gdf, "value")
+        assert "g_z" in result.columns
+        assert "g_p" in result.columns
+        assert "hotspot" in result.columns
+
+    def test_hotspot_values(self, spatial_gdf):
+        result = getis_ord_g(spatial_gdf, "value")
+        assert set(result["hotspot"].unique()).issubset({"hot", "cold", "ns"})
+
+    def test_preserves_length(self, spatial_gdf):
+        result = getis_ord_g(spatial_gdf, "value")
+        assert len(result) == len(spatial_gdf)
+
+
+# ---------------------------------------------------------------------------
+# spatial/interpolation — Universal Kriging
+# ---------------------------------------------------------------------------
+
+
+class TestUniversalKriging:
+    @pytest.fixture
+    def stations(self):
+        return pd.DataFrame(
+            {
+                "lat": [4.0, 4.5, 5.0, 4.2, 4.8],
+                "lon": [-74.0, -74.5, -73.5, -73.8, -74.2],
+                "temp": [18.0, 15.0, 20.0, 17.0, 16.0],
+            }
+        )
+
+    def test_returns_two_arrays(self, stations):
+        pytest.importorskip("pykrige")
+        grid_lat, grid_lon = np.meshgrid(
+            np.linspace(4.0, 5.0, 4), np.linspace(-74.5, -73.5, 4), indexing="ij"
+        )
+        z, ss = universal_kriging(stations, "lat", "lon", "temp", grid_lat, grid_lon)
+        assert z.shape == grid_lat.shape
+        assert ss.shape == grid_lat.shape
+
+    def test_variance_non_negative(self, stations):
+        pytest.importorskip("pykrige")
+        grid_lat, grid_lon = np.meshgrid(
+            np.linspace(4.0, 5.0, 4), np.linspace(-74.5, -73.5, 4), indexing="ij"
+        )
+        _, ss = universal_kriging(stations, "lat", "lon", "temp", grid_lat, grid_lon)
+        assert np.all(ss >= 0)
+
+    def test_import_error_without_pykrige(self, stations, monkeypatch):
+        import builtins
+        real_import = builtins.__import__
+
+        def mock_import(name, *args, **kwargs):
+            if name == "pykrige.uk":
+                raise ImportError
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", mock_import)
+        grid_lat, grid_lon = np.meshgrid(np.linspace(4, 5, 3), np.linspace(-74, -73, 3), indexing="ij")
+        with pytest.raises(ImportError):
+            universal_kriging(stations, "lat", "lon", "temp", grid_lat, grid_lon)
+
 
 # ---------------------------------------------------------------------------
 # spatial/interpolation — IDW (no requiere dependencias opcionales)
