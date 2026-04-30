@@ -239,4 +239,43 @@ y que el flujo operacional usa `walk_forward` en su lugar.
 
 ---
 
+## ADR-013 — Decisiones de diseño del módulo spatial/ (retroalimentación Juan/Ministerio)
+
+**Fecha:** 2026-04-30
+**Estado:** Aceptado
+
+**Contexto:** Incorporación de retroalimentación técnica de Juan (SIG — Ministerio de Ambiente)
+sobre el módulo `spatial/`. Tres preguntas de diseño quedaron abiertas tras la integración.
+
+**Decisiones:**
+
+1. **GEE integration (`spatial/gee_interface.py`) → NO por ahora.**
+   Google Earth Engine requiere autenticación OAuth, cuenta institucional y una API que cambia
+   frecuentemente. Para una base de conocimiento metodológica, el costo de mantenimiento supera
+   el beneficio. El flujo recomendado (GEE → exportar GeoTIFF → `load_raster()`) queda
+   documentado en el notebook geoespacial y en `docs/fuentes/geoespacial.md`. Reevaluar si el
+   repo evoluciona hacia un pipeline operacional con datos en producción.
+
+2. **Validación de CRS → reproyección automática, no error estricto.**
+   `intersection_area()` y `zonal_statistics()` reproyectan automáticamente a CTM12 (EPSG:9377)
+   antes de calcular áreas y al CRS del raster antes de enmascarar. No se lanza error si el CRS
+   de entrada difiere — se alinea silenciosamente con log de advertencia. Este enfoque es correcto
+   para una base de conocimiento donde el analista puede traer capas de fuentes diversas.
+   Si el CRS es `None` (capa sin definir), geopandas lanzará su propio error antes de que llegue
+   a las funciones del repo — no se necesita validación adicional.
+
+3. **Warnings de performance → implementados selectivamente.**
+   - `morans_i()`: warning si `len(gdf) > 5_000` (veredas ~6M cuelga sin advertencia).
+   - `intersection_area()`: warning si `n1 × n2 > 100_000` combinaciones potenciales.
+   - `zonal_statistics()`: sin warning adicional — rasterio ya maneja eficientemente por zona.
+   - Criterio: agregar warning solo cuando existe un límite práctico conocido y documentado.
+
+**Consecuencias:**
+- El módulo `spatial/` queda completo para el alcance de base de conocimiento v1.0.
+- GEE se referencia como herramienta externa, no integrada.
+- El notebook `geoespacial.ipynb` documenta el flujo completo con los cuatro casos de uso
+  prioritarios del Ministerio: traslapes, estadísticas zonales, interpolación y hotspots.
+
+---
+
 <!-- Agregar nuevas decisiones arriba, manteniendo numeración incremental -->
