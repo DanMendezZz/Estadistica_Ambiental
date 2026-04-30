@@ -12,10 +12,10 @@ from estadistica_ambiental.preprocessing.imputation import impute
 from estadistica_ambiental.preprocessing.outliers import flag_outliers
 from estadistica_ambiental.preprocessing.resampling import fill_missing_timestamps, resample
 from estadistica_ambiental.reporting.stats_report import stats_report
+from estadistica_ambiental.spatial.analysis import intersection_area
+from estadistica_ambiental.spatial.autocorrelation import geary_c, getis_ord_g
 from estadistica_ambiental.spatial.interpolation import idw, universal_kriging
 from estadistica_ambiental.spatial.projections import bounding_box_colombia, points_to_geodataframe
-from estadistica_ambiental.spatial.autocorrelation import geary_c, getis_ord_g, morans_i
-from estadistica_ambiental.spatial.analysis import intersection_area, zonal_statistics
 
 # ---------------------------------------------------------------------------
 # spatial/analysis — intersection_area y zonal_statistics

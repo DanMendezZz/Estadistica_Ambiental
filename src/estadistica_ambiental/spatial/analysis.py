@@ -7,9 +7,12 @@ y agregación de variables ambientales por unidades político-administrativas.
 from __future__ import annotations
 
 import logging
-from typing import List, Union
+from typing import TYPE_CHECKING, List, Union
 
 import numpy as np
+
+if TYPE_CHECKING:
+    import geopandas
 
 logger = logging.getLogger(__name__)
 
