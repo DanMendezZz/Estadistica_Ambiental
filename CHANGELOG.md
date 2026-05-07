@@ -10,6 +10,35 @@ Versiones: [Semver](https://semver.org/lang/es/).
 
 ---
 
+## [1.2.0] — 2026-05-07
+
+### Agregado
+- `io.connectors.load_sisaire_local(anios, parametro, estaciones, path)`:
+  lee descargas locales del portal SISAIRE/CAR (`CAR_<año>.csv`) sin
+  duplicar archivos al repo. Normaliza encabezados
+  (`Estacion`→`estacion`, `Fecha inicial`→`fecha`, `PM2.5`→`pm25`),
+  fallback de encoding utf-8/latin-1, errores claros si la ruta no está
+  configurada.
+- `config.SISAIRE_LOCAL_DIR` (`Path | None`) leído de la variable de
+  entorno `SISAIRE_LOCAL_DIR`. El repo nunca asume una ruta fija.
+- `NOMBRES_CORRECTOS` extendido con `FECHA INICIAL` y `FECHA FINAL`.
+- README: nueva sección **"Datos reales (uso opcional, sin duplicar)"**
+  y nueva sección **"Consumir desde otro proyecto"** (instalación pip+git,
+  pinning a tag, patrón base ↔ repo satélite).
+
+### Tests
+- `TestLoadSisaireLocal` (8 nuevos): single year, multi-year concat, glob,
+  filtro por estación, FileNotFoundError sin env, parámetro inexistente.
+- Smoke test contra datos reales: 219.108 registros / 31 estaciones / 2024.
+
+### Notas de arquitectura
+- Se ratifica que este repo es **base de conocimiento + librería** —
+  productos finales (dashboards Streamlit, pipelines productivos,
+  reportes ejecutivos) van en repos satélite que importan
+  `estadistica_ambiental` como dependencia.
+
+---
+
 ## [1.0.0] — 2026-04-22 (primer release público — consolidación Fases 0-8)
 
 ### Agregado

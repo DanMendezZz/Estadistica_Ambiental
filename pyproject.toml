@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "estadistica-ambiental"
-version = "0.1.0"
+version = "1.2.0"
 description = "Plantilla Python para estadística aplicada al medio ambiente"
 authors = [{ name = "Dan Méndez" }]
 license = { text = "MIT" }
