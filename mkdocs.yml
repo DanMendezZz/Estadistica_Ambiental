@@ -1,0 +1,139 @@
+site_name: Estadística Ambiental
+site_description: Base de conocimiento Python para estadística aplicada al medio ambiente — EDA, descriptiva, inferencial, predictiva y reportes de cumplimiento normativo.
+site_author: Dan Méndez
+site_url: https://danmendezzz.github.io/Estadistica_Ambiental/
+
+repo_url: https://github.com/DanMendezZz/Estadistica_Ambiental
+repo_name: DanMendezZz/Estadistica_Ambiental
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+copyright: Copyright &copy; Dan Méndez — MIT License
+
+theme:
+  name: material
+  language: es
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - navigation.footer
+    - toc.integrate
+    - search.highlight
+    - search.suggest
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+    - content.action.view
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Cambiar a modo oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Cambiar a modo claro
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search:
+      lang:
+        - es
+        - en
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+            separate_signature: true
+            merge_init_into_class: true
+            show_if_no_docstring: false
+            heading_level: 3
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path:
+        - .
+        - docs
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.smartsymbols
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/DanMendezZz/Estadistica_Ambiental
+      name: Repositorio en GitHub
+  generator: false
+
+nav:
+  - Inicio: index.md
+  - Empezar: getting-started.md
+  - Metodología: metodologia.md
+  - Modelos: modelos.md
+  - Líneas temáticas:
+      - Visión general: lineas_tematicas.md
+      - Áreas protegidas: fuentes/areas_protegidas.md
+      - Calidad del aire: fuentes/calidad_aire.md
+      - Cambio climático: fuentes/cambio_climatico.md
+      - Dirección directiva: fuentes/direccion_directiva.md
+      - Geoespacial: fuentes/geoespacial.md
+      - Gestión del riesgo: fuentes/gestion_riesgo.md
+      - Humedales: fuentes/humedales.md
+      - Oferta hídrica: fuentes/oferta_hidrica.md
+      - Ordenamiento territorial: fuentes/ordenamiento_territorial.md
+      - Páramos: fuentes/paramos.md
+      - POMCA: fuentes/pomca.md
+      - Predios de conservación: fuentes/predios_conservacion.md
+      - PUEAA: fuentes/pueea.md
+      - Recurso hídrico: fuentes/recurso_hidrico.md
+      - Rondas hídricas: fuentes/rondas_hidricas.md
+      - Sistemas de información ambiental: fuentes/sistemas_informacion_ambiental.md
+  - ADRs:
+      - Decisiones de diseño: decisiones.md
+      - ADR-014 — Mediana contaminada (IQR rolling): adr/ADR-014-mediana-contaminada-iqr-rolling.md
+      - ADR-015 — Validación espacial filtra vecinos originales: adr/ADR-015-validacion-espacial-filtra-vecinos-originales.md
+  - Plantillas e intake:
+      - Intake del líder: intake_lider.md
+      - Plantilla de output: intake_output_template.md
+      - Plantilla R Markdown child: templates/rmd_child_template.md
+  - API Reference: api.md
+  - Changelog: changelog.md

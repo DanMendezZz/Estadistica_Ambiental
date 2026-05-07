@@ -13,7 +13,8 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-284%20passed-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-80%25-brightgreen.svg)]()
-[![version](https://img.shields.io/badge/version-1.2.0-blue.svg)]()
+[![version](https://img.shields.io/badge/version-1.3.0-blue.svg)]()
+[![docs](https://img.shields.io/badge/docs-mkdocs--material-blue.svg)](https://danmendezzz.github.io/Estadistica_Ambiental/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -363,7 +364,7 @@ Estadistica_Ambiental (este repo — base)
    ├── 16 notebooks plantilla
    └── ADRs y decisiones metodológicas
             ↑
-            │ pip install git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.2.0
+            │ pip install git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.3.0
             │
    ┌────────┴────────┬─────────────────┬──────────────┐
    │                 │                 │              │
@@ -376,17 +377,29 @@ calidad-aire-car   pomca-magdalena   paramos-rabanal   …  ← repos satélite
 
 ```bash
 # Última versión estable (recomendado para satélites — pinear a tag)
-pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.2.0"
+pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.3.0"
 
 # Con extras (ML, espacial, deep, etc.)
-pip install "estadistica-ambiental[ml,spatial] @ git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.2.0"
+pip install "estadistica-ambiental[ml,spatial] @ git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.3.0"
 
 # Versión en desarrollo (rama main — sin garantías de estabilidad)
 pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@main"
 ```
 
 > **Pin a tag siempre** en repos satélite. Evita que un commit en `main` rompa
-> producción sin aviso. Cuando salga `v1.3.0` actualizas conscientemente.
+> producción sin aviso. Cuando salga `v1.4.0` actualizas conscientemente.
+
+### Documentación navegable
+
+Sitio mkdocs-material con API reference auto-generada, ADRs, fichas de dominio
+y changelog: **<https://danmendezzz.github.io/Estadistica_Ambiental/>**.
+
+Para construir el sitio localmente:
+
+```bash
+pip install -e ".[docs]"
+mkdocs serve
+```
 
 ### Imports típicos en un repo satélite
 
@@ -525,6 +538,26 @@ python scripts/run_linea_tematica.py --linea oferta_hidrica          # datos sin
 python scripts/run_linea_tematica.py --linea paramos --modelos sarima,xgboost
 python scripts/fase8_calidad_aire.py                                 # datos reales SISAIRE
 ```
+
+### Snippets cortos por línea temática (`examples/`)
+
+Para ver el patrón sin abrir un notebook completo, `examples/` contiene scripts
+runnables (autocontenidos: caen a datos sintéticos si no hay descarga local):
+
+```bash
+python examples/00_quickstart.py             # ciclo mínimo: cargar → validar → describir
+python examples/01_calidad_aire_pm25.py      # exceedance_report contra Res. 2254 + OMS 2021
+python examples/02_oferta_hidrica_caudal.py  # NSE/KGE + ADF
+python examples/03_paramos_iuh.py            # IRH + gradiente Caldas-Lang
+python examples/04_cambio_climatico_co2.py   # Mann-Kendall + Sen slope
+python examples/05_eda_generico.py           # run_eda + reporte HTML
+```
+
+### Notebook end-to-end con datos reales
+
+`notebooks/showcases/calidad_aire_sisaire_real.ipynb` ejecuta el ciclo completo
+sobre datos SISAIRE/CAR reales (vía `load_sisaire_local()`) o sintéticos
+(fallback automático si `SISAIRE_LOCAL_DIR` no está configurada).
 
 ---
 
