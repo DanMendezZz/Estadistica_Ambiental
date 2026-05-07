@@ -302,6 +302,17 @@ class TestMissingPatterns:
         report = assess_quality(df, date_col="fecha")
         assert report is not None
 
+    def test_classify_missing_unknown_pattern(self):
+        """_classify_missing_pattern: gaps de 4 con pct<=30% → UNKNOWN (line 261)."""
+        from estadistica_ambiental.eda.quality import _analyze_missing
+
+        # 40 elementos, 4 NaN consecutivos en el centro → max_gap=4, pct=10%
+        # max_gap > 3 → no MCAR; max_gap <= 24 y pct <= 30 → no MAR → UNKNOWN
+        vals = [10.0] * 10 + [np.nan] * 4 + [10.0] * 26
+        s = pd.Series(vals)
+        info = _analyze_missing(s, "pm25")
+        assert info.pattern == MissingPattern.UNKNOWN
+
     def test_get_numeric_cols_with_specific_cols(self):
         # _get_numeric_cols con cols específicas cubre línea 435
         from estadistica_ambiental.eda.quality import _get_numeric_cols

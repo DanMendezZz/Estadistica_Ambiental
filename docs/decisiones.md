@@ -7,6 +7,26 @@
 > el sprint inicial de construcción del repositorio (Fases 0-8). La fecha refleja
 > cuándo se formalizó la decisión, no necesariamente cuándo se tomó.
 
+## Índice de ADRs
+
+| #   | Título                                                              | Fecha      | Estado    |
+| --- | ------------------------------------------------------------------- | ---------- | --------- |
+| 001 | Herencia de `boa-sarima-forecaster`                                 | 2026-04-22 | Aceptado  |
+| 002 | Outliers opcionales por defecto (no clipping automático)            | 2026-04-22 | Aceptado  |
+| 003 | Métricas estándar por dominio (RMSLE no en variables negativas)     | 2026-04-22 | Aceptado  |
+| 004 | Ciclo estadístico como flujo obligatorio (ADF + KPSS)               | 2026-04-22 | Aceptado  |
+| 005 | Normas colombianas centralizadas en `config.py`                     | 2026-04-22 | Aceptado  |
+| 006 | Validación de rangos físicos por línea temática                     | 2026-04-22 | Aceptado  |
+| 007 | Lags ENSO diferenciados por línea (`ENSO_LAG_MESES`)                | 2026-04-22 | Aceptado  |
+| 008 | Reporte de cumplimiento normativo (`exceedance_report` + semáforo)  | 2026-04-22 | Aceptado  |
+| 009 | Conectores oficiales a fuentes colombianas                          | 2026-04-22 | Aceptado  |
+| 010 | Correcciones PR #6 (10 bugs en aire/optuna/base/metrics)            | 2026-04-22 | Aceptado  |
+| 011 | Fork vs. dependencia de `boa-sarima-forecaster`                     | 2026-04-23 | Aceptado  |
+| 012 | `ModelSpec` Protocol como deuda técnica documentada                 | 2026-04-29 | Aceptado  |
+| 013 | Diseño del módulo `spatial/` (sin GEE, CRS auto, warnings perf.)    | 2026-04-30 | Aceptado  |
+| 014 | B1 — Mediana contaminada en IQR rolling (lección desde CAR)         | 2026-05-07 | Aceptado  |
+| 015 | B2 — Validación espacial filtra vecinos `flag == "original"`        | 2026-05-07 | Aceptado  |
+
 ---
 
 ## ADR-011 — Fork vs. dependencia de `boa-sarima-forecaster`

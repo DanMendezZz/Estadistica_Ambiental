@@ -4,6 +4,7 @@ Adaptado de boa-sarima-forecaster/config.py por Dan Méndez — 2026-04-22
 
 from __future__ import annotations
 
+import math
 import os
 from pathlib import Path
 
@@ -59,6 +60,36 @@ NORMA_CO: dict[str, float] = {
     "so2_24h": 50.0,  # µg/m³
     "co_8h": 10.0,  # mg/m³
 }
+
+# Índice de Calidad del Aire (ICA) — Res. 2254/2017 Anexo 3
+# Breakpoints (límites superiores inclusivos) por contaminante.
+# Categorías ordenadas: Buena, Aceptable, Dañina sensibles, Dañina, Muy dañina, Peligrosa.
+# Unidades: µg/m³, salvo CO que va en mg/m³.
+# Fuente única de verdad — consumida por preprocessing/air_quality.py y evaluation/metrics.py.
+ICA_BREAKPOINTS: dict[str, list[float]] = {
+    # PM2.5 — promedio 24h (µg/m³)
+    "pm25": [-math.inf, 12.0, 37.0, 55.0, 150.0, 250.0, math.inf],
+    # PM10 — promedio 24h (µg/m³)
+    "pm10": [-math.inf, 54.0, 154.0, 254.0, 354.0, 424.0, math.inf],
+    # Ozono O₃ — promedio 8h (µg/m³)
+    "o3": [-math.inf, 100.0, 160.0, 215.0, 265.0, 800.0, math.inf],
+    # NO₂ — promedio 1h (µg/m³)
+    "no2": [-math.inf, 100.0, 190.0, 677.0, 1221.0, 2350.0, math.inf],
+    # SO₂ — promedio 24h (µg/m³)
+    "so2": [-math.inf, 50.0, 100.0, 360.0, 649.0, 1000.0, math.inf],
+    # CO — promedio 8h (mg/m³)
+    "co": [-math.inf, 4.4, 9.4, 12.4, 15.4, 30.4, math.inf],
+}
+
+# Etiquetas oficiales (en orden) de las categorías ICA — Res. 2254/2017.
+ICA_LABELS: list[str] = [
+    "Buena",
+    "Aceptable",
+    "Dañina sensibles",
+    "Dañina",
+    "Muy dañina",
+    "Peligrosa",
+]
 
 # Guías OMS 2021
 NORMA_OMS: dict[str, float] = {

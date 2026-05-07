@@ -147,6 +147,130 @@ class TestLoadTsv:
 # ---------------------------------------------------------------------------
 
 
+class TestLoadNetcdf:
+    def test_no_xarray_raises_import_error(self, tmp_path):
+        """load_netcdf: ImportError cuando xarray no está instalado."""
+        from estadistica_ambiental.io.loaders import load_netcdf
+
+        with pytest.raises(ImportError, match="xarray"):
+            load_netcdf(tmp_path / "fake.nc")
+
+    def test_no_xarray_dispatch_raises(self, tmp_path):
+        """load (dispatcher) con .nc levanta ImportError por falta de xarray."""
+        from estadistica_ambiental.io.loaders import load
+
+        f = tmp_path / "datos.nc"
+        f.write_bytes(b"")
+        with pytest.raises(ImportError):
+            load(f)
+
+
+class TestLoadShapefile:
+    def test_no_geopandas_raises_import_error(self, tmp_path):
+        """load_shapefile: ImportError cuando geopandas no está instalado."""
+        from estadistica_ambiental.io.loaders import load_shapefile
+
+        with pytest.raises(ImportError, match="geopandas"):
+            load_shapefile(tmp_path / "fake.shp")
+
+    def test_no_geopandas_dispatch_raises(self, tmp_path):
+        """load (dispatcher) con .geojson levanta ImportError por falta de geopandas."""
+        from estadistica_ambiental.io.loaders import load
+
+        f = tmp_path / "datos.geojson"
+        f.write_bytes(b"{}")
+        with pytest.raises(ImportError):
+            load(f)
+
+
+class TestLoadNetcdfMock:
+    def test_load_netcdf_body_with_xarray_mock(self, tmp_path, monkeypatch):
+        """Cubre el cuerpo de load_netcdf (lines 116-125) mediante mock de xarray."""
+        import sys
+        import types
+        from unittest.mock import MagicMock
+
+        fake_df = pd.DataFrame(
+            {
+                "time": pd.date_range("2023-01-01", periods=3, freq="D"),
+                "lat": [4.5, 4.6, 4.7],
+                "lon": [-74.0, -74.1, -74.2],
+                "pm25": [15.0, 18.0, 12.0],
+            }
+        )
+        mock_ds = MagicMock()
+        mock_ds.__getitem__.return_value = mock_ds
+        mock_ds.to_dataframe.return_value.reset_index.return_value = fake_df
+
+        mock_xr = types.ModuleType("xarray")
+        mock_xr.open_dataset = MagicMock(return_value=mock_ds)
+        monkeypatch.setitem(sys.modules, "xarray", mock_xr)
+
+        from estadistica_ambiental.io.loaders import load_netcdf
+
+        f = tmp_path / "fake.nc"
+        f.write_bytes(b"CDF")  # fake NetCDF header
+        df = load_netcdf(f, variable="pm25", date_col="time")
+        assert isinstance(df, pd.DataFrame)
+
+    def test_load_netcdf_no_variable_filter(self, tmp_path, monkeypatch):
+        """load_netcdf sin variable=None evita el filtro ds[[variable]] (line 120)."""
+        import sys
+        import types
+        from unittest.mock import MagicMock
+
+        fake_df = pd.DataFrame({"time": pd.date_range("2023-01-01", periods=2), "val": [1.0, 2.0]})
+        mock_ds = MagicMock()
+        mock_ds.to_dataframe.return_value.reset_index.return_value = fake_df
+
+        mock_xr = types.ModuleType("xarray")
+        mock_xr.open_dataset = MagicMock(return_value=mock_ds)
+        monkeypatch.setitem(sys.modules, "xarray", mock_xr)
+
+        from estadistica_ambiental.io.loaders import load_netcdf
+
+        f = tmp_path / "fake.nc"
+        f.write_bytes(b"CDF")
+        df = load_netcdf(f)  # variable=None → no filter
+        assert isinstance(df, pd.DataFrame)
+
+
+class TestDetectEncodingChardet:
+    def test_chardet_used_when_available(self, tmp_path, monkeypatch):
+        """_detect_encoding: usa chardet cuando está disponible (mock)."""
+        import sys
+        import types
+
+        fake_chardet = types.ModuleType("chardet")
+        fake_chardet.detect = lambda data: {"encoding": "latin-1", "confidence": 0.95}
+        monkeypatch.setitem(sys.modules, "chardet", fake_chardet)
+
+        f = tmp_path / "test.csv"
+        f.write_bytes(b"fecha,pm25\n2023-01-01,15.2\n")
+
+        from estadistica_ambiental.io import loaders
+
+        result = loaders._detect_encoding(f)
+        assert result == "latin-1"
+
+    def test_chardet_none_encoding_falls_back_to_utf8(self, tmp_path, monkeypatch):
+        """_detect_encoding: si chardet retorna None encoding, usa utf-8."""
+        import sys
+        import types
+
+        fake_chardet = types.ModuleType("chardet")
+        fake_chardet.detect = lambda data: {"encoding": None, "confidence": 0.0}
+        monkeypatch.setitem(sys.modules, "chardet", fake_chardet)
+
+        f = tmp_path / "test.csv"
+        f.write_bytes(b"fecha,pm25\n2023-01-01,15.2\n")
+
+        from estadistica_ambiental.io import loaders
+
+        result = loaders._detect_encoding(f)
+        assert result == "utf-8"
+
+
 class TestHelpers:
     def test_invalid_date_col_logs_warning(self, csv_file, caplog):
         import logging

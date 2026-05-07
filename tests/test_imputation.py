@@ -81,6 +81,63 @@ class TestImpute:
         result = impute(df_with_gaps.copy(), cols=["pm25"], method="linear")
         pd.testing.assert_series_equal(result["fecha"], original_fecha)
 
+    def test_kalman_real_imputation_recovers_sine(self):
+        """_kalman: imputación numérica real sobre seno con NaNs cada 5 muestras.
+
+        Valida que el filtro de Kalman (vía pykalman) reconstruye una señal
+        determinista con error razonable (RMSE < 2× std de la señal).
+        """
+        pytest.importorskip("pykalman")
+
+        n = 100
+        t = np.arange(n)
+        ground_truth = np.sin(2 * np.pi * t / 20.0) * 5.0 + 10.0
+        values = ground_truth.copy()
+        nan_idx = np.arange(0, n, 5)  # NaN cada 5 muestras
+        values[nan_idx] = np.nan
+
+        df = pd.DataFrame({"pm25": values})
+        result = impute(df, cols=["pm25"], method="kalman")
+
+        # Sin NaN restantes
+        assert result["pm25"].isna().sum() == 0
+        # Valores plausibles dentro del rango original (con margen)
+        signal_std = ground_truth.std()
+        rng_min, rng_max = ground_truth.min() - signal_std, ground_truth.max() + signal_std
+        assert result["pm25"].between(rng_min, rng_max).all()
+        # RMSE solo sobre los puntos imputados, tolerancia generosa
+        rmse = np.sqrt(np.mean((result["pm25"].values[nan_idx] - ground_truth[nan_idx]) ** 2))
+        assert rmse < 2 * signal_std, f"RMSE {rmse:.3f} excede 2× std ({2 * signal_std:.3f})"
+
+    def test_mice_real_imputation_plausible_values(self):
+        """_mice: imputación numérica real con IterativeImputer.
+
+        Valida que la imputación múltiple devuelve valores en el rango de los
+        datos originales y reduce el error vs. imputación trivial (constante=0).
+        """
+        pytest.importorskip("sklearn")
+
+        rng = np.random.default_rng(42)
+        n = 80
+        ground_truth = rng.normal(loc=20.0, scale=4.0, size=n)
+        values = ground_truth.copy()
+        nan_idx = np.array([7, 15, 23, 31, 47, 55, 63, 71])
+        values[nan_idx] = np.nan
+
+        df = pd.DataFrame({"pm25": values})
+        result = impute(df, cols=["pm25"], method="mice")
+
+        # Sin NaN restantes
+        assert result["pm25"].isna().sum() == 0
+        # Valores plausibles: dentro de min/max ± std del ground truth
+        signal_std = ground_truth.std()
+        rng_min = ground_truth.min() - signal_std
+        rng_max = ground_truth.max() + signal_std
+        assert result["pm25"].between(rng_min, rng_max).all()
+        # RMSE razonable sobre puntos imputados (< 2× std de la señal)
+        rmse = np.sqrt(np.mean((result["pm25"].values[nan_idx] - ground_truth[nan_idx]) ** 2))
+        assert rmse < 2 * signal_std, f"RMSE {rmse:.3f} excede 2× std ({2 * signal_std:.3f})"
+
     def test_mean_imputed_value_is_column_mean(self):
         s = pd.DataFrame({"v": [10.0, np.nan, 20.0]})
         result = impute(s, cols=["v"], method="mean")

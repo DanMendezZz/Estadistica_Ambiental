@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 import warnings
-from typing import Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -77,7 +77,8 @@ class SARIMAXModel(BaseModel):
         return np.asarray(forecast)
 
     @property
-    def warm_starts(self):
+    def warm_starts(self) -> List[Dict[str, Any]]:
+        """Configuraciones SARIMAX iniciales para arrancar la búsqueda de Optuna."""
         return [
             {"p": 1, "d": 1, "q": 1, "P": 1, "D": 1, "Q": 1},
             {"p": 2, "d": 1, "q": 2, "P": 1, "D": 1, "Q": 1},
@@ -103,10 +104,12 @@ class SARIMAXModel(BaseModel):
 
     @property
     def aic(self) -> float:
+        """Akaike Information Criterion del ajuste; ``inf`` si no se ha ajustado."""
         return self._result.aic if self._fitted else float("inf")
 
     @property
-    def summary(self):
+    def summary(self) -> Optional[Any]:
+        """Resumen estadístico de statsmodels; ``None`` si no se ha ajustado."""
         return self._result.summary() if self._fitted else None
 
 
@@ -119,7 +122,8 @@ class ARIMAModel(SARIMAXModel):
         super().__init__(order=order, seasonal_order=(0, 0, 0, 0))
 
     @property
-    def warm_starts(self):
+    def warm_starts(self) -> List[Dict[str, Any]]:
+        """Configuraciones ARIMA iniciales (sin componentes estacionales) para Optuna."""
         return [
             {"p": 1, "d": 1, "q": 1},
             {"p": 2, "d": 1, "q": 2},
@@ -150,7 +154,8 @@ class SARIMAModel(SARIMAXModel):
         super().__init__(order=order, seasonal_order=seasonal_order)
 
     @property
-    def warm_starts(self):
+    def warm_starts(self) -> List[Dict[str, Any]]:
+        """Configuraciones SARIMA iniciales (con estacionalidad) para Optuna."""
         return [
             {"p": 1, "d": 1, "q": 1, "P": 1, "D": 1, "Q": 1},
             {"p": 2, "d": 1, "q": 2, "P": 0, "D": 1, "Q": 1},
@@ -222,7 +227,8 @@ class ETSModel(BaseModel):
         return np.asarray(self._result.forecast(steps=horizon))
 
     @property
-    def warm_starts(self):
+    def warm_starts(self) -> List[Dict[str, Any]]:
+        """Configuraciones ETS / Holt-Winters iniciales para Optuna."""
         return [
             {"trend": "add", "seasonal": "add", "damped_trend": False},
             {"trend": "mul", "seasonal": "mul", "damped_trend": False},

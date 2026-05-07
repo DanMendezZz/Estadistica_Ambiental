@@ -1,3 +1,6 @@
+# DEPRECATED — lógica integrada a build_notebooks.py 2026-05-07
+# La fuente activa ahora es scripts/_patches/gestion_riesgo.py.
+# Este archivo se conserva como referencia histórica del enriquecimiento.
 """Patch gestion_riesgo.ipynb: agrega AVR, IVET, SPI, vulnerabilidad, LSTM."""
 import json, pathlib, uuid
 

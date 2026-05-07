@@ -1,3 +1,6 @@
+# DEPRECATED — lógica integrada a build_notebooks.py 2026-05-07
+# La fuente activa ahora es scripts/_patches/predios_conservacion.py.
+# Este archivo se conserva como referencia histórica del enriquecimiento.
 """Patch predios_conservacion.ipynb: agrega costo de oportunidad y AHP."""
 import json, pathlib, uuid
 

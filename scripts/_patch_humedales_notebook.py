@@ -1,3 +1,6 @@
+# DEPRECATED — lógica integrada a build_notebooks.py 2026-05-07
+# La fuente activa ahora es scripts/_patches/humedales.py.
+# Este archivo se conserva como referencia histórica del enriquecimiento.
 """Patch humedales.ipynb: agrega OD, estado trofico, Vollenweider, macroinvertebrados, NDWI."""
 import json, pathlib, uuid
 

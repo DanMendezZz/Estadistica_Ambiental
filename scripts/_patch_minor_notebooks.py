@@ -1,3 +1,7 @@
+# DEPRECATED — lógica integrada a build_notebooks.py 2026-05-07
+# La fuente activa ahora son scripts/_patches/{pomca,rondas_hidricas,
+# areas_protegidas,pueea,geoespacial}.py. Este archivo se conserva como
+# referencia histórica del enriquecimiento.
 """Patch notebooks con 1 marker faltante: pomca, rondas_hidricas, areas_protegidas, pueea, geoespacial."""
 import json, pathlib, uuid
 

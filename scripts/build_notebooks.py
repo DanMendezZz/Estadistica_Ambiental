@@ -1,9 +1,29 @@
-"""Genera los notebooks plantilla para las 15 líneas temáticas restantes."""
+"""Genera los notebooks plantilla para las 15 líneas temáticas restantes.
 
+Tras emitir la plantilla base, aplica los enrichments de dominio definidos
+en `scripts/_patches/` (IRH, NDC, AVR, BMWP, ICA, etc.). Los enrichments son
+idempotentes — pueden invocarse N veces sin duplicar celdas.
+
+Notebooks con contenido custom (`CUSTOM_NOTEBOOKS`) NO se regeneran desde
+plantilla; sólo se les aplican los enrichments si el archivo ya existe.
+Esto preserva trabajo manual como `geoespacial.ipynb` (4 casos de uso).
+"""
+
+import hashlib
 import json
+import sys
 from pathlib import Path
 
+# Asegurar que el paquete `_patches` sea importable cuando se ejecute como script
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _patches import apply_enrichments, apply_guardrails  # noqa: E402
+
 BASE = Path(__file__).resolve().parent.parent / "notebooks"
+
+# Notebooks con contenido custom hand-crafted que NO debe sobrescribirse por
+# la plantilla base. Los enrichments registrados sí se les aplican (si la
+# clave coincide con `_patches/<linea>.py`).
+CUSTOM_NOTEBOOKS: set[str] = {"geoespacial"}
 
 LINEAS = [
     # (path_relativo, nombre_display, variable_ejemplo, unidad, linea_tematica_key, modelos_sugeridos)
@@ -71,13 +91,18 @@ LINEAS = [
 ]
 
 
+def _stable_id(prefix: str, src: str) -> str:
+    """ID determinista por md5 del contenido — mismo resultado entre corridas."""
+    return f"{prefix}{hashlib.md5(src.encode('utf-8')).hexdigest()[:12]}"
+
+
 def md(src):
-    return {"cell_type": "markdown", "metadata": {}, "source": src, "id": f"m{abs(hash(src[:20])):08x}"}
+    return {"cell_type": "markdown", "metadata": {}, "source": src, "id": _stable_id("m", src)}
 
 
 def code(src):
     return {"cell_type": "code", "metadata": {}, "source": src,
-            "outputs": [], "execution_count": None, "id": f"c{abs(hash(src[:20])):08x}"}
+            "outputs": [], "execution_count": None, "id": _stable_id("c", src)}
 
 
 def build_notebook(path_rel, nombre, variable, unidad, linea_key, modelos_sugeridos):
@@ -123,12 +148,21 @@ def build_notebook(path_rel, nombre, variable, unidad, linea_key, modelos_sugeri
     )
     enso_import = (
         "from estadistica_ambiental.features.climate import load_oni, enso_lagged\n"
+        "from estadistica_ambiental.config import ENSO_LAG_MESES\n"
         if usa_enso else ""
     )
     enso_cell_src = (
         f'# --- Covariable ENSO (lag específico para {nombre}) ---\n'
+        f'# Guard (M-20): avisar si LINEA no tiene lag específico — se aplicará el default.\n'
+        f'if LINEA not in ENSO_LAG_MESES:\n'
+        f'    _lag_default = ENSO_LAG_MESES["default"]\n'
+        f'    print(f"[aviso] \'{{LINEA}}\' sin lag específico en ENSO_LAG_MESES; "\n'
+        f'          f"se usará default ({{_lag_default}} meses).")\n'
+        f'else:\n'
+        f'    print(f"[ok] ENSO lag para \'{{LINEA}}\' = {{ENSO_LAG_MESES[LINEA]}} meses")\n'
+        f'\n'
         f'oni = load_oni()  # Descarga ONI desde NOAA\n'
-        f'df = enso_lagged(df, oni, date_col="fecha", linea_tematica="{linea_key}")\n'
+        f'df = enso_lagged(df, oni, date_col="fecha", linea_tematica=LINEA)\n'
         f'print("Columnas ENSO agregadas:", [c for c in df.columns if "oni" in c or "enso" in c])'
     ) if usa_enso else None
 
@@ -312,8 +346,80 @@ def build_notebook(path_rel, nombre, variable, unidad, linea_key, modelos_sugeri
     return out
 
 
+def enrich_notebook(path: Path, linea_key: str) -> bool:
+    """Aplica los enrichments registrados para `linea_key` sobre el notebook
+    en `path` (lectura → mutación in-place → reescritura).
+
+    Idempotente: si los enrichments detectan su marker, no duplican celdas.
+
+    Returns True si se aplicó (o ya estaba), False si no hay enrichment
+    registrado o si el archivo no existe.
+    """
+    if not path.exists():
+        return False
+    nb = json.loads(path.read_text(encoding="utf-8"))
+    n_before = len(nb["cells"])
+    if not apply_enrichments(linea_key, nb):
+        return False
+    n_after = len(nb["cells"])
+    if n_after != n_before:
+        path.write_text(
+            json.dumps(nb, ensure_ascii=False, indent=1), encoding="utf-8"
+        )
+    return True
+
+
+def apply_guardrails_to_notebook(path: Path, linea_key: str) -> bool:
+    """Inserta o reposiciona la sección de Guardrails M-21 (idempotente)."""
+    if not path.exists():
+        return False
+    raw_before = path.read_text(encoding="utf-8")
+    nb = json.loads(raw_before)
+    apply_guardrails(linea_key, nb)
+    raw_after = json.dumps(nb, ensure_ascii=False, indent=1)
+    if raw_after != raw_before:
+        path.write_text(raw_after, encoding="utf-8")
+        return True
+    return False
+
+
+# Notebooks temáticos hand-crafted que viven fuera de LINEAS pero también
+# deben recibir guardrails. (linea_key, path_relativo_sin_extension)
+EXTRA_GUARDRAIL_TARGETS: list[tuple[str, str]] = [
+    ("calidad_aire", "bloque_b_transversales/calidad_aire"),
+]
+
+
 if __name__ == "__main__":
+    base_count = 0
+    enrich_count = 0
+    guard_count = 0
     for path_rel, nombre, variable, unidad, linea_key, modelos in LINEAS:
-        path = build_notebook(path_rel, nombre, variable, unidad, linea_key, modelos)
-        print(f"  {path.name}")
-    print(f"\n{len(LINEAS)} notebooks generados.")
+        out = BASE / "lineas_tematicas" / f"{path_rel}.ipynb"
+
+        if linea_key in CUSTOM_NOTEBOOKS:
+            print(f"  {out.name} (custom — base no regenerada)")
+        else:
+            path = build_notebook(
+                path_rel, nombre, variable, unidad, linea_key, modelos
+            )
+            print(f"  {path.name}")
+            base_count += 1
+
+        if enrich_notebook(out, linea_key):
+            enrich_count += 1
+
+        if apply_guardrails_to_notebook(out, linea_key):
+            guard_count += 1
+
+    for linea_key, path_rel in EXTRA_GUARDRAIL_TARGETS:
+        out = BASE / "lineas_tematicas" / f"{path_rel}.ipynb"
+        if apply_guardrails_to_notebook(out, linea_key):
+            guard_count += 1
+            print(f"  {out.name} (guardrails M-21)")
+
+    print(
+        f"\n{base_count} notebooks generados desde plantilla, "
+        f"{enrich_count} enriquecidos con celdas de dominio, "
+        f"{guard_count} con guardrails M-21."
+    )

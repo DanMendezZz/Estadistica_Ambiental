@@ -433,6 +433,130 @@ def load_smbyc_alertas(path: str) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
+# SISAIRE — Subsistema de Información sobre Calidad del Aire (IDEAM)
+# Portal: https://sisaire.ideam.gov.co/
+# Publica datos horarios y diarios de PM2.5, PM10, O3, NO2, SO2, CO de las
+# Autoridades Ambientales (CARs) que reportan al IDEAM. Las descargas en CSV
+# suelen llegar con encoding latin-1 (mojibake U+FFFD si se asume utf-8).
+# ---------------------------------------------------------------------------
+
+_SISAIRE_API = "https://sisaire.ideam.gov.co/api"
+
+# Mapeo de nombres SISAIRE → convenciones internas del repo (M-03 / Plan §13).
+# Corrige también encabezados con caracteres unicode dañados en exports CSV.
+NOMBRES_CORRECTOS: dict[str, str] = {
+    "PM2_5": "pm25",
+    "PM2.5": "pm25",
+    "PM25": "pm25",
+    "PM10": "pm10",
+    "O3": "o3",
+    "NO2": "no2",
+    "SO2": "so2",
+    "CO": "co",
+    "FECHA": "fecha",
+    "FECHA_HORA": "fecha",
+    "DATETIME": "fecha",
+    "ESTACION": "estacion",
+    "NOMBRE_ESTACION": "estacion",
+    "CODIGO_ESTACION": "codigo_estacion",
+    "AUTORIDAD_AMBIENTAL": "autoridad",
+    "DEPARTAMENTO": "departamento",
+    "MUNICIPIO": "municipio",
+    "LATITUD": "lat",
+    "LONGITUD": "lon",
+    "VALOR": "valor",
+    "UNIDAD": "unidad",
+    "PARAMETRO": "parametro",
+}
+
+
+def load_sisaire(
+    estacion: Optional[str],
+    parametro: str = "PM2.5",
+    fecha_ini: str = "2024-01-01",
+    fecha_fin: Optional[str] = None,
+    timeout: float = 30.0,
+) -> pd.DataFrame:
+    """Descarga CSV de SISAIRE (IDEAM) con fallback de encoding utf-8 → latin-1.
+
+    Args:
+        estacion: Código o nombre de estación SISAIRE; ``None`` consulta todas.
+        parametro: Variable a descargar (PM2.5, PM10, O3, NO2, SO2, CO).
+        fecha_ini: Fecha inicio ``YYYY-MM-DD``.
+        fecha_fin: Fecha fin ``YYYY-MM-DD`` (default: hoy).
+        timeout: Timeout HTTP en segundos.
+
+    Returns:
+        DataFrame con columnas normalizadas según ``NOMBRES_CORRECTOS``
+        (p. ej. ``PM2_5`` → ``pm25``, ``FECHA`` → ``fecha``).
+
+    Notas:
+        El portal SISAIRE entrega CSV usualmente codificados en latin-1; esta
+        función intenta primero ``utf-8`` y, si falla con ``UnicodeDecodeError``,
+        reintenta con ``latin-1`` para evitar mojibake (U+FFFD).
+    """
+    try:
+        import requests
+    except ImportError:
+        logger.error("Instalar 'requests': pip install requests")
+        return pd.DataFrame()
+
+    if fecha_fin is None:
+        fecha_fin = datetime.now().strftime("%Y-%m-%d")
+
+    url = f"{_SISAIRE_API}/datos/descarga"
+    params = {
+        "estacion": estacion if estacion is not None else "all",
+        "parametro": parametro,
+        "fechaIni": fecha_ini,
+        "fechaFin": fecha_fin,
+        "formato": "csv",
+    }
+
+    resp = requests.get(url, params=params, timeout=timeout)
+    resp.raise_for_status()
+
+    raw: bytes = resp.content
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        logger.info("SISAIRE: utf-8 falló, reintentando con latin-1.")
+        text = raw.decode("latin-1")
+
+    import io
+
+    df = pd.read_csv(io.StringIO(text), low_memory=False)
+    if df.empty:
+        logger.warning("SISAIRE: respuesta sin registros para %s/%s", estacion, parametro)
+        return df
+
+    # Normalización de columnas con NOMBRES_CORRECTOS (case-insensitive en clave)
+    rename_map: dict[str, str] = {}
+    upper_lookup = {k.upper(): v for k, v in NOMBRES_CORRECTOS.items()}
+    for col in df.columns:
+        key = str(col).strip().upper()
+        if key in upper_lookup:
+            rename_map[col] = upper_lookup[key]
+    df = df.rename(columns=rename_map)
+
+    if "fecha" in df.columns:
+        df["fecha"] = pd.to_datetime(df["fecha"], errors="coerce")
+
+    if "estacion" not in df.columns and estacion is not None:
+        df["estacion"] = estacion
+
+    logger.info(
+        "SISAIRE: %d registros (%s, %s, %s → %s)",
+        len(df),
+        estacion,
+        parametro,
+        fecha_ini,
+        fecha_fin,
+    )
+    return df.reset_index(drop=True)
+
+
+# ---------------------------------------------------------------------------
 # Datos abiertos.gov.co — Portal general de datos ambientales Colombia
 # ---------------------------------------------------------------------------
 

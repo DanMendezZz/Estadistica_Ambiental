@@ -1,3 +1,6 @@
+# DEPRECATED — lógica integrada a build_notebooks.py 2026-05-07
+# La fuente activa ahora es scripts/_patches/direccion_directiva.py.
+# Este archivo se conserva como referencia histórica del enriquecimiento.
 """Patch direccion_directiva.ipynb: agrega DPSIR, ICAU, Isolation Forest."""
 import json, pathlib, uuid
 

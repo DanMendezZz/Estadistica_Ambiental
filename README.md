@@ -45,7 +45,7 @@ ciclo analítico es siempre el mismo — cargar, validar, describir, inferir, mo
 Este repositorio resuelve eso con una **base de conocimiento reutilizable** que combina tres cosas
 que raramente aparecen juntas en un solo lugar:
 
-- **Metodología documentada** — decisiones de diseño (ADR-001 a ADR-012), buenas prácticas calibradas
+- **Metodología documentada** — decisiones de diseño (ADR-001 a ADR-013), buenas prácticas calibradas
   sobre datos reales y fichas de dominio por línea temática.
 - **Normas colombianas en el código** — Res. 2254/2017 (calidad del aire), 2115/2007 (agua potable),
   631/2015 (vertimientos) e índices IDEAM listos para usarse con un solo import, sin hardcodear umbrales.
@@ -204,6 +204,20 @@ reentrenar el modelo base:
 
 ![Pronóstico PM2.5 con incertidumbre](docs/img/forecast_ar1.png)
 
+### Caso de uso productivo: pipeline CAR (Cundinamarca)
+
+El proyecto hermano **"Calidad de aire CAR"** (red SISAIRE / IDEAM, 34 estaciones, 2016–2026)
+es la primera validación operacional del repo en datos reales. Confirma de forma independiente
+varias decisiones del repo:
+
+- `walk_forward(gap=24)` — el gap de 24 h fue redescubierto en CAR por leakage de autocorrelación PM2.5 (r ≈ 0.97 lag-1h).
+- `exceedance_report()` con Res. 2254/2017 y OMS 2021 — utilizado en backtesting 2025 y reporte ejecutivo.
+- `enso_lagged(lag_meses=2)` para calidad del aire — coincidencia con la literatura colombiana.
+
+Métricas en producción: **RMSE = 3.717 µg/m³**, **HitRate ICA = 88.61 %**, **27/31 estaciones AR(1) PASS**
+(tests T1–T4 + KS + Ljung-Box + Jarque-Bera). El feedback recíproco está documentado en
+[`Plan/Feedback/repo_estadistica_ambiental_feedback.md`](Plan/Feedback/repo_estadistica_ambiental_feedback.md).
+
 ---
 
 ## Estructura del proyecto
@@ -274,7 +288,7 @@ Estadistica_Ambiental/
 ├── docs/
 │   ├── fuentes/                   ← 16 fichas técnicas de dominio ✅
 │   │   └── calidad_aire.md        ← variables · ICA µg/m³ · buenas prácticas BP-1 a BP-7
-│   ├── decisiones.md              ← ADR-001 a ADR-012
+│   ├── decisiones.md              ← ADR-001 a ADR-013
 │   ├── metodologia.md             ← ciclo estadístico detallado
 │   ├── modelos.md                 ← catálogo de modelos y cuándo usar cada uno
 │   └── intake_lider.md            ← cuestionario onboarding líderes de área (18 preguntas)

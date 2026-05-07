@@ -1,3 +1,6 @@
+# DEPRECATED — lógica integrada a build_notebooks.py 2026-05-07
+# La fuente activa ahora es scripts/_patches/sistemas_informacion_ambiental.py.
+# Este archivo se conserva como referencia histórica del enriquecimiento.
 """Patch sistemas_informacion_ambiental.ipynb: agrega RETC, vertimientos, metales pesados."""
 import json, pathlib, uuid
 

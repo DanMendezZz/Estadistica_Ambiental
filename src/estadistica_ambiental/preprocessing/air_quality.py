@@ -17,11 +17,17 @@ from typing import Literal, Tuple
 import numpy as np
 import pandas as pd
 
+from estadistica_ambiental.config import ICA_BREAKPOINTS, ICA_LABELS
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constantes ICA — Resolución 2254 de 2017 (MinAmbiente Colombia)
 # Aplicables a PM2.5, PM10, O₃, NO₂, SO₂, CO
+#
+# Los breakpoints y etiquetas viven en `config.ICA_BREAKPOINTS` /
+# `config.ICA_LABELS` (ADR-005, fuente única de verdad). Aquí se mantienen los
+# alias privados por retrocompatibilidad con código que los importaba.
 # ---------------------------------------------------------------------------
 
 # Colores oficiales normativa ICA Res. 2254/2017
@@ -34,25 +40,9 @@ ICA_COLORS: dict[str, str] = {
     "Peligrosa": "#7E0023",
 }
 
-# Breakpoints ICA por contaminante (µg/m³ o mg/m³ según indicado).
-# Fuente: Res. 2254/2017 Anexo 3, Tabla de ICA Colombia.
-# Límites superiores inclusivos de cada categoría.
-_ICA_BREAKPOINTS: dict[str, list[float]] = {
-    # PM2.5 — promedio 24h (µg/m³)
-    "pm25": [-np.inf, 12.0, 37.0, 55.0, 150.0, 250.0, np.inf],
-    # PM10 — promedio 24h (µg/m³)
-    "pm10": [-np.inf, 54.0, 154.0, 254.0, 354.0, 424.0, np.inf],
-    # Ozono O₃ — promedio 8h (µg/m³)
-    "o3": [-np.inf, 100.0, 160.0, 215.0, 265.0, 800.0, np.inf],
-    # NO₂ — promedio 1h (µg/m³)
-    "no2": [-np.inf, 100.0, 190.0, 677.0, 1221.0, 2350.0, np.inf],
-    # SO₂ — promedio 24h (µg/m³)
-    "so2": [-np.inf, 50.0, 100.0, 360.0, 649.0, 1000.0, np.inf],
-    # CO — promedio 8h (mg/m³)
-    "co": [-np.inf, 4.4, 9.4, 12.4, 15.4, 30.4, np.inf],
-}
-
-_ICA_LABELS: list[str] = list(ICA_COLORS.keys())
+# Alias privados — re-exportan las constantes centralizadas en config.py.
+_ICA_BREAKPOINTS: dict[str, list[float]] = ICA_BREAKPOINTS
+_ICA_LABELS: list[str] = ICA_LABELS
 
 
 # ---------------------------------------------------------------------------
