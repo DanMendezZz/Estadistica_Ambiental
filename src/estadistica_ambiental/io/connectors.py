@@ -454,6 +454,8 @@ NOMBRES_CORRECTOS: dict[str, str] = {
     "SO2": "so2",
     "CO": "co",
     "FECHA": "fecha",
+    "FECHA INICIAL": "fecha",
+    "FECHA FINAL": "fecha_fin",
     "FECHA_HORA": "fecha",
     "DATETIME": "fecha",
     "ESTACION": "estacion",
@@ -554,6 +556,105 @@ def load_sisaire(
         fecha_fin,
     )
     return df.reset_index(drop=True)
+
+
+def load_sisaire_local(
+    anios: int | list[int] | None = None,
+    parametro: str = "pm25",
+    estaciones: list[str] | None = None,
+    path: "str | None" = None,
+) -> pd.DataFrame:
+    """Lee descargas SISAIRE locales (`CAR_<año>.csv`) sin duplicar archivos.
+
+    Pensado para uso con datos descargados manualmente del portal SISAIRE / CAR
+    (formato: ``"Estacion","Fecha inicial","Fecha final","PM2.5"``). La carpeta
+    se referencia por ``config.SISAIRE_LOCAL_DIR`` (variable de entorno
+    ``SISAIRE_LOCAL_DIR``); el repo nunca asume una ruta fija.
+
+    Args:
+        anios: Año (int), lista de años o ``None`` para leer todos los
+            ``CAR_*.csv`` presentes.
+        parametro: Variable normalizada esperada (``pm25``, ``pm10``, ...).
+            Debe coincidir con la columna del CSV tras normalizar headers.
+        estaciones: Si se pasa, filtra ``estacion in estaciones``.
+        path: Carpeta explícita. Si es ``None`` usa ``config.SISAIRE_LOCAL_DIR``.
+
+    Returns:
+        DataFrame con columnas ``fecha`` (datetime), ``estacion`` (str) y
+        la columna del parámetro como float (p. ej. ``pm25``).
+
+    Raises:
+        FileNotFoundError: Si no se configuró ``SISAIRE_LOCAL_DIR`` ni se pasó
+            ``path``, o si la carpeta no contiene archivos coincidentes.
+    """
+    from pathlib import Path
+
+    from estadistica_ambiental.config import SISAIRE_LOCAL_DIR
+
+    base = Path(path) if path is not None else SISAIRE_LOCAL_DIR
+    if base is None:
+        raise FileNotFoundError(
+            "SISAIRE_LOCAL_DIR no está configurada. Define la variable de entorno "
+            "SISAIRE_LOCAL_DIR apuntando a la carpeta con los CSV CAR_<año>.csv, "
+            "o pasa `path=...` explícitamente."
+        )
+    if not base.exists():
+        raise FileNotFoundError(f"SISAIRE_LOCAL_DIR no existe: {base}")
+
+    if anios is None:
+        archivos = sorted(base.glob("CAR_*.csv"))
+    else:
+        lista = [anios] if isinstance(anios, int) else list(anios)
+        archivos = [base / f"CAR_{a}.csv" for a in lista]
+
+    archivos = [a for a in archivos if a.exists()]
+    if not archivos:
+        raise FileNotFoundError(f"Sin archivos CAR_<año>.csv en {base} para anios={anios}")
+
+    upper_lookup = {k.upper(): v for k, v in NOMBRES_CORRECTOS.items()}
+
+    frames: list[pd.DataFrame] = []
+    for archivo in archivos:
+        try:
+            sub = pd.read_csv(archivo, encoding="utf-8", low_memory=False)
+        except UnicodeDecodeError:
+            sub = pd.read_csv(archivo, encoding="latin-1", low_memory=False)
+
+        rename = {
+            c: upper_lookup[str(c).strip().upper()]
+            for c in sub.columns
+            if str(c).strip().upper() in upper_lookup
+        }
+        sub = sub.rename(columns=rename)
+        frames.append(sub)
+
+    df = pd.concat(frames, ignore_index=True)
+
+    if "fecha" in df.columns:
+        df["fecha"] = pd.to_datetime(df["fecha"], errors="coerce")
+
+    if parametro in df.columns:
+        df[parametro] = pd.to_numeric(df[parametro], errors="coerce")
+    else:
+        raise KeyError(
+            f"Parámetro '{parametro}' no encontrado tras normalizar columnas. "
+            f"Columnas disponibles: {list(df.columns)}"
+        )
+
+    if estaciones and "estacion" in df.columns:
+        df = df[df["estacion"].isin(estaciones)]
+
+    keep = [c for c in ("fecha", "estacion", parametro) if c in df.columns]
+    df = df[keep].dropna(subset=["fecha", parametro])
+
+    logger.info(
+        "SISAIRE local: %d registros desde %d archivo(s) en %s (parametro=%s)",
+        len(df),
+        len(archivos),
+        base,
+        parametro,
+    )
+    return df.sort_values("fecha").reset_index(drop=True)
 
 
 # ---------------------------------------------------------------------------

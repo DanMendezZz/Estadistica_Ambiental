@@ -349,6 +349,50 @@ python -m pytest tests/ -q
 
 ---
 
+## Datos reales (uso opcional, sin duplicar)
+
+El repo no incluye datos crudos. Para trabajar con descargas locales del portal
+**SISAIRE / IDEAM** (CSV anuales `CAR_<año>.csv`) se referencia la carpeta
+externa con una **variable de entorno** — el repo nunca asume una ruta fija.
+
+### 1. Configurar la variable de entorno
+
+```powershell
+# Windows (PowerShell, persistente)
+setx SISAIRE_LOCAL_DIR "D:\ruta\a\Datos SISAIRE\00_Datos_Originales"
+```
+
+```bash
+# Linux/macOS (en .bashrc / .zshrc)
+export SISAIRE_LOCAL_DIR="/ruta/a/Datos SISAIRE/00_Datos_Originales"
+```
+
+### 2. Cargar datos sin copiarlos al repo
+
+```python
+from estadistica_ambiental.io.connectors import load_sisaire_local
+
+# Todos los años disponibles, una estación
+df = load_sisaire_local(parametro="pm25", estaciones=["BOGOTA RURAL - MOCHUELO"])
+
+# Año específico, todas las estaciones
+df = load_sisaire_local(anios=2024, parametro="pm25")
+
+# Multi-año
+df = load_sisaire_local(anios=[2023, 2024, 2025], parametro="pm25")
+```
+
+`load_sisaire_local()` lee los CSV `CAR_<año>.csv` directamente desde la carpeta
+externa, normaliza encabezados (`Estacion` → `estacion`, `Fecha inicial` →
+`fecha`, `PM2.5` → `pm25`) y entrega un DataFrame listo para el pipeline
+(`validate()`, `exceedance_report()`, `walk_forward()`, `compliance_report()`).
+
+Si la variable no está configurada o se pasa una ruta inexistente, se levanta
+`FileNotFoundError` con instrucciones claras. Tests con archivos sintéticos en
+`tests/test_connectors.py::TestLoadSisaireLocal`.
+
+---
+
 ## Quick Start
 
 ### Análisis completo de una serie ambiental
