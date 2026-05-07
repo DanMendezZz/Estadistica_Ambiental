@@ -13,7 +13,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-284%20passed-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-80%25-brightgreen.svg)]()
-[![version](https://img.shields.io/badge/version-1.0.0-blue.svg)]()
+[![version](https://img.shields.io/badge/version-1.2.0-blue.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -346,6 +346,88 @@ Ver `pyproject.toml` para la lista completa.
 python -m pytest tests/ -q
 # 284 passed, 1 skipped, ~80% coverage
 ```
+
+---
+
+## Consumir desde otro proyecto (este repo es base de conocimiento)
+
+Este repositorio es **base de conocimiento + librería reutilizable**, no un
+producto final. Los dashboards, apps Streamlit, reportes ejecutivos y pipelines
+productivos viven en **repos satélite** que importan `estadistica_ambiental`
+como dependencia.
+
+```
+Estadistica_Ambiental (este repo — base)
+   ├── 16 fichas de dominio
+   ├── 11 módulos del pipeline (io · eda · inference · predictive · ...)
+   ├── 16 notebooks plantilla
+   └── ADRs y decisiones metodológicas
+            ↑
+            │ pip install git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.2.0
+            │
+   ┌────────┴────────┬─────────────────┬──────────────┐
+   │                 │                 │              │
+calidad-aire-car   pomca-magdalena   paramos-rabanal   …  ← repos satélite
+   ├── Streamlit    ├── ETL nocturno  ├── notebook ad-hoc
+   └── deploy       └── reportes      └── informe técnico
+```
+
+### Instalación desde GitHub
+
+```bash
+# Última versión estable (recomendado para satélites — pinear a tag)
+pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.2.0"
+
+# Con extras (ML, espacial, deep, etc.)
+pip install "estadistica-ambiental[ml,spatial] @ git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.2.0"
+
+# Versión en desarrollo (rama main — sin garantías de estabilidad)
+pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@main"
+```
+
+> **Pin a tag siempre** en repos satélite. Evita que un commit en `main` rompa
+> producción sin aviso. Cuando salga `v1.3.0` actualizas conscientemente.
+
+### Imports típicos en un repo satélite
+
+```python
+# Conectores y validación
+from estadistica_ambiental.io.connectors import load_sisaire_local, load_openaq
+from estadistica_ambiental.io.validators import validate
+
+# Reglas de dominio (normas colombianas, ENSO, ICA)
+from estadistica_ambiental.config import NORMA_CO, NORMA_OMS, ENSO_LAG_MESES
+from estadistica_ambiental.features.climate import enso_lagged, load_oni
+
+# Análisis y reportes
+from estadistica_ambiental.inference.intervals import exceedance_report
+from estadistica_ambiental.inference.stationarity import stationarity_report
+from estadistica_ambiental.evaluation.backtesting import walk_forward
+from estadistica_ambiental.reporting.compliance_report import compliance_report
+```
+
+### Qué SÍ vive en este repo (base)
+
+- Módulos reusables del ciclo estadístico (`src/estadistica_ambiental/`).
+- Conectores genéricos a fuentes públicas (OpenAQ, SISAIRE, RMCAB, IDEAM…).
+- Notebooks plantilla por línea temática (`notebooks/lineas_tematicas/`).
+- Fichas de dominio (`docs/fuentes/`) y ADRs (`docs/decisiones.md`).
+- Tests, CI, documentación metodológica.
+
+### Qué NO vive aquí (va en repos satélite)
+
+- Apps Streamlit / dashboards de cliente concreto.
+- Pipelines ETL nocturnos con configuración de deploy.
+- Reportes ejecutivos automatizados con identidad visual de una entidad.
+- Datos crudos (sin importar tamaño — usar `SISAIRE_LOCAL_DIR` u otro).
+- Credenciales, tokens API, URLs internas.
+
+### Compatibilidad de versiones
+
+Sigue [SemVer](https://semver.org). Los breaking changes en API pública se
+marcan con bump MAJOR y se documentan en [`CHANGELOG.md`](CHANGELOG.md). Hasta
+v1.x los símbolos exportados desde `from estadistica_ambiental import *` son
+estables.
 
 ---
 
