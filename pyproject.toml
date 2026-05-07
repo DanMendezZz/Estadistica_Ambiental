@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "estadistica-ambiental"
-version = "1.2.0"
+version = "1.3.0"
 description = "Plantilla Python para estadística aplicada al medio ambiente"
 authors = [{ name = "Dan Méndez" }]
 license = { text = "MIT" }
@@ -90,6 +90,12 @@ dev = [
 ]
 fast = [
     "polars>=0.20",
+]
+docs = [
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
+    "pymdown-extensions>=10.0",
 ]
 
 [tool.hatch.build.targets.wheel]

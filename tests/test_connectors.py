@@ -18,7 +18,9 @@ from estadistica_ambiental.io.connectors import (
     NOMBRES_CORRECTOS,
     _openaq_param_id,
     list_datasets_co,
+    load_datos_gov_co_dataset,
     load_ideam_dhime,
+    load_ideam_dhime_csv,
     load_openaq,
     load_rmcab,
     load_siata_aire,
@@ -569,3 +571,119 @@ class TestLoadSisaireLocal:
         self._write_year(tmp_path, 2024, ['"A","2024-01-01 00:00","2024-01-01 00:59","15.0"\n'])
         with pytest.raises(KeyError, match="pm10"):
             load_sisaire_local(anios=2024, parametro="pm10", path=str(tmp_path))
+
+
+# ---------------------------------------------------------------------------
+# load_datos_gov_co_dataset — cliente SODA genérico
+# ---------------------------------------------------------------------------
+
+
+class TestLoadDatosGovCoDataset:
+    def test_returns_dataframe_with_rows(self):
+        payload = [
+            {"departamento": "Antioquia", "valor": 12.5, "fecha": "2024-01-01"},
+            {"departamento": "Bogota", "valor": 18.3, "fecha": "2024-01-02"},
+        ]
+        with patch("requests.get", return_value=_mock_response(payload)) as mocked:
+            df = load_datos_gov_co_dataset(dataset_id="abcd-1234", limit=100)
+        assert mocked.called
+        called_url = mocked.call_args[0][0]
+        assert called_url.endswith("/resource/abcd-1234.json")
+        assert len(df) == 2
+        assert {"departamento", "valor", "fecha"}.issubset(df.columns)
+
+    def test_pagination_aggregates_pages(self, monkeypatch):
+        # Reducimos el tamaño de página interno para forzar dos llamadas con
+        # mocks pequeños (en producción es 50000, no testeable directamente).
+        import estadistica_ambiental.io.connectors as conn
+
+        monkeypatch.setattr(conn, "DATOS_GOV_CO_PAGE_SIZE", 2)
+
+        # Página 1 llega completa (2 filas == page_size) → continúa.
+        # Página 2 corta (1 fila < page_size) → corta.
+        page1 = [{"x": 1}, {"x": 2}]
+        page2 = [{"x": 3}]
+        with patch(
+            "requests.get",
+            side_effect=[_mock_response(page1), _mock_response(page2)],
+        ) as mocked:
+            df = load_datos_gov_co_dataset(dataset_id="ds", limit=100)
+        assert mocked.call_count == 2
+        assert len(df) == 3
+        # El segundo request debe llevar $offset = 2
+        second_call = mocked.call_args_list[1]
+        assert second_call.kwargs["params"]["$offset"] == 2
+
+    def test_returns_empty_on_http_error(self):
+        with patch("requests.get", side_effect=RuntimeError("500 server error")):
+            df = load_datos_gov_co_dataset(dataset_id="ds", limit=10)
+        assert df.empty
+        assert isinstance(df, pd.DataFrame)
+
+    def test_app_token_is_sent_in_header(self):
+        with patch("requests.get", return_value=_mock_response([{"a": 1}])) as mocked:
+            load_datos_gov_co_dataset(dataset_id="ds", limit=1, app_token="tk-xyz")
+        kwargs = mocked.call_args.kwargs
+        assert "headers" in kwargs
+        assert kwargs["headers"].get("X-App-Token") == "tk-xyz"
+
+
+# ---------------------------------------------------------------------------
+# load_ideam_dhime_csv — variante robusta para CSV con metadatos
+# ---------------------------------------------------------------------------
+
+
+class TestLoadIdeamDhimeCsv:
+    _METADATA = (
+        "Reporte IDEAM DHIME\n"
+        "Estacion: 21205012 - APTO ELDORADO\n"
+        "Municipio: Bogota D.C.\n"
+        "Latitud: 4.7016\n"
+        "Longitud: -74.1469\n"
+    )
+
+    def test_reads_csv_with_metadata_header_lines(self, tmp_path):
+        csv = tmp_path / "21205012_precip.csv"
+        csv.write_text(
+            self._METADATA
+            + "Fecha,Valor,Calidad\n"
+            + "2024-01-01,12.5,bueno\n"
+            + "2024-01-02,8.3,bueno\n"
+            + "2024-01-03,0.0,bueno\n",
+            encoding="utf-8",
+        )
+        df = load_ideam_dhime_csv(path=str(csv), parametro="precipitacion")
+        assert len(df) == 3
+        assert list(df.columns) == ["fecha", "estacion", "parametro", "valor"]
+
+    def test_normalizes_date_and_value_columns(self, tmp_path):
+        csv = tmp_path / "estacion.csv"
+        csv.write_text(
+            "Header info\n"
+            "More header\n"
+            "FECHA,VALOR\n"
+            "2024-01-01,15.2\n"
+            "2024-01-02,16.7\n",
+            encoding="utf-8",
+        )
+        df = load_ideam_dhime_csv(path=str(csv), parametro="temperatura")
+        assert pd.api.types.is_datetime64_any_dtype(df["fecha"])
+        assert df["valor"].dtype.kind == "f"
+        assert (df["parametro"] == "temperatura").all()
+        assert df["valor"].iloc[0] == 15.2
+
+    def test_estacion_inferred_from_filename(self, tmp_path):
+        csv = tmp_path / "21205012_APTO_ELDORADO.csv"
+        csv.write_text(
+            "metadata line\nFecha,Valor\n2024-01-01,5.0\n",
+            encoding="utf-8",
+        )
+        df = load_ideam_dhime_csv(path=str(csv), parametro="caudal")
+        assert (df["estacion"] == "21205012_APTO_ELDORADO").all()
+
+    def test_raises_filenotfound_when_path_missing(self, tmp_path):
+        with pytest.raises(FileNotFoundError):
+            load_ideam_dhime_csv(
+                path=str(tmp_path / "no_existe.csv"),
+                parametro="precipitacion",
+            )

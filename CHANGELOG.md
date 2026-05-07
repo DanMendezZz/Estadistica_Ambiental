@@ -10,6 +10,52 @@ Versiones: [Semver](https://semver.org/lang/es/).
 
 ---
 
+## [1.3.0] — 2026-05-07
+
+### Agregado
+- **`examples/`** — 6 scripts runnables y autocontenidos (con fallback a datos
+  sintéticos): `00_quickstart`, `01_calidad_aire_pm25`, `02_oferta_hidrica_caudal`,
+  `03_paramos_iuh`, `04_cambio_climatico_co2`, `05_eda_generico`. Pensados para
+  onboarding rápido sin abrir un notebook completo.
+- **`notebooks/showcases/calidad_aire_sisaire_real.ipynb`** — notebook end-to-end
+  que consume `load_sisaire_local()` real (con fallback sintético) y recorre
+  carga → validación → calidad → resampling → descriptiva → excedencias →
+  Mann-Kendall → métricas → reporte HTML de cumplimiento.
+- **Conectores genéricos adicionales** en `io/connectors.py`:
+  - `load_datos_gov_co_dataset(dataset_id, where, select, limit, app_token)` —
+    cliente SODA para `datos.gov.co/resource/<id>.json` con paginación
+    `$offset`/`$limit` y soporte de `X-App-Token`.
+  - `load_ideam_dhime_csv(path, parametro, fecha_col_candidates)` — lector
+    robusto para exports CSV de DHIME (auto-skip de líneas de metadata,
+    detección de columnas fecha/valor, fallback utf-8/latin-1, sniff de
+    delimitador).
+- **Documentación navegable** — sitio `mkdocs-material` + `mkdocstrings` con:
+  - `mkdocs.yml` (theme Material en español, paleta light/dark, search
+    multilingüe, snippets para inyectar `CHANGELOG.md`).
+  - `docs/index.md`, `docs/getting-started.md`, `docs/api.md` (API reference
+    auto-generada para 21 sub-módulos), `docs/changelog.md`.
+  - Workflow `.github/workflows/docs.yml` para deploy automático a `gh-pages`.
+  - Extra opcional `[docs]` en `pyproject.toml`.
+- **Empaquetado para PyPI** — `python -m build` produce sdist + wheel limpios
+  (`dist/estadistica_ambiental-1.3.0*`). `twine check` PASSED.
+  Comando de upload manual: `python -m twine upload dist/estadistica_ambiental-1.3.0*`
+  (requiere token PyPI configurado en `~/.pypirc` o variable de entorno
+  `TWINE_PASSWORD`).
+- README: nuevas secciones **"Snippets cortos por línea temática"**, **"Notebook
+  end-to-end con datos reales"** y **"Documentación navegable"**.
+
+### Tests
+- 8 tests nuevos: `TestLoadDatosGovCoDataset` (4) + `TestLoadIdeamDhimeCsv` (4)
+  con mocks de `requests.get` y archivos sintéticos en `tmp_path`.
+- Suite total: **592 passed, 19 skipped, 4 xfailed** (sin regresiones).
+
+### Notas
+- Esta versión consolida el patrón **base ↔ satélite**: el repo expone más
+  conectores y onboarding pero mantiene su rol de base de conocimiento.
+  Productos finales siguen viviendo en repos satélite que pinean a este tag.
+
+---
+
 ## [1.2.0] — 2026-05-07
 
 ### Agregado

@@ -661,6 +661,249 @@ def load_sisaire_local(
 # Datos abiertos.gov.co — Portal general de datos ambientales Colombia
 # ---------------------------------------------------------------------------
 
+# Tamaño máximo por consulta del API SODA. SODA tiene un tope duro de 50000
+# filas por llamada — se expone como constante de módulo para que los tests
+# puedan reducirlo y así forzar paginación con datasets pequeños.
+DATOS_GOV_CO_PAGE_SIZE = 50000
+
+
+def load_datos_gov_co_dataset(
+    dataset_id: str,
+    where: Optional[str] = None,
+    select: Optional[str] = None,
+    limit: int = 50000,
+    app_token: Optional[str] = None,
+) -> pd.DataFrame:
+    """Descarga filas de un dataset SODA en datos.gov.co.
+
+    Cliente genérico de la Socrata Open Data API (SODA). A diferencia de
+    ``list_datasets_co`` (que solo lista metadatos), esta función descarga las
+    filas reales del dataset identificado por ``dataset_id`` (p. ej.
+    ``"7g8z-fpvn"``). El endpoint usado es:
+    ``https://www.datos.gov.co/resource/<dataset_id>.json``.
+
+    Args:
+        dataset_id: ID del dataset (parte después de ``/d/`` en la URL pública).
+        where: Cláusula SoQL ``$where`` (p. ej. ``"departamento = 'Antioquia'"``).
+        select: Cláusula SoQL ``$select`` con columnas separadas por coma.
+        limit: Tope total de filas a descargar (paginación interna por 50000).
+        app_token: Token opcional ``X-App-Token`` para evitar throttling de SODA.
+
+    Returns:
+        DataFrame con las columnas tal como las devuelve el dataset (sin
+        normalización: los datasets son heterogéneos).
+
+    Notas:
+        El endpoint SODA pagina con ``$offset`` y un máximo de 50000 filas por
+        consulta. Esta función itera hasta alcanzar ``limit`` o agotar resultados.
+    """
+    try:
+        import requests
+    except ImportError:
+        logger.warning("Instalar 'requests': pip install requests")
+        return pd.DataFrame()
+
+    url = f"https://www.datos.gov.co/resource/{dataset_id}.json"
+    headers = {"Accept": "application/json"}
+    if app_token:
+        headers["X-App-Token"] = app_token
+
+    # SODA limita cada llamada a ``DATOS_GOV_CO_PAGE_SIZE`` filas. Iteramos
+    # con $offset hasta que el servidor devuelva una página corta (señal de
+    # fin) o se alcance el ``limit`` total solicitado por el usuario.
+    page_size = max(1, DATOS_GOV_CO_PAGE_SIZE)
+    all_rows: list = []
+    offset = 0
+    try:
+        while len(all_rows) < limit:
+            params: dict = {"$limit": page_size, "$offset": offset}
+            if where:
+                params["$where"] = where
+            if select:
+                params["$select"] = select
+
+            resp = requests.get(url, headers=headers, params=params, timeout=60)
+            resp.raise_for_status()
+            batch = resp.json()
+            if not isinstance(batch, list) or not batch:
+                break
+            all_rows.extend(batch)
+            logger.info(
+                "datos.gov.co [%s]: pág. offset=%d trajo %d filas (acum=%d)",
+                dataset_id,
+                offset,
+                len(batch),
+                len(all_rows),
+            )
+            # Página corta del servidor → ya no hay más filas.
+            if len(batch) < page_size:
+                break
+            offset += len(batch)
+
+        # Recortar al límite total solicitado por el usuario.
+        if len(all_rows) > limit:
+            all_rows = all_rows[:limit]
+        df = pd.DataFrame(all_rows)
+        logger.info("datos.gov.co [%s]: %d filas descargadas en total", dataset_id, len(df))
+        return df
+    except Exception as e:
+        logger.error("Error descargando dataset %s desde datos.gov.co: %s", dataset_id, e)
+        return pd.DataFrame()
+
+
+# ---------------------------------------------------------------------------
+# IDEAM DHIME — variante robusta para CSV (encabezados con metadatos previos)
+# ---------------------------------------------------------------------------
+
+
+def load_ideam_dhime_csv(
+    path: str,
+    parametro: str,
+    fecha_col_candidates: Optional[list[str]] = None,
+) -> pd.DataFrame:
+    """Lee CSV de IDEAM DHIME con líneas de metadatos previas al encabezado.
+
+    Variante robusta de ``load_ideam_dhime`` específica para los CSV exportados
+    por DHIME, que típicamente traen varias filas de metadatos (estación,
+    municipio, coordenadas, etc.) antes del encabezado real, y nombran la
+    columna de valor de forma localizada (``VALOR``, ``Valor [mm]``,
+    ``valor_observado``...).
+
+    La función inspecciona las primeras líneas hasta detectar una fila que
+    contenga alguno de los candidatos de fecha y, a partir de ahí, parsea el
+    CSV. Luego identifica la columna de valor por: (a) coincidencia con el
+    ``parametro`` solicitado en el nombre o (b) primera columna numérica.
+
+    Args:
+        path: Ruta al CSV exportado desde DHIME.
+        parametro: Nombre descriptivo del parámetro (``"precipitacion"``,
+            ``"temperatura"``, ``"caudal"``, ...). Se intentará usar como pista
+            para localizar la columna de valor.
+        fecha_col_candidates: Nombres alternativos para la columna de fecha.
+            Default: ``["Fecha", "FECHA", "fecha"]``.
+
+    Returns:
+        DataFrame con columnas: ``fecha``, ``estacion``, ``parametro``, ``valor``.
+
+    Raises:
+        FileNotFoundError: Si ``path`` no existe.
+    """
+    from pathlib import Path
+
+    path_obj = Path(path)
+    if not path_obj.exists():
+        raise FileNotFoundError(f"Archivo DHIME no encontrado: {path}")
+
+    if fecha_col_candidates is None:
+        fecha_col_candidates = ["Fecha", "FECHA", "fecha"]
+    candidatos_upper = {c.upper() for c in fecha_col_candidates}
+
+    # Buscar la línea de encabezado: la primera que contenga alguno de los
+    # nombres de fecha candidatos como token separado por coma o punto y coma.
+    max_skip = 30
+    header_line = 0
+    encoding_used = "utf-8"
+    try:
+        with open(path_obj, encoding="utf-8") as fh:
+            lines = fh.readlines()
+    except UnicodeDecodeError:
+        encoding_used = "latin-1"
+        with open(path_obj, encoding="latin-1") as fh:
+            lines = fh.readlines()
+
+    for i, line in enumerate(lines[:max_skip]):
+        tokens = [t.strip().strip('"').upper() for t in line.replace(";", ",").split(",")]
+        if any(tok in candidatos_upper for tok in tokens):
+            header_line = i
+            break
+
+    try:
+        df = pd.read_csv(
+            path_obj,
+            skiprows=header_line,
+            encoding=encoding_used,
+            sep=None,
+            engine="python",
+        )
+    except Exception as e:
+        logger.error("Error leyendo CSV DHIME '%s': %s", path_obj.name, e)
+        return pd.DataFrame(columns=["fecha", "estacion", "parametro", "valor"])
+
+    # Localizar columna de fecha
+    fecha_col: Optional[str] = None
+    for col in df.columns:
+        if str(col).strip().upper() in candidatos_upper:
+            fecha_col = col
+            break
+    if fecha_col is None:
+        for col in df.columns:
+            if "FECHA" in str(col).upper() or "DATE" in str(col).upper():
+                fecha_col = col
+                break
+    if fecha_col is None:
+        logger.warning("DHIME CSV: no se halló columna de fecha en %s", path_obj.name)
+        return pd.DataFrame(columns=["fecha", "estacion", "parametro", "valor"])
+
+    df = df.rename(columns={fecha_col: "fecha"})
+    df["fecha"] = pd.to_datetime(df["fecha"], errors="coerce", dayfirst=False)
+
+    # Localizar columna de estación si existe
+    estacion_col: Optional[str] = None
+    for col in df.columns:
+        cu = str(col).upper()
+        if "ESTACION" in cu or "ESTACIÓN" in cu or "COD_EST" in cu or "CODIGOESTACION" in cu:
+            estacion_col = col
+            break
+
+    # Localizar columna de valor: por coincidencia con parametro o primera numérica
+    parametro_upper = parametro.upper()
+    valor_col: Optional[str] = None
+    for col in df.columns:
+        if col == "fecha" or col == estacion_col:
+            continue
+        if parametro_upper in str(col).upper():
+            valor_col = col
+            break
+    if valor_col is None:
+        for col in df.columns:
+            if col == "fecha" or col == estacion_col:
+                continue
+            serie_num = pd.to_numeric(df[col], errors="coerce")
+            if serie_num.notna().any():
+                valor_col = col
+                df[col] = serie_num
+                break
+        else:
+            # Fallback explícito a "VALOR"
+            for col in df.columns:
+                if str(col).strip().upper() == "VALOR":
+                    valor_col = col
+                    break
+
+    if valor_col is None:
+        logger.warning("DHIME CSV: no se halló columna de valor en %s", path_obj.name)
+        return pd.DataFrame(columns=["fecha", "estacion", "parametro", "valor"])
+
+    df = df.rename(columns={valor_col: "valor"})
+    df["valor"] = pd.to_numeric(df["valor"], errors="coerce")
+
+    if estacion_col and estacion_col in df.columns:
+        df = df.rename(columns={estacion_col: "estacion"})
+    else:
+        df["estacion"] = path_obj.stem
+
+    df["parametro"] = parametro
+
+    out = df[["fecha", "estacion", "parametro", "valor"]].dropna(subset=["fecha", "valor"])
+    logger.info(
+        "DHIME CSV: %d registros leídos desde '%s' (parametro=%s, header_line=%d)",
+        len(out),
+        path_obj.name,
+        parametro,
+        header_line,
+    )
+    return out.sort_values("fecha").reset_index(drop=True)
+
 
 def list_datasets_co(
     query: str = "calidad aire",
