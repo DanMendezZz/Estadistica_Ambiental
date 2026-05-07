@@ -10,6 +10,19 @@ Versiones: [Semver](https://semver.org/lang/es/).
 
 ---
 
+## [1.3.1] — 2026-05-07
+
+### Corregido
+- `release.yml` — el job `publish-testpypi` ahora usa **Trusted Publishing
+  (OIDC)** en lugar de un token API que nunca estuvo configurado. Requiere
+  registrar el publisher una vez en `test.pypi.org/manage/account/publishing/`
+  (ver comentarios en el workflow).
+- Sin cambios funcionales en el paquete — wheel/sdist idénticos a v1.3.0.
+  Esta versión existe únicamente para validar el flujo de publicación
+  automatizada con la corrección del workflow.
+
+---
+
 ## [1.3.0] — 2026-05-07
 
 ### Agregado
