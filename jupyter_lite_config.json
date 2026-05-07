@@ -1,0 +1,9 @@
+{
+  "LiteBuildConfig": {
+    "contents": ["docs/lite/files"],
+    "output_dir": "docs/lite/_dist"
+  },
+  "PipliteAddon": {
+    "piplite_urls": []
+  }
+}
