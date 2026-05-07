@@ -120,7 +120,6 @@ source = ["src/estadistica_ambiental"]
 omit = [
     "*/tests/*",
     "src/estadistica_ambiental/predictive/deep.py",
-    "src/estadistica_ambiental/predictive/bayesian.py",
 ]
 
 [tool.coverage.report]
