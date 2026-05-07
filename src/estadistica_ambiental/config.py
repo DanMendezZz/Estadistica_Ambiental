@@ -19,6 +19,13 @@ DATA_OUTPUT = Path(os.getenv("DATA_OUTPUT_DIR", str(ROOT_DIR / "data" / "output"
 REPORTS_DIR = DATA_OUTPUT / "reports"
 DOCS_FUENTES = ROOT_DIR / "docs" / "fuentes"
 
+# Carpeta externa con descargas SISAIRE (`CAR_<año>.csv`). Definir en el sistema
+# con `setx SISAIRE_LOCAL_DIR "<ruta>"` (Windows) o exportar en .bashrc / .env;
+# queda `None` si no está configurada — el repo no asume nunca esa ruta.
+SISAIRE_LOCAL_DIR: Path | None = (
+    Path(os.environ["SISAIRE_LOCAL_DIR"]) if os.environ.get("SISAIRE_LOCAL_DIR") else None
+)
+
 # ---------------------------------------------------------------------------
 # Backtesting defaults (heredados y ajustados)
 # ---------------------------------------------------------------------------

@@ -478,3 +478,94 @@ class TestLoadSisaire:
             )
         assert mocked.call_args.kwargs["params"]["estacion"] == "all"
         assert not df.empty
+
+
+# ---------------------------------------------------------------------------
+# load_sisaire_local — descargas SISAIRE/CAR locales (sin duplicar al repo)
+# ---------------------------------------------------------------------------
+
+
+class TestLoadSisaireLocal:
+    _HEADER = '"Estacion","Fecha inicial","Fecha final","PM2.5"\n'
+
+    def _write_year(self, folder, year, rows):
+        f = folder / f"CAR_{year}.csv"
+        body = self._HEADER + "".join(rows)
+        f.write_text(body, encoding="utf-8")
+        return f
+
+    def test_single_year_normalizes_columns(self, tmp_path):
+        from estadistica_ambiental.io.connectors import load_sisaire_local
+
+        self._write_year(
+            tmp_path,
+            2024,
+            [
+                '"BOGOTA RURAL - MOCHUELO","2024-12-31 23:00","2024-12-31 23:59","30.0"\n',
+                '"BOGOTA RURAL - MOCHUELO","2024-12-31 22:00","2024-12-31 22:59","42.0"\n',
+            ],
+        )
+        df = load_sisaire_local(anios=2024, parametro="pm25", path=str(tmp_path))
+        assert list(df.columns) == ["fecha", "estacion", "pm25"]
+        assert df.shape[0] == 2
+        assert df["pm25"].dtype.kind == "f"
+        assert df["fecha"].is_monotonic_increasing  # ordenado ascendente
+
+    def test_multi_year_concat(self, tmp_path):
+        from estadistica_ambiental.io.connectors import load_sisaire_local
+
+        self._write_year(tmp_path, 2023, ['"A","2023-01-01 00:00","2023-01-01 00:59","10.0"\n'])
+        self._write_year(tmp_path, 2024, ['"A","2024-01-01 00:00","2024-01-01 00:59","20.0"\n'])
+        df = load_sisaire_local(anios=[2023, 2024], parametro="pm25", path=str(tmp_path))
+        assert df.shape[0] == 2
+        assert df["fecha"].dt.year.tolist() == [2023, 2024]
+
+    def test_glob_all_when_anios_none(self, tmp_path):
+        from estadistica_ambiental.io.connectors import load_sisaire_local
+
+        self._write_year(tmp_path, 2024, ['"A","2024-01-01 00:00","2024-01-01 00:59","15.0"\n'])
+        df = load_sisaire_local(parametro="pm25", path=str(tmp_path))
+        assert not df.empty
+
+    def test_filter_by_estacion(self, tmp_path):
+        from estadistica_ambiental.io.connectors import load_sisaire_local
+
+        self._write_year(
+            tmp_path,
+            2024,
+            [
+                '"KENNEDY","2024-01-01 00:00","2024-01-01 00:59","12.0"\n',
+                '"USME","2024-01-01 00:00","2024-01-01 00:59","18.0"\n',
+            ],
+        )
+        df = load_sisaire_local(
+            anios=2024, parametro="pm25", path=str(tmp_path), estaciones=["USME"]
+        )
+        assert df["estacion"].unique().tolist() == ["USME"]
+
+    def test_raises_when_no_path_and_no_env(self, monkeypatch):
+        import estadistica_ambiental.io.connectors as conn
+
+        monkeypatch.setattr("estadistica_ambiental.config.SISAIRE_LOCAL_DIR", None)
+        with pytest.raises(FileNotFoundError, match="SISAIRE_LOCAL_DIR"):
+            conn.load_sisaire_local(parametro="pm25")
+
+    def test_raises_when_dir_missing(self, tmp_path):
+        from estadistica_ambiental.io.connectors import load_sisaire_local
+
+        ghost = tmp_path / "no_existe"
+        with pytest.raises(FileNotFoundError, match="no existe"):
+            load_sisaire_local(parametro="pm25", path=str(ghost))
+
+    def test_raises_when_year_csv_missing(self, tmp_path):
+        from estadistica_ambiental.io.connectors import load_sisaire_local
+
+        with pytest.raises(FileNotFoundError, match="Sin archivos"):
+            load_sisaire_local(anios=1999, parametro="pm25", path=str(tmp_path))
+
+    def test_raises_when_parametro_not_in_columns(self, tmp_path):
+        from estadistica_ambiental.io.connectors import load_sisaire_local
+
+        self._write_year(tmp_path, 2024, ['"A","2024-01-01 00:00","2024-01-01 00:59","15.0"\n'])
+        with pytest.raises(KeyError, match="pm10"):
+            load_sisaire_local(anios=2024, parametro="pm10", path=str(tmp_path))
