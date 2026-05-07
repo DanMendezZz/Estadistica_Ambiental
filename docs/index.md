@@ -5,10 +5,22 @@ EDA, estadística descriptiva e inferencial, modelos predictivos y reportes de c
 Metodología de estándares internacionales (ISO, WMO, literatura peer-reviewed) con implementación de
 referencia para Colombia.
 
+[![PyPI](https://img.shields.io/pypi/v/estadistica-ambiental.svg?label=PyPI)](https://pypi.org/project/estadistica-ambiental/)
+[![Python](https://img.shields.io/pypi/pyversions/estadistica-ambiental.svg)](https://pypi.org/project/estadistica-ambiental/)
 [![CI](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/ci.yml/badge.svg)](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/DanMendezZz/Estadistica_Ambiental/branch/main/graph/badge.svg)](https://codecov.io/gh/DanMendezZz/Estadistica_Ambiental)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/DanMendezZz/Estadistica_Ambiental/blob/main/LICENSE)
+
+## Instalación rápida
+
+```bash
+pip install estadistica-ambiental
+```
+
+```python
+import estadistica_ambiental as ea
+print(ea.__version__)
+```
 
 ---
 

@@ -8,14 +8,17 @@
 > áreas protegidas y más). Cada línea tiene su propia ficha de dominio, notebook plantilla y normas
 > colombianas integradas en el código.
 
+[![PyPI](https://img.shields.io/pypi/v/estadistica-ambiental.svg?label=PyPI)](https://pypi.org/project/estadistica-ambiental/)
+[![Python](https://img.shields.io/pypi/pyversions/estadistica-ambiental.svg)](https://pypi.org/project/estadistica-ambiental/)
 [![CI](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/ci.yml/badge.svg)](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/ci.yml)
+[![Release](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/release.yml/badge.svg)](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/DanMendezZz/Estadistica_Ambiental/branch/main/graph/badge.svg)](https://codecov.io/gh/DanMendezZz/Estadistica_Ambiental)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Tests](https://img.shields.io/badge/tests-284%20passed-brightgreen.svg)]()
-[![Coverage](https://img.shields.io/badge/coverage-80%25-brightgreen.svg)]()
-[![version](https://img.shields.io/badge/version-1.3.0-blue.svg)]()
 [![docs](https://img.shields.io/badge/docs-mkdocs--material-blue.svg)](https://danmendezzz.github.io/Estadistica_Ambiental/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+```bash
+pip install estadistica-ambiental
+```
 
 ---
 
@@ -311,28 +314,35 @@ Estadistica_Ambiental/
 
 ## Instalación
 
-### Core
+### Desde PyPI (recomendado para uso normal)
+
+```bash
+pip install estadistica-ambiental
+```
+
+Con extras opcionales:
+
+```bash
+pip install "estadistica-ambiental[ml]"           # XGBoost, LightGBM
+pip install "estadistica-ambiental[spatial]"      # geopandas, pykrige, pysal, folium
+pip install "estadistica-ambiental[prophet]"      # Meta Prophet
+pip install "estadistica-ambiental[deep]"         # PyTorch (LSTM/GRU)
+pip install "estadistica-ambiental[ml,spatial]"   # combinaciones
+```
+
+Verificar la instalación:
+
+```python
+import estadistica_ambiental as ea
+print(ea.__version__)
+```
+
+### Para desarrollar el repo (clone)
 
 ```bash
 git clone https://github.com/DanMendezZz/Estadistica_Ambiental.git
 cd Estadistica_Ambiental
 pip install -e ".[dev]"
-```
-
-### Con modelos ML (XGBoost · LightGBM)
-
-```bash
-pip install -e ".[dev,ml]"
-```
-
-### Extras individuales
-
-```bash
-pip install -e ".[prophet]"    # Meta Prophet
-pip install -e ".[spatial]"    # geopandas · rasterio · pykrige · pysal · folium
-pip install -e ".[deep]"       # PyTorch — LSTM · GRU
-pip install -e ".[profile]"    # ydata-profiling · sweetviz · missingno
-pip install -e ".[fast]"       # polars — carga rápida de parquets grandes
 ```
 
 ### Dependencias core
@@ -345,7 +355,7 @@ Ver `pyproject.toml` para la lista completa.
 
 ```bash
 python -m pytest tests/ -q
-# 284 passed, 1 skipped, ~80% coverage
+# 592 passed, 19 skipped, 4 xfailed (~80% coverage)
 ```
 
 ---
@@ -364,7 +374,7 @@ Estadistica_Ambiental (este repo — base)
    ├── 16 notebooks plantilla
    └── ADRs y decisiones metodológicas
             ↑
-            │ pip install git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.3.0
+            │ pip install estadistica-ambiental
             │
    ┌────────┴────────┬─────────────────┬──────────────┐
    │                 │                 │              │
@@ -373,21 +383,31 @@ calidad-aire-car   pomca-magdalena   paramos-rabanal   …  ← repos satélite
    └── deploy       └── reportes      └── informe técnico
 ```
 
-### Instalación desde GitHub
+### Instalación desde PyPI (preferida)
 
 ```bash
-# Última versión estable (recomendado para satélites — pinear a tag)
-pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.3.0"
+# Última estable
+pip install estadistica-ambiental
 
-# Con extras (ML, espacial, deep, etc.)
-pip install "estadistica-ambiental[ml,spatial] @ git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.3.0"
+# Pinear a versión exacta (recomendado en producción)
+pip install "estadistica-ambiental==1.3.2"
 
-# Versión en desarrollo (rama main — sin garantías de estabilidad)
+# Con extras
+pip install "estadistica-ambiental[ml,spatial]==1.3.2"
+```
+
+### Alternativa — desde GitHub (commits sin tag, ramas, forks)
+
+```bash
+# Pin a tag concreto
+pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.3.2"
+
+# Rama main (sin garantías de estabilidad)
 pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@main"
 ```
 
-> **Pin a tag siempre** en repos satélite. Evita que un commit en `main` rompa
-> producción sin aviso. Cuando salga `v1.4.0` actualizas conscientemente.
+> **Pin a versión siempre** en repos satélite. Evita que un commit en `main` rompa
+> producción sin aviso. Cuando salga `v1.4.0` actualizás conscientemente.
 
 ### Documentación navegable
 
