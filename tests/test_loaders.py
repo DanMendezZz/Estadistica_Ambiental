@@ -166,15 +166,21 @@ class TestLoadNetcdf:
 
 
 class TestLoadShapefile:
-    def test_no_geopandas_raises_import_error(self, tmp_path):
+    def test_no_geopandas_raises_import_error(self, tmp_path, monkeypatch):
         """load_shapefile: ImportError cuando geopandas no está instalado."""
+        import sys
+
+        monkeypatch.setitem(sys.modules, "geopandas", None)
         from estadistica_ambiental.io.loaders import load_shapefile
 
         with pytest.raises(ImportError, match="geopandas"):
             load_shapefile(tmp_path / "fake.shp")
 
-    def test_no_geopandas_dispatch_raises(self, tmp_path):
+    def test_no_geopandas_dispatch_raises(self, tmp_path, monkeypatch):
         """load (dispatcher) con .geojson levanta ImportError por falta de geopandas."""
+        import sys
+
+        monkeypatch.setitem(sys.modules, "geopandas", None)
         from estadistica_ambiental.io.loaders import load
 
         f = tmp_path / "datos.geojson"

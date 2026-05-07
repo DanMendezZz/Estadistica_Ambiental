@@ -481,11 +481,15 @@ class TestStatsReport:
 
 
 class TestKrigingImportError:
-    def test_ordinary_kriging_no_pykrige(self):
+    def test_ordinary_kriging_no_pykrige(self, monkeypatch):
         """ordinary_kriging: ImportError cuando pykrige no está instalado (lines 72-75)."""
+        import sys
+
         import numpy as np
         import pandas as pd
 
+        monkeypatch.setitem(sys.modules, "pykrige", None)
+        monkeypatch.setitem(sys.modules, "pykrige.ok", None)
         from estadistica_ambiental.spatial.interpolation import ordinary_kriging
 
         df = pd.DataFrame(
@@ -497,15 +501,21 @@ class TestKrigingImportError:
 
 
 class TestProjectionsImportError:
-    def test_reproject_no_geopandas_raises(self):
+    def test_reproject_no_geopandas_raises(self, monkeypatch):
         """reproject: ImportError cuando geopandas no está instalado."""
+        import sys
+
+        monkeypatch.setitem(sys.modules, "geopandas", None)
         from estadistica_ambiental.spatial.projections import reproject
 
         with pytest.raises(ImportError, match="geopandas"):
             reproject(None, 4326, 9377)
 
-    def test_clip_to_colombia_no_geopandas_raises(self):
+    def test_clip_to_colombia_no_geopandas_raises(self, monkeypatch):
         """clip_to_colombia: ImportError cuando geopandas no está instalado."""
+        import sys
+
+        monkeypatch.setitem(sys.modules, "geopandas", None)
         from estadistica_ambiental.spatial.projections import clip_to_colombia
 
         with pytest.raises(ImportError, match="geopandas"):
