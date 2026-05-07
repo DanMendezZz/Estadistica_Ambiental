@@ -25,7 +25,7 @@ from estadistica_ambiental.preprocessing.resampling import resample
 from estadistica_ambiental.reporting.forecast_report import forecast_report
 from estadistica_ambiental.reporting.stats_report import stats_report
 
-__version__ = "1.0.0"
+__version__ = "1.3.2"
 __all__ = [
     "load",
     "validate",
