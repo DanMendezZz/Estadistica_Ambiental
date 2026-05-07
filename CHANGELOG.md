@@ -10,6 +10,22 @@ Versiones: [Semver](https://semver.org/lang/es/).
 
 ---
 
+## [1.3.2] — 2026-05-07
+
+### Agregado
+- `release.yml` — JOB 6 `publish-pypi` activado con **Trusted Publishing
+  (OIDC)** contra PyPI real. Pending publisher registrado en
+  `pypi.org/manage/account/publishing/` para `estadistica-ambiental`.
+  A partir de esta versión, cada tag `v*.*.*` publica automáticamente
+  en PyPI real (además de TestPyPI).
+
+### Corregido
+- `src/estadistica_ambiental/__init__.py` — `__version__` desincronizado
+  con `pyproject.toml` (estaba hardcodeado en `"1.0.0"` desde v1.0.0).
+  Ahora refleja la versión real del paquete.
+
+---
+
 ## [1.3.1] — 2026-05-07
 
 ### Corregido

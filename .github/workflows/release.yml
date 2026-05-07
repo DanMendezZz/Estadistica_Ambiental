@@ -141,19 +141,30 @@ jobs:
           skip-existing: true
 
   # ─────────────────────────────────────────────
-  # JOB 6: Publicar en PyPI (deshabilitado — habilitar cuando esté listo)
-  # Requiere: secret PYPI_API_TOKEN en Settings > Secrets.
+  # JOB 6: Publicar en PyPI real
+  # Usa Trusted Publishing (OIDC) — no requiere secrets/tokens.
+  # Configuración previa (una sola vez):
+  #   https://pypi.org/manage/account/publishing/
+  #     - PyPI Project Name:  estadistica-ambiental
+  #     - Owner:              DanMendezZz
+  #     - Repository:         Estadistica_Ambiental
+  #     - Workflow filename:  release.yml
+  #     - Environment:        (vacío)
   # ─────────────────────────────────────────────
-  # publish-pypi:
-  #   name: Publish to PyPI
-  #   needs: publish-testpypi
-  #   runs-on: ubuntu-latest
-  #   environment: pypi
-  #   steps:
-  #     - uses: actions/download-artifact@v4
-  #       with:
-  #         name: dist
-  #         path: dist/
-  #     - uses: pypa/gh-action-pypi-publish@release/v1
-  #       with:
-  #         password: ${{ secrets.PYPI_API_TOKEN }}
+  publish-pypi:
+    name: Publish to PyPI
+    needs: publish-testpypi
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # OIDC para Trusted Publishing
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
