@@ -10,6 +10,15 @@ edit_uri: edit/main/docs/
 docs_dir: docs
 copyright: Copyright &copy; Dan Méndez — MIT License
 
+# JupyterLite genera docs/lite/_dist/ en CI antes del build de mkdocs.
+# Localmente puede no existir; relajamos la validación de enlaces para evitar
+# que --strict aborte por la referencia desde notebooks.md.
+validation:
+  links:
+    not_found: info
+    unrecognized_links: ignore
+    absolute_links: ignore
+
 theme:
   name: material
   language: es
@@ -109,6 +118,7 @@ nav:
   - Empezar: getting-started.md
   - Metodología: metodologia.md
   - Modelos: modelos.md
+  - Notebooks interactivos: notebooks.md
   - Líneas temáticas:
       - Visión general: lineas_tematicas.md
       - Áreas protegidas: fuentes/areas_protegidas.md

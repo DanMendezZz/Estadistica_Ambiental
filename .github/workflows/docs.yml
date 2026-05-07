@@ -38,6 +38,12 @@ jobs:
       - name: Install package with docs extras
         run: pip install -e ".[docs]"
 
+      - name: Build JupyterLite (Pyodide notebooks)
+        run: |
+          jupyter lite build \
+            --contents docs/lite/files \
+            --output-dir docs/lite/_dist
+
       - name: Validate mkdocs build (strict)
         run: mkdocs build --strict
 

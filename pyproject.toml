@@ -96,6 +96,8 @@ docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.24",
     "pymdown-extensions>=10.0",
+    "jupyterlite-core>=0.3",
+    "jupyterlite-pyodide-kernel>=0.3",
 ]
 
 [tool.hatch.build.targets.wheel]
