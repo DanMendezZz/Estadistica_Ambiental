@@ -36,11 +36,13 @@ class TestMapStations:
 
     def test_contains_one_marker_per_station(self, stations_df):
         """El HTML debe tener tantos CircleMarker como estaciones."""
+        pytest.importorskip("folium")
         m = map_stations(stations_df, label_col="nombre", value_col="pm25")
         html = m._repr_html_()
         assert html.count("circle_marker") >= len(stations_df)
 
     def test_title_appears_in_html(self, stations_df):
+        pytest.importorskip("folium")
         m = map_stations(stations_df, label_col="nombre", title="Mi Red")
         html = m._repr_html_()
         assert "Mi Red" in html
