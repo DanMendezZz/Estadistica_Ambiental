@@ -26,7 +26,6 @@ from estadistica_ambiental.io.connectors import (
     load_smbyc_alertas,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -117,10 +116,13 @@ class TestLoadOpenaq:
         # Primera página: 2 resultados (igual al limit) → continuará. Segunda: 1 → corta.
         payload_full = self._sample_payload(n=2, found=3)
         payload_short = self._sample_payload(n=1, found=3)
-        with patch("requests.get", side_effect=[
-            _mock_response(payload_full),
-            _mock_response(payload_short),
-        ]):
+        with patch(
+            "requests.get",
+            side_effect=[
+                _mock_response(payload_full),
+                _mock_response(payload_short),
+            ],
+        ):
             df = load_openaq(location_id=225433, parameter="pm25", limit=2)
         assert len(df) == 3
 
@@ -214,10 +216,7 @@ class TestLoadSiataAire:
         assert {"fecha", "estacion", "variable", "valor", "unidad"}.issubset(df.columns)
 
     def test_remote_success(self):
-        csv_text = (
-            "fecha,estacion,variable,valor,unidad\n"
-            "2024-01-01,Itagui,PM2.5,30.0,µg/m³\n"
-        )
+        csv_text = "fecha,estacion,variable,valor,unidad\n2024-01-01,Itagui,PM2.5,30.0,µg/m³\n"
         resp = MagicMock()
         resp.text = csv_text
         resp.raise_for_status.return_value = None
@@ -286,8 +285,7 @@ class TestLoadSmbycAlertas:
     def test_falls_back_to_csv_without_geopandas(self, tmp_path, monkeypatch):
         csv = tmp_path / "alertas.csv"
         csv.write_text(
-            "fecha_alerta,area_ha,municipio,departamento\n"
-            "2024-01-01,150.5,Florencia,Caqueta\n",
+            "fecha_alerta,area_ha,municipio,departamento\n2024-01-01,150.5,Florencia,Caqueta\n",
             encoding="utf-8",
         )
 
@@ -378,10 +376,7 @@ class TestLoadSisaire:
     )
     # Mismo contenido pero con caracteres no-ASCII (µ, ñ) que deben aparecer
     # correctamente cuando se decodifica con latin-1.
-    _CSV_LATIN1 = (
-        "FECHA,ESTACION,PM2_5,UNIDAD\n"
-        "2024-01-01 00:00,Cañón del Chicamocha,12.4,µg/m³\n"
-    )
+    _CSV_LATIN1 = "FECHA,ESTACION,PM2_5,UNIDAD\n2024-01-01 00:00,Cañón del Chicamocha,12.4,µg/m³\n"
 
     def test_happy_path_utf8(self):
         with patch(
@@ -427,10 +422,7 @@ class TestLoadSisaire:
         assert "�" not in nombre  # sin U+FFFD
 
     def test_column_normalization_pm2_5_to_pm25(self):
-        csv = (
-            "FECHA,ESTACION,PM2_5,PM10,O3\n"
-            "2024-01-01,EST,10.0,25.0,30.0\n"
-        )
+        csv = "FECHA,ESTACION,PM2_5,PM10,O3\n2024-01-01,EST,10.0,25.0,30.0\n"
         with patch("requests.get", return_value=_mock_csv_response(csv)):
             df = load_sisaire(
                 estacion="EST",

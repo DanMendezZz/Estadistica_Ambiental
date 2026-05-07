@@ -14,7 +14,6 @@ from estadistica_ambiental.predictive.residual_ar import (
     TestResult,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures: residuos sintéticos AR(1) puro
 # ---------------------------------------------------------------------------

@@ -488,7 +488,9 @@ class TestKrigingImportError:
 
         from estadistica_ambiental.spatial.interpolation import ordinary_kriging
 
-        df = pd.DataFrame({"lat": [4.5, 5.0, 5.5], "lon": [-74.0, -73.5, -73.0], "pm25": [10.0, 15.0, 12.0]})
+        df = pd.DataFrame(
+            {"lat": [4.5, 5.0, 5.5], "lon": [-74.0, -73.5, -73.0], "pm25": [10.0, 15.0, 12.0]}
+        )
         lat_g, lon_g = np.meshgrid(np.linspace(4.5, 5.5, 3), np.linspace(-74.0, -73.0, 3))
         with pytest.raises(ImportError, match="pykrige"):
             ordinary_kriging(df, "lat", "lon", "pm25", lat_g, lon_g)

@@ -61,7 +61,10 @@ class TestChoroplethMap:
         from shapely.geometry import box
 
         gdf = gpd.GeoDataFrame(
-            {"valor": [1.0, 2.0, 3.0], "geometry": [box(0, 0, 1, 1), box(1, 0, 2, 1), box(2, 0, 3, 1)]},
+            {
+                "valor": [1.0, 2.0, 3.0],
+                "geometry": [box(0, 0, 1, 1), box(1, 0, 2, 1), box(2, 0, 3, 1)],
+            },
             crs="EPSG:4326",
         )
         import folium
@@ -94,7 +97,9 @@ class TestPlotKrigingMap:
         fig = plot_kriging_map(grid_lat, grid_lon, z, points_df=points)
         # Verifica que el ax tiene un PathCollection (scatter)
         ax = fig.axes[0]
-        scatters = [c for c in ax.collections if hasattr(c, "get_offsets") and len(c.get_offsets()) > 0]
+        scatters = [
+            c for c in ax.collections if hasattr(c, "get_offsets") and len(c.get_offsets()) > 0
+        ]
         assert any(len(s.get_offsets()) == len(points) for s in scatters)
         plt.close(fig)
 
