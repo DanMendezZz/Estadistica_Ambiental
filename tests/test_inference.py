@@ -173,6 +173,24 @@ class TestTrend:
         result = sens_slope(trending_series)
         assert result["slope"] > 0
 
+    def test_mann_kendall_import_error(self, trending_series, monkeypatch):
+        """mann_kendall: ImportError cuando pymannkendall no disponible (line 20)."""
+        import sys
+
+        monkeypatch.setitem(sys.modules, "pymannkendall", None)
+        with pytest.raises(ImportError, match="pymannkendall"):
+            mann_kendall(trending_series)
+
+    def test_pettitt_import_error(self, trending_series, monkeypatch):
+        """pettitt_test: ImportError cuando pymannkendall no disponible (line 61)."""
+        import sys
+
+        from estadistica_ambiental.inference.trend import pettitt_test
+
+        monkeypatch.setitem(sys.modules, "pymannkendall", None)
+        with pytest.raises(ImportError, match="pymannkendall"):
+            pettitt_test(trending_series)
+
 
 # --- intervals ---
 
@@ -269,3 +287,19 @@ class TestSensSlope:
         s = pd.Series(np.arange(100, dtype=float))
         result = sens_slope(s)
         assert result["slope"] == pytest.approx(1.0, abs=0.01)
+
+
+class TestExceedanceUmbralNone:
+    def test_norma_key_missing_in_dict_skipped(self, monkeypatch):
+        """exceedance_report: umbral None (key ausente en norma_dict) → continue (line 188)."""
+        from estadistica_ambiental.inference import intervals
+
+        fake_norma = {"key_exists": 10.0}
+        monkeypatch.setitem(
+            intervals._NORMA_MAP,
+            "var_fake_xyz",
+            [("Norma ficticia", fake_norma, "key_missing")],
+        )
+        s = pd.Series([5.0, 15.0, 25.0])
+        rep = intervals.exceedance_report(s, variable="var_fake_xyz")
+        assert rep.empty

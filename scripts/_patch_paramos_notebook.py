@@ -1,3 +1,6 @@
+# DEPRECATED — lógica integrada a build_notebooks.py 2026-05-07
+# La fuente activa ahora es scripts/_patches/paramos.py.
+# Este archivo se conserva como referencia histórica del enriquecimiento.
 """Patch paramos.ipynb: agrega IRH, cobertura vegetal y gradiente Caldas-Lang."""
 import json, pathlib, uuid
 

@@ -109,8 +109,19 @@ PHYSICAL_RANGES: Dict[str, Tuple[float, float]] = {
     "lng": (-82.0, -66.0),
 }
 
-# Rangos específicos por línea temática — sobrescriben PHYSICAL_RANGES
-# cuando se invoca validate(df, linea_tematica="paramos")
+# ---------------------------------------------------------------------------
+# Rangos específicos por línea temática (ADR-006).
+# Sobrescriben PHYSICAL_RANGES cuando se invoca:
+#   validate(df, linea_tematica="<key>")
+#
+# Líneas soportadas: 'paramos', 'calidad_aire', 'oferta_hidrica',
+# 'recurso_hidrico', 'humedales'. Si la línea no aparece aquí, se usan los
+# rangos base de PHYSICAL_RANGES sin sobrescritura.
+#
+# Para añadir una nueva línea: registrar aquí un dict {col: (min, max)} con
+# las columnas cuyo rango difiere del base (no hace falta repetir las que
+# ya están en PHYSICAL_RANGES).
+# ---------------------------------------------------------------------------
 _LINEA_RANGES: Dict[str, Dict[str, Tuple[float, float]]] = {
     "paramos": {
         "temperatura": (-5.0, 16.0),  # °C — páramos (máx. típico 16°C)

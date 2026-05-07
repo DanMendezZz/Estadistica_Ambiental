@@ -200,35 +200,18 @@ def nrmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     return float(rmse(y_true, y_pred) / std_y)
 
 
-# Puntos de corte ICA por defecto — Resolución 2254/2017, PM2.5 (µg/m³)
-# Solo se usa si air_quality._ICA_BREAKPOINTS no está disponible.
-_ICA_BREAKPOINTS_DEFAULT: dict = {
-    "Buena": (-np.inf, 12.0),
-    "Aceptable": (12.0, 37.0),
-    "Danina_sens": (37.0, 55.0),
-    "Danina": (55.0, 150.0),
-    "Muy_danina": (150.0, 250.0),
-    "Peligrosa": (250.0, np.inf),
-}
-
-
 def _get_ica_breakpoints(pollutant: str) -> dict:
     """Devuelve breakpoints ICA en formato {categoría: (lo, hi)} para el contaminante dado.
 
-    Usa _ICA_BREAKPOINTS de preprocessing.air_quality (Res. 2254/2017).
-    Si el contaminante no se reconoce, usa PM2.5 con aviso en log.
+    Consume `config.ICA_BREAKPOINTS` y `config.ICA_LABELS` (Res. 2254/2017),
+    fuente única de verdad centralizada según ADR-005.
+    Si el contaminante no se reconoce, usa PM2.5 silenciosamente.
     """
-    try:
-        from estadistica_ambiental.preprocessing.air_quality import (
-            _ICA_BREAKPOINTS,
-            _ICA_LABELS,
-        )
+    from estadistica_ambiental.config import ICA_BREAKPOINTS, ICA_LABELS
 
-        key = pollutant.lower().replace(".", "").replace("₂", "2").replace("₃", "3")
-        bins = _ICA_BREAKPOINTS.get(key, _ICA_BREAKPOINTS["pm25"])
-        return {label: (bins[i], bins[i + 1]) for i, label in enumerate(_ICA_LABELS)}
-    except ImportError:
-        return _ICA_BREAKPOINTS_DEFAULT
+    key = pollutant.lower().replace(".", "").replace("₂", "2").replace("₃", "3")
+    bins = ICA_BREAKPOINTS.get(key, ICA_BREAKPOINTS["pm25"])
+    return {label: (bins[i], bins[i + 1]) for i, label in enumerate(ICA_LABELS)}
 
 
 def _categorize_ica(values: np.ndarray, breakpoints: dict) -> np.ndarray:

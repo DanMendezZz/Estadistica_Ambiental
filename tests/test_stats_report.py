@@ -27,6 +27,9 @@ class TestStatsReport:
         out = tmp_path / "stats.html"
         stats_report(env_df, output=str(out), date_col="fecha")
         assert out.exists()
+        assert out.stat().st_size > 500
+        content = out.read_text(encoding="utf-8")
+        assert "<html" in content.lower()
 
     def test_returns_path(self, tmp_path, env_df):
         from pathlib import Path
@@ -51,6 +54,9 @@ class TestStatsReport:
         out = tmp_path / "stats_nodates.html"
         stats_report(env_df.drop(columns=["fecha"]), output=str(out))
         assert out.exists()
+        assert out.stat().st_size > 500
+        content = out.read_text(encoding="utf-8")
+        assert "<html" in content.lower()
 
     def test_specific_value_cols(self, tmp_path, env_df):
         out = tmp_path / "stats_cols.html"
@@ -62,6 +68,8 @@ class TestStatsReport:
         out = tmp_path / "sub" / "report.html"
         stats_report(env_df, output=str(out))
         assert out.exists()
+        assert out.parent.is_dir()
+        assert out.stat().st_size > 500
 
     def test_short_series_stationarity_skipped(self, tmp_path):
         # Series < 20 puntos → _section_stationarity las salta sin error
@@ -74,3 +82,63 @@ class TestStatsReport:
         out = tmp_path / "short.html"
         stats_report(df, output=str(out), date_col="fecha")
         assert out.exists()
+        content = out.read_text(encoding="utf-8")
+        assert "<html" in content.lower()
+
+    def test_very_short_series_trend_skipped(self, tmp_path):
+        """_section_trend: len(s) < 10 → continue; si todos, retorna '' (lines 78, 94)."""
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2020-01-01", periods=5, freq="ME"),
+                "pm25": [10.0, 12.0, 11.0, 13.0, 12.5],
+            }
+        )
+        out = tmp_path / "short_trend.html"
+        stats_report(df, output=str(out), date_col="fecha")
+        assert out.exists()
+        content = out.read_text(encoding="utf-8")
+        assert "<html" in content.lower()
+
+    def test_stationarity_exception_handled(self, tmp_path, monkeypatch):
+        """_section_stationarity: excepción capturada con continue (lines 65-66)."""
+        import estadistica_ambiental.reporting.stats_report as sr
+
+        def bad_stationarity(s):
+            raise RuntimeError("forced stationarity error")
+
+        monkeypatch.setattr(sr, "stationarity_report", bad_stationarity)
+
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2020-01-01", periods=30, freq="ME"),
+                "pm25": np.arange(30, dtype=float),
+            }
+        )
+        out = tmp_path / "exc_stat.html"
+        stats_report(df, output=str(out), date_col="fecha")
+        assert out.exists()
+        content = out.read_text(encoding="utf-8")
+        assert "<html" in content.lower()
+        assert "forced stationarity error" not in content
+
+    def test_trend_exception_handled(self, tmp_path, monkeypatch):
+        """_section_trend: excepción en mann_kendall capturada (lines 91-92)."""
+        import estadistica_ambiental.reporting.stats_report as sr
+
+        def bad_mk(s):
+            raise RuntimeError("forced trend error")
+
+        monkeypatch.setattr(sr, "mann_kendall", bad_mk)
+
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2020-01-01", periods=15, freq="ME"),
+                "pm25": np.arange(15, dtype=float),
+            }
+        )
+        out = tmp_path / "exc_trend.html"
+        stats_report(df, output=str(out), date_col="fecha")
+        assert out.exists()
+        content = out.read_text(encoding="utf-8")
+        assert "<html" in content.lower()
+        assert "forced trend error" not in content

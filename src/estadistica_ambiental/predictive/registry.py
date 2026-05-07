@@ -25,9 +25,10 @@ _REGISTRY: Dict[str, Type[BaseModel]] = {
 
 # Modelos deep learning — se registran solo si PyTorch está disponible
 try:
-    from estadistica_ambiental.predictive.deep import GRUModel, LSTMModel
+    from estadistica_ambiental.predictive.deep import BiLSTMModel, GRUModel, LSTMModel
 
     _REGISTRY["lstm"] = LSTMModel
+    _REGISTRY["bilstm"] = BiLSTMModel
     _REGISTRY["gru"] = GRUModel
 except ImportError:
     pass

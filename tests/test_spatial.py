@@ -473,3 +473,180 @@ class TestStatsReport:
         content = out.read_text(encoding="utf-8")
         assert "Mann-Kendall" in content
         assert "descriptiva" in content.lower()
+
+
+# ---------------------------------------------------------------------------
+# spatial/projections — ImportError coverage (geopandas no instalado)
+# ---------------------------------------------------------------------------
+
+
+class TestKrigingImportError:
+    def test_ordinary_kriging_no_pykrige(self):
+        """ordinary_kriging: ImportError cuando pykrige no está instalado (lines 72-75)."""
+        import numpy as np
+        import pandas as pd
+
+        from estadistica_ambiental.spatial.interpolation import ordinary_kriging
+
+        df = pd.DataFrame({"lat": [4.5, 5.0, 5.5], "lon": [-74.0, -73.5, -73.0], "pm25": [10.0, 15.0, 12.0]})
+        lat_g, lon_g = np.meshgrid(np.linspace(4.5, 5.5, 3), np.linspace(-74.0, -73.0, 3))
+        with pytest.raises(ImportError, match="pykrige"):
+            ordinary_kriging(df, "lat", "lon", "pm25", lat_g, lon_g)
+
+
+class TestProjectionsImportError:
+    def test_reproject_no_geopandas_raises(self):
+        """reproject: ImportError cuando geopandas no está instalado."""
+        from estadistica_ambiental.spatial.projections import reproject
+
+        with pytest.raises(ImportError, match="geopandas"):
+            reproject(None, 4326, 9377)
+
+    def test_clip_to_colombia_no_geopandas_raises(self):
+        """clip_to_colombia: ImportError cuando geopandas no está instalado."""
+        from estadistica_ambiental.spatial.projections import clip_to_colombia
+
+        with pytest.raises(ImportError, match="geopandas"):
+            clip_to_colombia(None)
+
+    def test_bounding_box_colombia_no_deps(self):
+        """bounding_box_colombia: no requiere geopandas."""
+        from estadistica_ambiental.spatial.projections import bounding_box_colombia
+
+        bbox = bounding_box_colombia(buffer_deg=1.0)
+        assert len(bbox) == 4
+        assert bbox[0] < bbox[2]  # lon_min < lon_max
+        assert bbox[1] < bbox[3]  # lat_min < lat_max
+
+
+# ---------------------------------------------------------------------------
+# spatial/autocorrelation — _interpret_moran (puro) e ImportError paths
+# ---------------------------------------------------------------------------
+
+
+class TestInterpretMoran:
+    """Función pura: no requiere libpysal/esda."""
+
+    def test_clustering_positivo(self):
+        from estadistica_ambiental.spatial.autocorrelation import _interpret_moran
+
+        result = _interpret_moran(0.5, p=0.01, alpha=0.05)
+        assert "clustering" in result
+        assert "positivo" in result
+
+    def test_dispersion(self):
+        from estadistica_ambiental.spatial.autocorrelation import _interpret_moran
+
+        result = _interpret_moran(-0.4, p=0.01, alpha=0.05)
+        assert "dispersión" in result
+
+    def test_no_significativo(self):
+        from estadistica_ambiental.spatial.autocorrelation import _interpret_moran
+
+        result = _interpret_moran(0.5, p=0.20, alpha=0.05)
+        assert "aleatoria" in result
+        assert "no significativo" in result
+
+
+class TestAutocorrelationImportErrors:
+    """Cubre las ramas `except ImportError` cuando libpysal/esda faltan."""
+
+    def test_morans_i_import_error(self, monkeypatch):
+        import sys
+
+        from estadistica_ambiental.spatial.autocorrelation import morans_i
+
+        monkeypatch.setitem(sys.modules, "libpysal", None)
+        with pytest.raises(ImportError, match="pysal|libpysal"):
+            morans_i(None, "value")
+
+    def test_geary_c_import_error(self, monkeypatch):
+        import sys
+
+        from estadistica_ambiental.spatial.autocorrelation import geary_c
+
+        monkeypatch.setitem(sys.modules, "libpysal", None)
+        with pytest.raises(ImportError, match="pysal|libpysal"):
+            geary_c(None, "value")
+
+    def test_getis_ord_g_import_error(self, monkeypatch):
+        import sys
+
+        from estadistica_ambiental.spatial.autocorrelation import getis_ord_g
+
+        monkeypatch.setitem(sys.modules, "libpysal", None)
+        with pytest.raises(ImportError, match="pysal|libpysal"):
+            getis_ord_g(None, "value")
+
+    def test_local_morans_i_import_error(self, monkeypatch):
+        import sys
+
+        from estadistica_ambiental.spatial.autocorrelation import local_morans_i
+
+        monkeypatch.setitem(sys.modules, "libpysal", None)
+        with pytest.raises(ImportError, match="pysal|libpysal"):
+            local_morans_i(None, "value")
+
+
+# ---------------------------------------------------------------------------
+# evaluation/comparison — edge cases en _normalize y rank_models
+# ---------------------------------------------------------------------------
+
+
+class TestComparisonEdgeCases:
+    def test_hydrology_domain_inverts_nse_kge(self):
+        """En hidrología NSE/KGE son higher-is-better → mayor NSE = menor score."""
+        results = {
+            "ModelGood": {"metrics": {"nse": 0.85, "kge": 0.80, "rmse": 1.0, "pbias": 5.0}},
+            "ModelBad": {"metrics": {"nse": 0.20, "kge": 0.25, "rmse": 3.0, "pbias": 30.0}},
+        }
+        ranking = rank_models(results, domain="hydrology")
+        assert ranking.index[0] == "ModelGood"
+
+    def test_constant_metric_ignored_in_score(self):
+        """Métrica con varianza cero (lo == hi) no aporta al ranking."""
+        # rmse idéntico en ambos modelos; mae los diferencia
+        results = {
+            "A": {"metrics": {"rmse": 2.0, "mae": 1.0, "r2": 0.9, "mase": 1.0}},
+            "B": {"metrics": {"rmse": 2.0, "mae": 3.0, "r2": 0.9, "mase": 1.0}},
+        }
+        ranking = rank_models(results, domain="general")
+        # A debe ganar gracias a menor MAE; rmse/r2/mase constantes no penalizan
+        assert ranking.index[0] == "A"
+
+    def test_missing_metric_does_not_crash(self):
+        """Modelo con métrica faltante: fillna(0) lo deja sin penalización en esa métrica."""
+        results = {
+            "ModelComplete": {"metrics": {"rmse": 2.0, "mae": 1.5, "r2": 0.85, "mase": 1.0}},
+            "ModelPartial": {"metrics": {"rmse": 1.5, "mae": 1.0}},  # faltan r2 y mase
+        }
+        ranking = rank_models(results, domain="general")
+        assert "rank" in ranking.columns
+        assert len(ranking) == 2
+
+    def test_normalize_all_nan_column(self):
+        """_normalize: columna toda NaN → resultado NaN sin crash."""
+        from estadistica_ambiental.evaluation.comparison import _normalize
+
+        df = pd.DataFrame({"rmse": [1.0, 2.0, 3.0], "kge": [np.nan, np.nan, np.nan]})
+        result = _normalize(df, ["rmse", "kge"])
+        assert result["kge"].isna().all()
+
+    def test_normalize_skips_missing_column(self):
+        """_normalize: columna que no existe en df se omite limpiamente."""
+        from estadistica_ambiental.evaluation.comparison import _normalize
+
+        df = pd.DataFrame({"rmse": [1.0, 2.0]})
+        result = _normalize(df, ["rmse", "nse"])
+        assert "rmse" in result.columns
+        assert "nse" not in result.columns
+
+    def test_select_best_returns_string(self):
+        """select_best: tipo de retorno es str (cubre str(...) cast)."""
+        results = {
+            "X": {"metrics": {"rmse": 2.0, "mae": 1.5, "r2": 0.85, "mase": 1.0}},
+            "Y": {"metrics": {"rmse": 5.0, "mae": 4.0, "r2": 0.50, "mase": 2.0}},
+        }
+        best = select_best(results)
+        assert isinstance(best, str)
+        assert best == "X"

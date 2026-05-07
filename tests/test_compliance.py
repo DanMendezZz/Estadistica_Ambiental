@@ -274,6 +274,12 @@ class TestComplianceReport:
             output=str(out),
         )
         assert result.exists()
+        assert result.stat().st_size > 1000
+        content = result.read_text(encoding="utf-8")
+        # Las tres variables hídricas deben aparecer en el reporte
+        assert "OD" in content
+        assert "DBO5" in content
+        assert "PH" in content
 
     def test_missing_variable_skipped(self, air_quality_df, tmp_path):
         """Variable que no existe en el df no rompe el reporte."""
@@ -287,3 +293,130 @@ class TestComplianceReport:
             output=str(out),
         )
         assert result.exists()
+        assert result.stat().st_size > 1000
+        content = result.read_text(encoding="utf-8")
+        # PM25 sí debe aparecer; variable_inexistente debe ser ignorada limpiamente
+        assert "PM25" in content
+        assert "variable_inexistente" not in content
+
+
+class TestComplianceReportCoverage:
+    """Tests de cobertura para ramas no ejercidas en TestComplianceReport."""
+
+    def test_all_vars_not_in_df_empty_sections(self, tmp_path):
+        """_section_semaforo({}) y _section_tabla_exceedances({}) cuando all_dfs vacío (lines 154, 188)."""
+        from estadistica_ambiental.reporting.compliance_report import compliance_report
+
+        df = pd.DataFrame({"temperatura": [14.0, 15.0, 16.0]})
+        out = tmp_path / "empty.html"
+        result = compliance_report(df, variables=["pm25"], date_col="fecha", output=str(out))
+        assert result.exists()
+        content = out.read_text(encoding="utf-8")
+        assert "Sin variables con normas colombianas" in content
+
+    def test_variable_no_norms_gray_and_table_empty_rep(self, tmp_path):
+        """temperatura sin normas → tarjeta gris (line 159) y fila 'Sin norma' en tabla (lines 193-197)."""
+        from estadistica_ambiental.reporting.compliance_report import compliance_report
+
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=10, freq="D"),
+                "pm25": [50.0] * 10,
+                "temperatura": [14.0] * 10,
+            }
+        )
+        out = tmp_path / "gray.html"
+        result = compliance_report(
+            df,
+            variables=["pm25", "temperatura"],
+            date_col="fecha",
+            output=str(out),
+        )
+        assert result.exists()
+        content = out.read_text(encoding="utf-8")
+        assert "Sin norma" in content or "Sin norma colombiana" in content
+
+    def test_all_values_comply_green_card(self, tmp_path):
+        """Valores pm25 muy bajos → max_exc == 0 → tarjeta verde CUMPLE (line 163)."""
+        from estadistica_ambiental.reporting.compliance_report import compliance_report
+
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=10, freq="D"),
+                "pm25": [1.0] * 10,
+            }
+        )
+        out = tmp_path / "green.html"
+        result = compliance_report(df, variables=["pm25"], date_col="fecha", output=str(out))
+        assert result.exists()
+        content = out.read_text(encoding="utf-8")
+        assert "CUMPLE" in content
+
+    def test_small_exceedance_yellow_card(self, tmp_path):
+        """~5% excedencia OMS annual → 0 < max_exc <= 10 → tarjeta amarilla ALERTA (line 165)."""
+        from estadistica_ambiental.reporting.compliance_report import compliance_report
+
+        # 5 valores ligeramente sobre OMS annual (5 µg/m³), 95 por debajo
+        vals = [6.0] * 5 + [4.0] * 95
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=100, freq="D"),
+                "pm25": vals,
+            }
+        )
+        out = tmp_path / "yellow.html"
+        result = compliance_report(df, variables=["pm25"], date_col="fecha", output=str(out))
+        assert result.exists()
+        content = out.read_text(encoding="utf-8")
+        assert "ALERTA" in content
+
+    def test_no_date_col_in_df_series_skipped(self, tmp_path):
+        """date_col ausente en df → _section_series retorna "" (line 235)."""
+        from estadistica_ambiental.reporting.compliance_report import compliance_report
+
+        df = pd.DataFrame({"pm25": [50.0] * 10})
+        out = tmp_path / "no_date.html"
+        result = compliance_report(
+            df, variables=["pm25"], date_col="fecha_inexistente", output=str(out)
+        )
+        assert result.exists()
+        content = result.read_text(encoding="utf-8")
+        assert "<html" in content.lower()
+        # PM25 sigue siendo evaluado; las series temporales se omiten en silencio
+        assert "PM25" in content
+
+    def test_linea_tematica_without_ficha_file(self, tmp_path):
+        """linea_tematica sin archivo md → _section_ficha_dominio retorna "" (line 321)."""
+        from estadistica_ambiental.reporting.compliance_report import compliance_report
+
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
+                "pm25": [10.0] * 5,
+            }
+        )
+        out = tmp_path / "no_ficha.html"
+        result = compliance_report(
+            df,
+            variables=["pm25"],
+            date_col="fecha",
+            linea_tematica="linea_inexistente_xyz_abc",
+            output=str(out),
+        )
+        assert result.exists()
+        content = result.read_text(encoding="utf-8")
+        assert "<html" in content.lower()
+        # La sección de ficha de dominio debe estar ausente (sin linea válida)
+        assert "linea_inexistente_xyz_abc" not in content
+
+    def test_ficha_exists_but_no_resumen_returns_empty(self, tmp_path, monkeypatch):
+        """_section_ficha_dominio: ficha sin sección ## Resumen → retorna "" (line 336)."""
+        import importlib
+
+        cr_module = importlib.import_module("estadistica_ambiental.reporting.compliance_report")
+        monkeypatch.setattr(cr_module, "DOCS_FUENTES", tmp_path)
+        ficha = tmp_path / "test_linea.md"
+        ficha.write_text("# Test\n\n## Otra Sección\nAlgún texto.\n", encoding="utf-8")
+
+        result = cr_module._section_ficha_dominio("test_linea")
+        assert result == ""

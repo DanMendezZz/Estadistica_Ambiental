@@ -1,13 +1,18 @@
-"""Modelos de Deep Learning: LSTM y GRU para series temporales ambientales.
+"""Modelos de Deep Learning: LSTM, BiLSTM y GRU para series temporales ambientales.
 
 Requiere: pip install estadistica-ambiental[deep]  (torch + lightning)
 Si PyTorch no está disponible, el import falla gracefully con ImportError.
+
+Todas las clases implementan el contrato :class:`BaseModel` y, además, exponen
+los miembros del protocolo :class:`ModelSpec` (``warm_starts``, ``suggest_params``,
+``build_model``, ``search_space``) para integrarse en el pipeline de
+optimización bayesiana y en :func:`estadistica_ambiental.evaluation.backtesting.walk_forward`.
 """
 
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -29,27 +34,46 @@ def _check_torch():
         )
 
 
-class _LSTMNet:
-    """Red LSTM mínima implementada en PyTorch puro (sin Lightning)."""
+class _RecurrentNet:
+    """Red recurrente mínima en PyTorch puro.
 
-    def __init__(self, input_size: int, hidden_size: int, n_layers: int, dropout: float):
+    Soporta LSTM (uni o bidireccional) y GRU según ``cell``.
+    """
+
+    def __init__(
+        self,
+        input_size: int,
+        hidden_size: int,
+        n_layers: int,
+        dropout: float,
+        cell: str = "lstm",
+        bidirectional: bool = False,
+    ):
         torch = _check_torch()
         import torch.nn as nn
+
+        cell_lower = cell.lower()
+        if cell_lower not in {"lstm", "gru"}:
+            raise ValueError(f"cell debe ser 'lstm' o 'gru', recibido '{cell}'")
+
+        rnn_cls = nn.LSTM if cell_lower == "lstm" else nn.GRU
+        out_factor = 2 if bidirectional else 1
 
         class Net(nn.Module):
             def __init__(self):
                 super().__init__()
-                self.lstm = nn.LSTM(
+                self.rnn = rnn_cls(
                     input_size,
                     hidden_size,
                     n_layers,
                     batch_first=True,
                     dropout=dropout if n_layers > 1 else 0,
+                    bidirectional=bidirectional,
                 )
-                self.fc = nn.Linear(hidden_size, 1)
+                self.fc = nn.Linear(hidden_size * out_factor, 1)
 
             def forward(self, x):
-                out, _ = self.lstm(x)
+                out, _ = self.rnn(x)
                 return self.fc(out[:, -1, :])
 
         self.net = Net()
@@ -78,13 +102,19 @@ class _LSTMNet:
 
 
 class LSTMModel(BaseModel):
-    """LSTM simple para pronóstico ambiental de series univariadas.
+    """LSTM para pronóstico ambiental univariado con ventana deslizante.
 
-    Usa ventana deslizante (lookback) como features de entrada.
-    Requiere: pip install torch  (o [deep]).
+    Implementa :class:`BaseModel` (``fit``/``predict``/``is_fitted``) y el
+    protocolo :class:`ModelSpec` (``warm_starts``/``suggest_params``/
+    ``build_model``/``search_space``) para uso directo con
+    :func:`walk_forward` y el optimizador bayesiano.
+
+    Requiere: pip install torch  (o el extra ``[deep]``).
     """
 
     name = "LSTM"
+    _cell: str = "lstm"
+    _bidirectional: bool = False
 
     def __init__(
         self,
@@ -96,7 +126,12 @@ class LSTMModel(BaseModel):
         lr: float = 1e-3,
     ):
         super().__init__(
-            lookback=lookback, hidden_size=hidden_size, n_layers=n_layers, epochs=epochs
+            lookback=lookback,
+            hidden_size=hidden_size,
+            n_layers=n_layers,
+            dropout=dropout,
+            epochs=epochs,
+            lr=lr,
         )
         self.lookback = lookback
         self.hidden_size = hidden_size
@@ -104,24 +139,41 @@ class LSTMModel(BaseModel):
         self.dropout = dropout
         self.epochs = epochs
         self.lr = lr
-        self._net = None
+        self._net: Optional[_RecurrentNet] = None
         self._scaler_mean = 0.0
         self._scaler_std = 1.0
         self._history: Optional[np.ndarray] = None
+        self._loss: Optional[float] = None
+
+    # ------------------------------------------------------------------ BaseModel
 
     def fit(self, y: pd.Series, X: Optional[pd.DataFrame] = None) -> "LSTMModel":
         _check_torch()
-        vals = y.dropna().values.astype(float)
-        self._scaler_mean = vals.mean()
-        self._scaler_std = vals.std() if vals.std() > 0 else 1.0
+        vals = np.asarray(y.dropna().values, dtype=float)
+        if len(vals) <= self.lookback:
+            raise ValueError(
+                f"La serie ({len(vals)} obs) debe tener más puntos que "
+                f"lookback ({self.lookback})."
+            )
+        self._scaler_mean = float(vals.mean())
+        self._scaler_std = float(vals.std()) if vals.std() > 0 else 1.0
         scaled = (vals - self._scaler_mean) / self._scaler_std
 
         X_win, y_win = self._make_windows(scaled)
-        self._net = _LSTMNet(self.lookback, self.hidden_size, self.n_layers, self.dropout)
+        self._net = _RecurrentNet(
+            input_size=1,
+            hidden_size=self.hidden_size,
+            n_layers=self.n_layers,
+            dropout=self.dropout,
+            cell=self._cell,
+            bidirectional=self._bidirectional,
+        )
         self._net.train_loop(X_win, y_win, self.epochs, self.lr)
         self._history = scaled[-self.lookback :]
         self._fitted = True
-        logger.info("LSTM ajustado: %d pasos de lookback, %d epochs", self.lookback, self.epochs)
+        logger.info(
+            "%s ajustado: %d pasos de lookback, %d epochs", self.name, self.lookback, self.epochs
+        )
         return self
 
     def predict(self, horizon: int, X_future: Optional[pd.DataFrame] = None) -> np.ndarray:
@@ -144,30 +196,73 @@ class LSTMModel(BaseModel):
             y.append(series[i + self.lookback])
         return np.array(X), np.array(y)
 
+    # ------------------------------------------------------------------ summary
+
+    def summary(self) -> Dict[str, Any]:
+        """Resumen rápido del modelo (compatible con clásicos)."""
+        return {
+            "name": self.name,
+            "fitted": self._fitted,
+            "lookback": self.lookback,
+            "hidden_size": self.hidden_size,
+            "n_layers": self.n_layers,
+            "dropout": self.dropout,
+            "epochs": self.epochs,
+            "lr": self.lr,
+            "bidirectional": self._bidirectional,
+            "cell": self._cell,
+        }
+
+    # ------------------------------------------------------------------ ModelSpec
+
+    @property
+    def warm_starts(self) -> List[Dict[str, Any]]:
+        return [
+            {"lookback": 24, "hidden_size": 64, "n_layers": 2, "dropout": 0.1, "lr": 1e-3},
+            {"lookback": 48, "hidden_size": 128, "n_layers": 2, "dropout": 0.2, "lr": 5e-4},
+        ]
+
+    def suggest_params(self, trial: Any) -> Dict[str, Any]:
+        return {
+            "lookback": trial.suggest_int("lookback", 6, 96),
+            "hidden_size": trial.suggest_categorical("hidden_size", [16, 32, 64, 128]),
+            "n_layers": trial.suggest_int("n_layers", 1, 3),
+            "dropout": trial.suggest_float("dropout", 0.0, 0.5),
+            "lr": trial.suggest_float("lr", 1e-4, 1e-2, log=True),
+        }
+
+    def build_model(self, params: Dict[str, Any]) -> "LSTMModel":
+        return type(self)(
+            lookback=params.get("lookback", self.lookback),
+            hidden_size=params.get("hidden_size", self.hidden_size),
+            n_layers=params.get("n_layers", self.n_layers),
+            dropout=params.get("dropout", self.dropout),
+            epochs=params.get("epochs", self.epochs),
+            lr=params.get("lr", self.lr),
+        )
+
+    @property
+    def search_space(self) -> Dict[str, Any]:
+        return {
+            "lookback": ("int", 6, 96),
+            "hidden_size": ("categorical", [16, 32, 64, 128]),
+            "n_layers": ("int", 1, 3),
+            "dropout": ("float", 0.0, 0.5),
+            "lr": ("loguniform", 1e-4, 1e-2),
+        }
+
+
+class BiLSTMModel(LSTMModel):
+    """LSTM bidireccional. Misma interfaz que :class:`LSTMModel`."""
+
+    name = "BiLSTM"
+    _cell = "lstm"
+    _bidirectional = True
+
 
 class GRUModel(LSTMModel):
     """GRU — misma interfaz que LSTM, arquitectura más ligera."""
 
     name = "GRU"
-
-    def _build_net(self):
-        _check_torch()
-        import torch.nn as nn
-
-        class GRUNet(nn.Module):
-            def __init__(self, lookback, hidden_size, n_layers, dropout):
-                super().__init__()
-                self.gru = nn.GRU(
-                    lookback,
-                    hidden_size,
-                    n_layers,
-                    batch_first=True,
-                    dropout=dropout if n_layers > 1 else 0,
-                )
-                self.fc = nn.Linear(hidden_size, 1)
-
-            def forward(self, x):
-                out, _ = self.gru(x)
-                return self.fc(out[:, -1, :])
-
-        return GRUNet(self.lookback, self.hidden_size, self.n_layers, self.dropout)
+    _cell = "gru"
+    _bidirectional = False

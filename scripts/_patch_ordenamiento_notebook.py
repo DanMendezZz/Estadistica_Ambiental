@@ -1,3 +1,6 @@
+# DEPRECATED — lógica integrada a build_notebooks.py 2026-05-07
+# La fuente activa ahora es scripts/_patches/ordenamiento_territorial.py.
+# Este archivo se conserva como referencia histórica del enriquecimiento.
 """Patch ordenamiento_territorial.ipynb: agrega EEP, IACAL, SARAR."""
 import json, pathlib, uuid
 

@@ -1,3 +1,6 @@
+# DEPRECATED — lógica integrada a build_notebooks.py 2026-05-07
+# La fuente activa ahora es scripts/_patches/cambio_climatico.py.
+# Este archivo se conserva como referencia histórica del enriquecimiento.
 """Patch cambio_climatico.ipynb: agrega carbono, NDC, Monte Carlo."""
 import json, pathlib, uuid
 

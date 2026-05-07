@@ -1,3 +1,6 @@
+# DEPRECATED — lógica integrada a build_notebooks.py 2026-05-07
+# La fuente activa ahora es scripts/_patches/recurso_hidrico.py.
+# Este archivo se conserva como referencia histórica del enriquecimiento.
 """Patch recurso_hidrico.ipynb: agrega capacidad de asimilacion y QUAL2K."""
 import json, pathlib, uuid
 
