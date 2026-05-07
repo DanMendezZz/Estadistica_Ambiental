@@ -33,6 +33,20 @@ try:
 except ImportError:
     pass
 
+# Modelos bayesianos — se registran solo si PyMC + ArviZ están disponibles
+try:
+    from estadistica_ambiental.predictive.bayesian import (
+        PYMC_AVAILABLE,
+        BayesianARIMA,
+        HierarchicalModel,
+    )
+
+    if PYMC_AVAILABLE:
+        _REGISTRY["bayesian_arima"] = BayesianARIMA
+        _REGISTRY["hierarchical"] = HierarchicalModel
+except ImportError:
+    pass
+
 
 def get_model(name: str, **kwargs) -> BaseModel:
     """Instancia un modelo por nombre. kwargs pasan al constructor."""
