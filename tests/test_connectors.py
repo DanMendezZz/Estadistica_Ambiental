@@ -659,11 +659,7 @@ class TestLoadIdeamDhimeCsv:
     def test_normalizes_date_and_value_columns(self, tmp_path):
         csv = tmp_path / "estacion.csv"
         csv.write_text(
-            "Header info\n"
-            "More header\n"
-            "FECHA,VALOR\n"
-            "2024-01-01,15.2\n"
-            "2024-01-02,16.7\n",
+            "Header info\nMore header\nFECHA,VALOR\n2024-01-01,15.2\n2024-01-02,16.7\n",
             encoding="utf-8",
         )
         df = load_ideam_dhime_csv(path=str(csv), parametro="temperatura")
