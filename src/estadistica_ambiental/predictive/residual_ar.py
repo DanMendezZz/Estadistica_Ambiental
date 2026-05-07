@@ -255,9 +255,7 @@ class HourlyAR1Calibrator:
         results: Dict[str, TestResult] = {}
         results["T1_mean_zero"] = _test_t1_mean_zero(innovations, alpha=a)
         results["T2_variance_finite"] = _test_t2_variance_finite(innovations, alpha=a)
-        results["T3_hourly_autocorr"] = _test_t3_hourly_autocorr(
-            innovations, inn_index, alpha=a
-        )
+        results["T3_hourly_autocorr"] = _test_t3_hourly_autocorr(innovations, inn_index, alpha=a)
         results["T4_monthly_seasonality"] = _test_t4_monthly_seasonality(
             res_arr, res_index, alpha=a
         )
@@ -318,9 +316,7 @@ def _coerce_series(
             raise TypeError("El índice de residuals debe ser DatetimeIndex.")
     else:
         if datetime_index is None:
-            raise ValueError(
-                "Si residuals es ndarray, datetime_index es obligatorio."
-            )
+            raise ValueError("Si residuals es ndarray, datetime_index es obligatorio.")
         idx = pd.DatetimeIndex(datetime_index)
         arr = np.asarray(residuals, dtype=float)
     return arr, idx
@@ -385,9 +381,7 @@ def _test_t1_mean_zero(innovations: np.ndarray, alpha: float) -> TestResult:
 def _test_t2_variance_finite(innovations: np.ndarray, alpha: float) -> TestResult:
     """T2: varianza estable y finita (ratio de varianzas primera/segunda mitad)."""
     if innovations.size < 4:
-        return TestResult(
-            "T2_variance_finite", False, np.nan, np.nan, "muestra insuficiente"
-        )
+        return TestResult("T2_variance_finite", False, np.nan, np.nan, "muestra insuficiente")
     half = innovations.size // 2
     v1 = float(np.var(innovations[:half], ddof=1))
     v2 = float(np.var(innovations[half:], ddof=1))
@@ -414,9 +408,7 @@ def _test_t3_hourly_autocorr(
     """T3: autocorrelación residual horaria ≈ 0 (test sobre ρ̂ en lag 1)."""
     n = innovations.size
     if n < 5:
-        return TestResult(
-            "T3_hourly_autocorr", False, np.nan, np.nan, "muestra insuficiente"
-        )
+        return TestResult("T3_hourly_autocorr", False, np.nan, np.nan, "muestra insuficiente")
     s = innovations - innovations.mean()
     denom = float(np.sum(s**2))
     if denom <= 0:

@@ -152,8 +152,7 @@ class LSTMModel(BaseModel):
         vals = np.asarray(y.dropna().values, dtype=float)
         if len(vals) <= self.lookback:
             raise ValueError(
-                f"La serie ({len(vals)} obs) debe tener más puntos que "
-                f"lookback ({self.lookback})."
+                f"La serie ({len(vals)} obs) debe tener más puntos que lookback ({self.lookback})."
             )
         self._scaler_mean = float(vals.mean())
         self._scaler_std = float(vals.std()) if vals.std() > 0 else 1.0
