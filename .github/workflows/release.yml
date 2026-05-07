@@ -112,12 +112,21 @@ jobs:
 
   # ─────────────────────────────────────────────
   # JOB 5: Publicar en TestPyPI (validación previa a PyPI)
-  # Requiere: secret TEST_PYPI_API_TOKEN en Settings > Secrets.
+  # Usa Trusted Publishing (OIDC) — no requiere secrets/tokens.
+  # Configuración previa (una sola vez):
+  #   https://test.pypi.org/manage/account/publishing/
+  #     - PyPI Project Name:  estadistica-ambiental
+  #     - Owner:              DanMendezZz
+  #     - Repository:         Estadistica_Ambiental
+  #     - Workflow filename:  release.yml
+  #     - Environment:        (vacío)
   # ─────────────────────────────────────────────
   publish-testpypi:
     name: Publish to TestPyPI
     needs: github-release
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # OIDC para Trusted Publishing
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -129,7 +138,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           skip-existing: true
 
   # ─────────────────────────────────────────────
