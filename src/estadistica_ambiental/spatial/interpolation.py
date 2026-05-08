@@ -27,7 +27,11 @@ def idw(
 
     Args:
         points: DataFrame con estaciones de observación.
-        grid_lat, grid_lon: Grids de puntos objetivo (meshgrid).
+        lat_col: Nombre de la columna de latitud en ``points``.
+        lon_col: Nombre de la columna de longitud en ``points``.
+        value_col: Nombre de la columna con el valor a interpolar.
+        grid_lat: Grid 2D de latitudes objetivo (meshgrid).
+        grid_lon: Grid 2D de longitudes objetivo (meshgrid).
         power: Exponente del IDW (2 = estándar).
 
     Returns:
