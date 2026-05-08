@@ -98,6 +98,7 @@ docs = [
     "pymdown-extensions>=10.0",
     "jupyterlite-core>=0.3",
     "jupyterlite-pyodide-kernel>=0.3",
+    "jupyter-server>=2.10",
 ]
 
 [tool.hatch.build.targets.wheel]

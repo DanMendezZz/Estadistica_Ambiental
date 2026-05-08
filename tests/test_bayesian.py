@@ -287,9 +287,7 @@ class TestHierarchicalModelSpec:
         )
 
     def test_group_estimates_one_row_per_group(self, panel_long):
-        model = HierarchicalModel(
-            group_col="estacion", samples=SAMPLES, tune=TUNE, chains=CHAINS
-        )
+        model = HierarchicalModel(group_col="estacion", samples=SAMPLES, tune=TUNE, chains=CHAINS)
         model.fit(panel_long, value_col="y")
         ge = model.group_estimates()
         assert len(ge) == panel_long["estacion"].nunique()
@@ -298,9 +296,7 @@ class TestHierarchicalModelSpec:
         assert (ge["mean"] <= ge["hdi_upper"]).all()
 
     def test_handles_unbalanced_groups(self, panel_unbalanced):
-        model = HierarchicalModel(
-            group_col="estacion", samples=SAMPLES, tune=TUNE, chains=CHAINS
-        )
+        model = HierarchicalModel(group_col="estacion", samples=SAMPLES, tune=TUNE, chains=CHAINS)
         model.fit(panel_unbalanced, value_col="y")
         assert model.is_fitted
         ge = model.group_estimates()
@@ -311,9 +307,7 @@ class TestHierarchicalModelSpec:
         assert ge["hdi_upper"].notna().all()
 
     def test_fit_dataframe_value_col_inferred(self, panel_long):
-        model = HierarchicalModel(
-            group_col="estacion", samples=SAMPLES, tune=TUNE, chains=CHAINS
-        )
+        model = HierarchicalModel(group_col="estacion", samples=SAMPLES, tune=TUNE, chains=CHAINS)
         # Sin value_col explícito: debe inferir 'y' como única columna numérica.
         model.fit(panel_long)
         assert model.is_fitted

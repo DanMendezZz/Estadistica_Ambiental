@@ -187,9 +187,7 @@ class BayesianARIMA(BaseModel):
         self._y_orig = y_arr
         if isinstance(y_series.index, pd.DatetimeIndex):
             self._last_index = y_series.index
-            self._freq = pd.infer_freq(y_series.index) or getattr(
-                y_series.index, "freqstr", None
-            )
+            self._freq = pd.infer_freq(y_series.index) or getattr(y_series.index, "freqstr", None)
 
         y_diff = _difference(y_arr, self.d)
         self._y_diff = y_diff
@@ -206,9 +204,7 @@ class BayesianARIMA(BaseModel):
 
         # Matriz de lags AR (siempre).
         Y = y_diff[n_lags:]
-        Xlag = np.column_stack(
-            [y_diff[n_lags - i - 1 : len(y_diff) - i - 1] for i in range(p_eff)]
-        )
+        Xlag = np.column_stack([y_diff[n_lags - i - 1 : len(y_diff) - i - 1] for i in range(p_eff)])
 
         # Para MA pre-calculamos residuos del fit OLS-like sobre AR (proxy de epsilons).
         eps_lags = None
@@ -259,9 +255,7 @@ class BayesianARIMA(BaseModel):
         self._fitted = True
         # Atributo público requerido por la spec.
         self.trace_ = self._trace
-        logger.info(
-            "BayesianARIMA(p=%d, d=%d, q=%d) ajustado.", self.p, self.d, self.q
-        )
+        logger.info("BayesianARIMA(p=%d, d=%d, q=%d) ajustado.", self.p, self.d, self.q)
         return self
 
     # ------------------------------------------------------------------ predict
@@ -502,9 +496,7 @@ class HierarchicalModel(BaseModel):
                     "value_col no especificado y no se pudo inferir una columna numérica."
                 )
             if self.group_col not in df.columns:
-                raise ValueError(
-                    f"DataFrame no tiene la columna de grupo '{self.group_col}'."
-                )
+                raise ValueError(f"DataFrame no tiene la columna de grupo '{self.group_col}'.")
             y_arr = np.asarray(df[vc].values, dtype=float)
             g = df[self.group_col].values
         else:
@@ -534,9 +526,7 @@ class HierarchicalModel(BaseModel):
         with pm.Model() as model:
             mu_global = pm.Normal("mu_global", mu=0.0, sigma=10.0)
             sigma_global = pm.HalfNormal("sigma_global", sigma=5.0)
-            mu_group = pm.Normal(
-                "mu_group", mu=mu_global, sigma=sigma_global, shape=n_groups
-            )
+            mu_group = pm.Normal("mu_group", mu=mu_global, sigma=sigma_global, shape=n_groups)
             sigma = pm.HalfNormal("sigma", sigma=5.0)
             pm.Normal("y_obs", mu=mu_group[idx], sigma=sigma, observed=y_arr)
             self._trace = pm.sample(
