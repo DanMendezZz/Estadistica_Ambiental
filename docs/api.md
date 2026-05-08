@@ -313,7 +313,7 @@ genera automáticamente a partir de los docstrings con [mkdocstrings](https://mk
 ## Análisis espacial
 
 > Requiere `pip install estadistica-ambiental[spatial]` (geopandas + rasterio +
-> pysal + esda + folium). Ver [ADR-013](decisiones.md#adr-013--decisiones-de-diseño-del-módulo-spatial-retroalimentación-juanministerio).
+> pysal + esda + folium). Ver ADR-013 en [`decisiones.md`](decisiones.md).
 
 ### spatial.io
 
