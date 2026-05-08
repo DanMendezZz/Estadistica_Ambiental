@@ -20,23 +20,61 @@
 pip install estadistica-ambiental
 ```
 
+📚 **Documentación:** <https://danmendezzz.github.io/Estadistica_Ambiental/>
+📓 **Notebooks navegables sin instalar (Pyodide):** [JupyterLite live](https://danmendezzz.github.io/Estadistica_Ambiental/lite/)
+🛰️ **Satélite de ejemplo:** [`Estadistica_Ambiental_Dashboard`](https://github.com/DanMendezZz/Estadistica_Ambiental_Dashboard) (Streamlit Cloud)
+
 ---
 
 ## Tabla de contenido
 
-1. [Motivación](#motivación)
-2. [Metodología](#metodología)
-3. [Resultados y validación](#resultados-y-validación)
-4. [Estructura del proyecto](#estructura-del-proyecto)
-5. [Instalación](#instalación)
-6. [Quick Start](#quick-start)
-7. [Catálogo de modelos](#catálogo-de-modelos)
-8. [16 Líneas temáticas](#16-líneas-temáticas)
-9. [Normativa colombiana integrada](#normativa-colombiana-integrada)
-10. [Reportes automáticos](#reportes-automáticos)
-11. [Flujo por línea temática](#flujo-por-línea-temática)
-12. [Compatibilidad y extras](#compatibilidad-y-extras)
-13. [Atribución](#atribución)
+1. [¿Qué encontrás en este repo?](#qué-encontrás-en-este-repo)
+2. [¿Para quién es este repo?](#para-quién-es-este-repo)
+3. [Motivación](#motivación)
+4. [Metodología](#metodología)
+5. [Resultados y validación](#resultados-y-validación)
+6. [Estructura del proyecto](#estructura-del-proyecto)
+7. [Instalación](#instalación)
+8. [Consumir desde otro proyecto (este repo es base de conocimiento)](#consumir-desde-otro-proyecto-este-repo-es-base-de-conocimiento)
+9. [Probá sin instalar nada — JupyterLite](#probá-sin-instalar-nada--jupyterlite)
+10. [Datos reales (uso opcional, sin duplicar)](#datos-reales-uso-opcional-sin-duplicar)
+11. [Quick Start](#quick-start)
+12. [Catálogo de modelos](#catálogo-de-modelos)
+13. [16 Líneas temáticas](#16-líneas-temáticas)
+14. [Normativa colombiana integrada](#normativa-colombiana-integrada)
+15. [Reportes automáticos](#reportes-automáticos)
+16. [Flujo por línea temática](#flujo-por-línea-temática)
+17. [Compatibilidad y extras](#compatibilidad-y-extras)
+18. [Trabajo futuro](#trabajo-futuro)
+19. [Atribución](#atribución)
+
+---
+
+## ¿Qué encontrás en este repo?
+
+Este repo es **base de conocimiento + librería reutilizable**, no un producto final. Concretamente:
+
+- **11 módulos del pipeline estadístico** (`io · eda · descriptive · inference · features · predictive · evaluation · reporting · spatial · preprocessing · optimization`) instalables con `pip install estadistica-ambiental`.
+- **16 notebooks plantilla** por línea temática (calidad del aire, oferta hídrica, páramos, humedales, …) que recorren el ciclo completo end-to-end con datos sintéticos o reales.
+- **19 ADRs** ([`docs/decisiones.md`](docs/decisiones.md) + [`docs/adr/`](docs/adr/)) con el porqué de cada decisión metodológica — outliers como señal real, RMSLE en variables negativas, ENSO con lag por ecosistema, normas centralizadas, base↔satélite, OIDC para PyPI.
+- **16 fichas de dominio** ([`docs/fuentes/<linea>.md`](docs/fuentes/)) con normas regulatorias, fuentes públicas, umbrales y buenas prácticas por línea temática.
+- **Normas colombianas centralizadas** en `config.py` (Res. 2254/2017, 2115/2007, 631/2015, IUA, IRH, ICA, ENSO).
+- **639 tests · CI verde · cobertura ~80 %** sobre Linux + Windows; sitio mkdocs auto-publicado a GitHub Pages tras cada push a `main`.
+
+---
+
+## ¿Para quién es este repo?
+
+| Sos... | Empezá por |
+| --- | --- |
+| **Analista en CAR / IDEAM / MADS / alcaldía** | [Quick Start](#quick-start) → [16 Líneas temáticas](#16-líneas-temáticas) → notebooks en `notebooks/lineas_tematicas/` |
+| **Estudiante de estadística ambiental** | [JupyterLite live](https://danmendezzz.github.io/Estadistica_Ambiental/lite/) (sin instalar nada) → [Resultados y validación](#resultados-y-validación) → [`docs/decisiones.md`](docs/decisiones.md) |
+| **Docente o investigador** | [`docs/decisiones.md`](docs/decisiones.md) (19 ADRs) → [`docs/fuentes/`](docs/fuentes/) (fichas de dominio) → [Catálogo de modelos](#catálogo-de-modelos) |
+| **Desarrollador de un satélite** | [Consumir desde otro proyecto](#consumir-desde-otro-proyecto-este-repo-es-base-de-conocimiento) → ejemplo real en [`Estadistica_Ambiental_Dashboard`](https://github.com/DanMendezZz/Estadistica_Ambiental_Dashboard) (Streamlit Cloud) |
+
+> **Nota didáctica:** las decisiones difíciles (cuándo usar SARIMA vs ML, por qué obligamos ADF+KPSS, cuándo
+> validar contra OMS y cuándo contra Res. 2254) están **documentadas como ADR** — no escondidas en el código.
+> Si vas a defender una metodología, los ADRs son el insumo principal.
 
 ---
 
@@ -292,7 +330,7 @@ Estadistica_Ambiental/
 ├── docs/
 │   ├── fuentes/                   ← 16 fichas técnicas de dominio ✅
 │   │   └── calidad_aire.md        ← variables · ICA µg/m³ · buenas prácticas BP-1 a BP-7
-│   ├── decisiones.md              ← ADR-001 a ADR-013
+│   ├── decisiones.md              ← ADR-001 a ADR-019
 │   ├── metodologia.md             ← ciclo estadístico detallado
 │   ├── modelos.md                 ← catálogo de modelos y cuándo usar cada uno
 │   └── intake_lider.md            ← cuestionario onboarding líderes de área (18 preguntas)
@@ -307,7 +345,7 @@ Estadistica_Ambiental/
 │   ├── fase8_calidad_aire.py      ← showcase con datos reales PM2.5 SISAIRE
 │   └── build_notebooks.py         ← regenera los 16 notebooks desde plantilla
 │
-└── tests/                         ← 284 tests · 80% cobertura · CI ubuntu + windows
+└── tests/                         ← 639 tests · ~80% cobertura · CI ubuntu + windows
 ```
 
 ---
@@ -355,7 +393,7 @@ Ver `pyproject.toml` para la lista completa.
 
 ```bash
 python -m pytest tests/ -q
-# 592 passed, 19 skipped, 4 xfailed (~80% coverage)
+# 639 tests collected — ~80% coverage en Linux + Windows
 ```
 
 ---
@@ -461,6 +499,25 @@ Sigue [SemVer](https://semver.org). Los breaking changes en API pública se
 marcan con bump MAJOR y se documentan en [`CHANGELOG.md`](CHANGELOG.md). Hasta
 v1.x los símbolos exportados desde `from estadistica_ambiental import *` son
 estables.
+
+---
+
+## Probá sin instalar nada — JupyterLite
+
+Tres notebooks didácticos corren **directo en el navegador** vía Pyodide (sin Python local, sin pip,
+sin descargas) — pensado para estudiantes y demos rápidas:
+
+🔗 **<https://danmendezzz.github.io/Estadistica_Ambiental/lite/>**
+
+| Notebook | Qué muestra |
+| --- | --- |
+| `01_calidad_demo.ipynb` | Carga, validación con rangos físicos, EDA mínimo sobre PM2.5. |
+| `02_tendencia_mann_kendall.ipynb` | Detección de tendencia con Mann-Kendall + Sen's slope sobre serie ambiental. |
+| `03_excedencias_normativas.ipynb` | `exceedance_report()` contra Res. 2254/2017 y guías OMS 2021. |
+
+> **Limitaciones de Pyodide (ADR-017):** las librerías nativas pesadas (geopandas, rasterio, XGBoost,
+> Prophet, PyTorch, PyMC) **no corren en el browser**. Para esos módulos hay que instalar el paquete
+> normalmente. Los notebooks de JupyterLite usan únicamente la capa puramente Python del repo.
 
 ---
 
@@ -594,7 +651,7 @@ sobre datos SISAIRE/CAR reales (vía `load_sisaire_local()`) o sintéticos
 | Random Forest | — | Robusto sin tuning agresivo; buena línea base ML |
 | LSTM / GRU | `[deep]` | Series largas (>5 años), cuando hay GPU disponible |
 | Kriging / GP | `[spatial]` | Interpolación espacio-temporal entre estaciones |
-| PyMC / Bayesian | `[bayes]` | Incertidumbre jerárquica multi-estación (stub — Fase 10) |
+| PyMC / Bayesian | `[bayes]` | Incertidumbre jerárquica multi-estación (Fase 10 — ver [ADR-016](docs/adr/ADR-016-pymc-bayesiano-fase10.md)) |
 
 Todos los modelos comparten la misma interfaz y son comparables con `walk_forward` + `rank_models`.
 
@@ -726,6 +783,37 @@ docs/decisiones.md — registro ADR de decisiones metodológicas
 | `[bayes]` | pymc · arviz | Modelos jerárquicos (Fase 10, experimental) |
 | `[profile]` | ydata-profiling · sweetviz · missingno | EDA enriquecido |
 | `[fast]` | polars | Series horarias muy largas (>1M registros) |
+
+---
+
+## Trabajo futuro
+
+La base de conocimiento queda documentalmente cerrada en v1.3.2 (todas las decisiones grandes con ADR,
+cobertura de API completa en docs, tests verdes). Los siguientes frentes son **mejoras incrementales**,
+priorizadas por valor pedagógico — no por features de producto. Detalle completo en `Plan/Plan.md` §10.
+
+### A. Pedagógico (alta prioridad)
+
+- **Glosario de dominio** (`docs/glosario.md`) con términos técnicos colombianos (IUA, IRH, ICA, ENSO, ICA-aire, ENA, MRV, REDD+).
+- **Índice "preguntas que el repo responde"** — ~30 preguntas frecuentes linkeando a notebook + función.
+- **Casos de estudio reproducibles** — 3-5 mini-casos cortos por bloque temático.
+
+### B. Cobertura (media prioridad)
+
+- Auditoría cruzada `Fuentes.md` ↔ notebooks (gap analysis).
+- Fichas operativas para los conectores ya implementados (limitaciones API, latencia, cobertura).
+- Línea adicional candidata: **ruido ambiental** (Res. 627/2006) — decisión pendiente.
+
+### C. Calidad técnica (baja prioridad)
+
+- Pre-commit hook con `mkdocs build --strict` para detectar warnings griffe antes del push.
+- Subir cobertura a ≥ 85 % en `predictive.bayesian` y `spatial.*`.
+- Type hints completos con `mypy --strict` en módulos heredados.
+
+### D. Ecosistema satélites (depende del usuario, no del repo base)
+
+- Validador de cumplimiento normativo como webapp (carga CSV → reporte HTML).
+- Backtesting interactivo educativo (selección de modelo + serie + horizonte).
 
 ---
 
