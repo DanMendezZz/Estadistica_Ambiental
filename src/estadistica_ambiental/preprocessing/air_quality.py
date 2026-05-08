@@ -432,10 +432,10 @@ def correct_seasonal_bias(
         Tupla ``(predictions_corrected, bias_table)``:
 
         - ``predictions_corrected``: pd.Series con los valores corregidos,
-          mismo índice que ``predictions``. Períodos sin datos de calibración
-          se devuelven sin corrección (sesgo = 0) con aviso en log.
+            mismo índice que ``predictions``. Períodos sin datos de calibración
+            se devuelven sin corrección (sesgo = 0) con aviso en log.
         - ``bias_table``: pd.DataFrame con columnas ``['periodo', 'sesgo',
-          'n_obs', 'sesgo_std']``. ``sesgo`` > 0 indica sobreestimación.
+            'n_obs', 'sesgo_std']``. ``sesgo`` > 0 indica sobreestimación.
 
     Raises:
         ValueError: Si ``by`` no es 'month', 'quarter' o 'week'.
