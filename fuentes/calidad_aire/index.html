@@ -1,0 +1,2632 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Base de conocimiento Python para estadística aplicada al medio ambiente — EDA, descriptiva, inferencial, predictiva y reportes de cumplimiento normativo.">
+      
+      
+        <meta name="author" content="Dan Méndez">
+      
+      
+        <link rel="canonical" href="https://danmendezzz.github.io/Estadistica_Ambiental/fuentes/calidad_aire/">
+      
+      
+        <link rel="prev" href="../areas_protegidas/">
+      
+      
+        <link rel="next" href="../cambio_climatico/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Calidad del aire - Estadística Ambiental</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#calidad-del-aire" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../.." title="Estadística Ambiental" class="md-header__button md-logo" aria-label="Estadística Ambiental" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Estadística Ambiental
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Calidad del aire
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Cambiar a modo oscuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo oscuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Cambiar a modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Cambiar a modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Compartir" aria-label="Compartir" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DanMendezZz/Estadistica_Ambiental" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    DanMendezZz/Estadistica_Ambiental
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Pestañas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Inicio
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Empezar
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../metodologia/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Metodología
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../modelos/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Modelos
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../notebooks/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Notebooks interactivos
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../lineas_tematicas/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Líneas temáticas
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../decisiones/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../intake_lider/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Plantillas e intake
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Estadística Ambiental" class="md-nav__button md-logo" aria-label="Estadística Ambiental" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Estadística Ambiental
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DanMendezZz/Estadistica_Ambiental" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    DanMendezZz/Estadistica_Ambiental
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inicio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Empezar
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metodologia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metodología
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../modelos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notebooks interactivos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Líneas temáticas
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Líneas temáticas
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../lineas_tematicas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visión general
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../areas_protegidas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Áreas protegidas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calidad del aire
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calidad del aire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#objetivos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Objetivos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variables-ambientales-clave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Variables ambientales clave
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#datos-y-fuentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Datos y fuentes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#indicadores-y-metricas-oficiales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Indicadores y métricas oficiales
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Indicadores y métricas oficiales">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ica-colombia-resolucion-22542017-concentraciones-reales-en-gm3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ICA Colombia — Resolución 2254/2017 (concentraciones reales en µg/m³)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#normativa-aplicable-colombia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Normativa aplicable (Colombia)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preguntas-analiticas-tipicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preguntas analíticas típicas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metodos-estadisticos-sugeridos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métodos estadísticos sugeridos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#metodos-identificados-en-el-notebooklm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métodos identificados en el NotebookLM
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Métodos identificados en el NotebookLM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#imputacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Imputación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#series-de-tiempo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Series de tiempo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ml-dl-forecasting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ML / DL forecasting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estadistica-espacial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estadística espacial
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metodos-complementarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métodos complementarios
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metricas-de-evaluacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métricas de evaluación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#actores-institucionales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Actores institucionales
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#riesgos-y-sesgos-en-los-datos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgos y sesgos en los datos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#glosario-minimo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Glosario mínimo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#buenas-practicas-metodologicas-lecciones-del-pipeline-sisaire-car-2016-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Buenas prácticas metodológicas (lecciones del pipeline SISAIRE CAR 2016-2026)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Buenas prácticas metodológicas (lecciones del pipeline SISAIRE CAR 2016-2026)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bp-1-walk-forward-con-gap-obligatorio-para-series-horarias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BP-1 — Walk-forward con gap obligatorio para series horarias
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bp-2-correccion-de-sesgo-por-quarter-no-por-mes-para-regimen-andino-bimodal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BP-2 — Corrección de sesgo por quarter (no por mes) para régimen andino bimodal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bp-3-criterio-de-ranking-multi-metrica-para-calidad-del-aire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BP-3 — Criterio de ranking multi-métrica para calidad del aire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bp-4-outliers-vs-episodios-criticos-validacion-espacial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BP-4 — Outliers vs. episodios críticos: validación espacial
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bp-5-criterio-de-exclusion-por-cobertura-en-entrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BP-5 — Criterio de exclusión por cobertura en entrenamiento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bp-6-renombres-y-discontinuidades-historicas-en-etl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BP-6 — Renombres y discontinuidades históricas en ETL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bp-7-periodo-de-retorno-de-excedencias-como-metrica-de-gestion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BP-7 — Período de retorno de excedencias como métrica de gestión
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preguntas-abiertas-oportunidades" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preguntas abiertas / oportunidades
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Referencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cambio_climatico/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cambio climático
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../direccion_directiva/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dirección directiva
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../geoespacial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geoespacial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gestion_riesgo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gestión del riesgo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../humedales/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Humedales
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../oferta_hidrica/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Oferta hídrica
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ordenamiento_territorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ordenamiento territorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../paramos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Páramos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pomca/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    POMCA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../predios_conservacion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Predios de conservación
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pueea/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PUEAA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../recurso_hidrico/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recurso hídrico
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rondas_hidricas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rondas hídricas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sistemas_informacion_ambiental/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sistemas de información ambiental
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../decisiones/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisiones de diseño
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/ADR-014-mediana-contaminada-iqr-rolling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-014 — Mediana contaminada (IQR rolling)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/ADR-015-validacion-espacial-filtra-vecinos-originales/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-015 — Validación espacial filtra vecinos originales
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/ADR-016-pymc-bayesiano-fase10/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-016 — PyMC bayesiano (Fase 10)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/ADR-017-jupyterlite-pyodide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-017 — JupyterLite + Pyodide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/ADR-018-base-satelite-governance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-018 — Patrón base↔satélite
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adr/ADR-019-trusted-publishing-oidc-pypi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-019 — Trusted Publishing (OIDC) PyPI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plantillas e intake
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plantillas e intake
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intake_lider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intake del líder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intake_output_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plantilla de output
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../templates/rmd_child_template/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plantilla R Markdown child
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/DanMendezZz/Estadistica_Ambiental/edit/main/docs/fuentes/calidad_aire.md" title="Editar esta página" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/DanMendezZz/Estadistica_Ambiental/raw/main/docs/fuentes/calidad_aire.md" title="Ver código fuente de esta página" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="calidad-del-aire">Calidad del Aire<a class="headerlink" href="#calidad-del-aire" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>NotebookLM fuente:</strong> https://notebooklm.google.com/notebook/96050780-400c-4522-945a-211c406dc516
+<strong>Última sincronización:</strong> 2026-04-22
+<strong>Responsable de la ficha:</strong> Dan Méndez
+<strong>Bloque:</strong> B (transversal temática) — Alimenta: gestión de riesgo, sistemas de información ambiental</p>
+</blockquote>
+<hr />
+<h2 id="resumen-ejecutivo">Resumen ejecutivo<a class="headerlink" href="#resumen-ejecutivo" title="Permanent link">&para;</a></h2>
+<p>El notebook es una colección de estudios científicos sobre monitoreo, predicción y gestión de calidad del aire con foco en PM2.5. Cubre el ciclo completo: desde preprocesamiento de redes de sensores defectuosos hasta arquitecturas avanzadas de deep learning para pronóstico espacio-temporal, pasando por integración de datos satelitales AOD y sistemas de alerta temprana IoT.</p>
+<p>El enfoque dominante es la transición de modelos estadísticos clásicos (ARIMA, regresión) hacia híbridos neuronales, con validación rigurosa por RMSE, MAE, R² y métricas específicas de dominio.</p>
+<hr />
+<h2 id="objetivos">Objetivos<a class="headerlink" href="#objetivos" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Monitorear concentraciones de PM2.5, PM10, O3, NO2, CO y SO2 en redes de sensores.</li>
+<li>Predecir episodios de contaminación con anticipación suficiente para alertas tempranas.</li>
+<li>Estimar concentraciones en zonas sin estaciones mediante interpolación satelital y espacial.</li>
+<li>Cuantificar impacto en salud pública y apoyar cumplimiento de normas ambientales.</li>
+</ul>
+<hr />
+<h2 id="variables-ambientales-clave">Variables ambientales clave<a class="headerlink" href="#variables-ambientales-clave" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Unidad</th>
+<th>Rango típico</th>
+<th>Frecuencia</th>
+<th>Fuente habitual</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PM2.5</td>
+<td>µg/m³</td>
+<td>0–500</td>
+<td>Horaria / diaria</td>
+<td>RMCAB, SIATA, EPA</td>
+</tr>
+<tr>
+<td>PM10</td>
+<td>µg/m³</td>
+<td>0–600</td>
+<td>Horaria / diaria</td>
+<td>Mismas redes</td>
+</tr>
+<tr>
+<td>O3</td>
+<td>µg/m³</td>
+<td>0–600</td>
+<td>Horaria</td>
+<td>Estaciones fijas</td>
+</tr>
+<tr>
+<td>NO2</td>
+<td>µg/m³</td>
+<td>0–400</td>
+<td>Horaria</td>
+<td>Estaciones fijas</td>
+</tr>
+<tr>
+<td>CO</td>
+<td>mg/m³</td>
+<td>0–50</td>
+<td>Horaria</td>
+<td>Estaciones fijas</td>
+</tr>
+<tr>
+<td>SO2</td>
+<td>µg/m³</td>
+<td>0–500</td>
+<td>Horaria</td>
+<td>Estaciones fijas</td>
+</tr>
+<tr>
+<td>AOD</td>
+<td>adim.</td>
+<td>0–2</td>
+<td>Diaria</td>
+<td>MODIS, MISR (satélite)</td>
+</tr>
+<tr>
+<td>AQI / ICA</td>
+<td>índice</td>
+<td>0–500</td>
+<td>Horaria</td>
+<td>Calculado</td>
+</tr>
+<tr>
+<td>Temperatura</td>
+<td>°C</td>
+<td>–5 a 40</td>
+<td>Horaria</td>
+<td>Meteorología</td>
+</tr>
+<tr>
+<td>Humedad relativa</td>
+<td>%</td>
+<td>0–100</td>
+<td>Horaria</td>
+<td>Meteorología</td>
+</tr>
+<tr>
+<td>Velocidad viento</td>
+<td>m/s</td>
+<td>0–15</td>
+<td>Horaria</td>
+<td>Meteorología</td>
+</tr>
+<tr>
+<td>Precipitación</td>
+<td>mm</td>
+<td>0–100</td>
+<td>Horaria</td>
+<td>Meteorología</td>
+</tr>
+<tr>
+<td>Presión</td>
+<td>hPa</td>
+<td>700–1013</td>
+<td>Horaria</td>
+<td>Meteorología</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="datos-y-fuentes">Datos y fuentes<a class="headerlink" href="#datos-y-fuentes" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Colombia:</strong> RMCAB (Bogotá), SIATA (Antioquia), AMVA, DAGMA (Cali), IDEAM/SISAIRE.</li>
+<li><strong>Global:</strong> OpenAQ (https://openaq.org) — datos horarios en JSON/CSV.</li>
+<li><strong>Satélite:</strong> NASA Giovanni (MODIS/MISR), Copernicus CAMS.</li>
+<li><strong>Modelos de transporte químico:</strong> CMAQ, GEOS-Chem (covariables regionales).</li>
+<li><strong>Sensores de bajo costo:</strong> PurpleAir, SDS011 — requieren calibración contra referencia.</li>
+</ul>
+<hr />
+<h2 id="indicadores-y-metricas-oficiales">Indicadores y métricas oficiales<a class="headerlink" href="#indicadores-y-metricas-oficiales" title="Permanent link">&para;</a></h2>
+<h3 id="ica-colombia-resolucion-22542017-concentraciones-reales-en-gm3">ICA Colombia — Resolución 2254/2017 (concentraciones reales en µg/m³)<a class="headerlink" href="#ica-colombia-resolucion-22542017-concentraciones-reales-en-gm3" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>⚠️ <strong>Error frecuente:</strong> el ICA colombiano opera en <strong>concentraciones de contaminante (µg/m³)</strong>,
+no en la escala adimensional AQI 0–500 de EPA/US. Los umbrales de abajo son los que
+usa <code>exceedance_report()</code> y <code>hit_rate_ica()</code> en el repositorio.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Categoría</th>
+<th>PM2.5 (µg/m³)</th>
+<th>Color oficial</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Buena</td>
+<td>0 – 12</td>
+<td><code>#00E400</code> verde</td>
+</tr>
+<tr>
+<td>Aceptable</td>
+<td>12 – 37</td>
+<td><code>#FFFF00</code> amarillo — <strong>umbral norma 24h</strong></td>
+</tr>
+<tr>
+<td>Dañina sensibles</td>
+<td>37 – 55</td>
+<td><code>#FF7E00</code> naranja</td>
+</tr>
+<tr>
+<td>Dañina</td>
+<td>55 – 150</td>
+<td><code>#FF0000</code> rojo</td>
+</tr>
+<tr>
+<td>Muy dañina</td>
+<td>150 – 250</td>
+<td><code>#8F3F97</code> morado</td>
+</tr>
+<tr>
+<td>Peligrosa</td>
+<td>250 – 500</td>
+<td><code>#7E0023</code> marrón</td>
+</tr>
+</tbody>
+</table>
+<p>Los colores son <strong>obligatorios en reportes a entidades regulatorias</strong> (CAR, MinAmbiente).
+Para PM10, O3, NO2, SO2 y CO los breakpoints están en <code>config.py → NORMA_CO</code> y en
+<code>preprocessing/air_quality.py → _ICA_BREAKPOINTS</code>.</p>
+<ul>
+<li><strong>Resolución 2254/2017:</strong> PM2.5 anual = 25 µg/m³; PM2.5 24h = 37 µg/m³.</li>
+<li><strong>Guías OMS 2021:</strong> PM2.5 anual = 5 µg/m³; PM2.5 24h = 15 µg/m³ (más estrictas).</li>
+</ul>
+<hr />
+<h2 id="normativa-aplicable-colombia">Normativa aplicable (Colombia)<a class="headerlink" href="#normativa-aplicable-colombia" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Resolución 2254/2017 — MinAmbiente:</strong> Norma nacional de calidad del aire.</li>
+<li><strong>Decreto 948/1995:</strong> Prevención y control de la contaminación atmosférica.</li>
+<li><strong>Ley 99/1993 art. 73:</strong> Criterios de calidad ambiental.</li>
+<li><strong>Protocolo de Monitoreo IDEAM (2010):</strong> Operación de redes y reportes.</li>
+</ul>
+<hr />
+<h2 id="preguntas-analiticas-tipicas">Preguntas analíticas típicas<a class="headerlink" href="#preguntas-analiticas-tipicas" title="Permanent link">&para;</a></h2>
+<ol>
+<li>¿Cuántos días al año supera la norma de 24h (37 µg/m³) o la guía OMS (15 µg/m³)?</li>
+<li>¿Cuál es la tendencia interanual de PM2.5? (Mann-Kendall + Sen's slope)</li>
+<li>¿Qué variables meteorológicas tienen mayor correlación con PM2.5?</li>
+<li>¿Es la serie estacionaria? (ADF + KPSS — ADR-004)</li>
+<li>¿Qué episodios son contaminación extrema vs. errores de sensor?</li>
+<li>¿Hay diferencia significativa entre estaciones o períodos? (t-test / Mann-Whitney)</li>
+<li>¿Con qué modelo se puede pronosticar PM2.5 con menor RMSE para 24–72h?</li>
+</ol>
+<hr />
+<h2 id="metodos-estadisticos-sugeridos">Métodos estadísticos sugeridos<a class="headerlink" href="#metodos-estadisticos-sugeridos" title="Permanent link">&para;</a></h2>
+<p><strong>Descriptiva / inferencial:</strong>
+- Distribución: lognormal o gamma (cola derecha pesada).
+- Estacionariedad: ADF + KPSS obligatorio antes de ARIMA.
+- Tendencia: Mann-Kendall + Sen's slope.
+- Punto de cambio: Pettitt.
+- Excedencias: <code>inference/intervals.py → exceedance_probability()</code>.
+- Correlación con meteorología: Spearman.</p>
+<p><strong>Imputación de faltantes (por complejidad):</strong>
+1. Interpolación lineal — gaps ≤ 3h.
+2. Rolling mean (ventana 24h) — gaps medianos.
+3. MICE — gaps largos con otras variables disponibles.
+4. BRITS / SAITS / GAIN — gaps extremos (&gt;40%).</p>
+<p><strong>Predictiva — jerarquía empírica para PM2.5 horario (validada con datos SISAIRE CAR 2016-2026):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Modelo</th>
+<th>RMSE típico</th>
+<th>HitRate ICA</th>
+<th>Rol recomendado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RF / XGBoost / LGB</td>
+<td>~3.7 µg/m³</td>
+<td>~88%</td>
+<td><strong>Producción</strong> — 32 lag/calendar features</td>
+</tr>
+<tr>
+<td>AR(1) doble-escala</td>
+<td>—</td>
+<td>—</td>
+<td>Pronóstico con bandas P10/P50/P90 sin reentrenar el RF</td>
+</tr>
+<tr>
+<td>SARIMAX</td>
+<td>~4.5 µg/m³</td>
+<td>~75%</td>
+<td>Con covariables meteorológicas horarias disponibles</td>
+</tr>
+<tr>
+<td>SARIMA</td>
+<td>~5.9 µg/m³</td>
+<td>~69%</td>
+<td><strong>Solo como benchmark estadístico</strong> — no para producción</td>
+</tr>
+<tr>
+<td>Prophet</td>
+<td>variable</td>
+<td>—</td>
+<td>Estacionalidades múltiples o eventos especiales; NO para series horarias</td>
+</tr>
+<tr>
+<td>LSTM / GRU</td>
+<td>~10 µg/m³</td>
+<td>~63%</td>
+<td>Necesita &gt;5 años + GPU; última opción</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Hallazgo clave (pipeline CAR 2026):</strong> SARIMA es el modelo más débil para PM2.5
+horario — no captura la autocorrelación diaria (ACF significativo hasta lag 48–72h)
+y es computacionalmente prohibitivo en producción.
+XGBoost con lag features es el benchmark real. SARIMAX solo compite cuando se
+tienen covariables meteorológicas horarias completas y sin gaps.</p>
+</blockquote>
+<p><strong>Nota metodológica — walk-forward con gap para series horarias:</strong>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># OBLIGATORIO para PM2.5 horario (ACF≈0.97 en lag-1h):</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">walk_forward</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">gap</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">n_splits</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Sin gap, R² se infla 8-40 puntos porcentuales por leakage de autocorrelación.</span>
+</span></code></pre></div></p>
+<p><strong>Espacial:</strong>
+- Kriging ordinario / universal.
+- IDW (más rápido).
+- LUR (Land Use Regression) para exposición urbana.
+- I de Moran antes de modelos espaciales.</p>
+<hr />
+<h2 id="metodos-identificados-en-el-notebooklm">Métodos identificados en el NotebookLM<a class="headerlink" href="#metodos-identificados-en-el-notebooklm" title="Permanent link">&para;</a></h2>
+<h3 id="imputacion">Imputación<a class="headerlink" href="#imputacion" title="Permanent link">&para;</a></h3>
+<p>Media, mediana, moda; Forward/Backward Fill; interpolación lineal;
+KNN; MICE; Regresión; MissForest; BRITS; SAITS; GRIN; DynamicSeq2SeqXGB; GAIN/DEGAIN.</p>
+<h3 id="series-de-tiempo">Series de tiempo<a class="headerlink" href="#series-de-tiempo" title="Permanent link">&para;</a></h3>
+<p>VAR, ARIMA, SARIMA, SARIMAX, Prophet, NeuralProphet, STL+ARIMA.</p>
+<h3 id="ml-dl-forecasting">ML / DL forecasting<a class="headerlink" href="#ml-dl-forecasting" title="Permanent link">&para;</a></h3>
+<p>RF, XGBoost, LightGBM, Extra Trees, ANN/MLP, ELM, RNN, LSTM, GRU,
+Bi-LSTM, Bi-GRU, CNN-LSTM, CNN-GRU, GC-LSTM (espacio-temporal).</p>
+<h3 id="estadistica-espacial">Estadística espacial<a class="headerlink" href="#estadistica-espacial" title="Permanent link">&para;</a></h3>
+<p>GWR, LUR, Kriging universal, Mixed-Effect Models (calibración AOD).</p>
+<h3 id="metodos-complementarios">Métodos complementarios<a class="headerlink" href="#metodos-complementarios" title="Permanent link">&para;</a></h3>
+<p>Descomposición: EMD, EEMD, CEEMDAN, Wavelet. PCA. Fuzzy Logic.
+SHAP / LIME (interpretabilidad). Wasserstein Distance. TOST. Diebold-Mariano.</p>
+<h3 id="metricas-de-evaluacion">Métricas de evaluación<a class="headerlink" href="#metricas-de-evaluacion" title="Permanent link">&para;</a></h3>
+<p>RMSE, MAE, R², MAPE, PBIAS, MSE, NSE, Willmott Index, a20-index, TIC, CRPS.</p>
+<hr />
+<h2 id="actores-institucionales">Actores institucionales<a class="headerlink" href="#actores-institucionales" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Actor</th>
+<th>Rol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IDEAM</td>
+<td>Norma, SISAIRE, datos históricos nacionales</td>
+</tr>
+<tr>
+<td>SDA Bogotá</td>
+<td>Operación RMCAB</td>
+</tr>
+<tr>
+<td>SIATA</td>
+<td>Red Antioquia-Valle de Aburrá, alertas tempranas</td>
+</tr>
+<tr>
+<td>MinAmbiente</td>
+<td>Regulación (Res. 2254/2017)</td>
+</tr>
+<tr>
+<td>Alcaldías</td>
+<td>Planes de descontaminación</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="riesgos-y-sesgos-en-los-datos">Riesgos y sesgos en los datos<a class="headerlink" href="#riesgos-y-sesgos-en-los-datos" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Congelamiento de sensor:</strong> detectar con <code>eda/quality.py → FreezeInfo</code>.</li>
+<li><strong>Deriva del sensor:</strong> especialmente en sensores de bajo costo sin mantenimiento.</li>
+<li><strong>Gaps por mantenimiento:</strong> patrón MAR — imputar con MICE o rolling mean.</li>
+<li><strong>PM2.5 &gt; PM10:</strong> error físico imposible — detectar con <code>io/validators.py</code> cross-checks.</li>
+<li><strong>Episodios reales vs. errores:</strong> incendios, festivos, Semana Santa — NO eliminar (ADR-002).</li>
+<li><strong>Escasez rural:</strong> redes urbanas sobrerepresentadas; usar Kriging para zonas sin cobertura.</li>
+</ul>
+<hr />
+<h2 id="glosario-minimo">Glosario mínimo<a class="headerlink" href="#glosario-minimo" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>PM2.5:</strong> Partículas ≤ 2.5 µm. Penetran alvéolos pulmonares.</li>
+<li><strong>AOD:</strong> Aerosol Optical Depth — medida satelital de partículas en columna atmosférica.</li>
+<li><strong>AQI / ICA:</strong> Índice de Calidad del Aire — escala 0–500.</li>
+<li><strong>CMAQ:</strong> Community Multiscale Air Quality — modelo de transporte químico EPA.</li>
+<li><strong>RMCAB:</strong> Red de Monitoreo de Calidad del Aire de Bogotá.</li>
+<li><strong>SIATA:</strong> Sistema de Alerta Temprana de Medellín y el Valle de Aburrá.</li>
+<li><strong>LUR:</strong> Land Use Regression — modelo de exposición urbana.</li>
+<li><strong>MAR:</strong> Missing At Random — faltantes relacionados con otras variables observadas.</li>
+<li><strong>MNAR:</strong> Missing Not At Random — faltantes relacionados con el propio valor.</li>
+</ul>
+<hr />
+<h2 id="buenas-practicas-metodologicas-lecciones-del-pipeline-sisaire-car-2016-2026">Buenas prácticas metodológicas (lecciones del pipeline SISAIRE CAR 2016-2026)<a class="headerlink" href="#buenas-practicas-metodologicas-lecciones-del-pipeline-sisaire-car-2016-2026" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>Estas lecciones surgieron del análisis de 34 estaciones y ~1.350.000 registros horarios
+de PM2.5 en Cundinamarca. Son transferibles a cualquier red de monitoreo de calidad del aire.</p>
+</blockquote>
+<h3 id="bp-1-walk-forward-con-gap-obligatorio-para-series-horarias">BP-1 — Walk-forward con gap obligatorio para series horarias<a class="headerlink" href="#bp-1-walk-forward-con-gap-obligatorio-para-series-horarias" title="Permanent link">&para;</a></h3>
+<p>Series con ACF alta (ACF≈0.97 en lag-1h para PM2.5) producen R² inflado si el set de
+entrenamiento termina en <code>t</code> y el test comienza en <code>t+1</code>. Usar <code>gap=24h</code> como mínimo:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">walk_forward</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">8760</span><span class="p">,</span> <span class="n">n_splits</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">gap</span><span class="o">=</span><span class="mi">24</span><span class="p">)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># Evidencia: LC gap bajó de 0.38 a 0.048 al implementar gap=24h en RF.</span>
+</span></code></pre></div>
+<h3 id="bp-2-correccion-de-sesgo-por-quarter-no-por-mes-para-regimen-andino-bimodal">BP-2 — Corrección de sesgo por quarter (no por mes) para régimen andino bimodal<a class="headerlink" href="#bp-2-correccion-de-sesgo-por-quarter-no-por-mes-para-regimen-andino-bimodal" title="Permanent link">&para;</a></h3>
+<p>Colombia (zona andina) tiene dos ciclos secos y dos lluviosos. La corrección mensual sobreajusta.
+Usar corrección por trimestre calibrada sobre residuos del backtesting:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">BIAS_QUARTER</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="o">+</span><span class="mf">0.03</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.15</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.23</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.07</span><span class="p">}</span>  <span class="c1"># µg/m³, Cundinamarca 2025</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">pred</span><span class="p">[</span><span class="s2">&quot;predicho_corr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">&quot;predicho&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">BIAS_QUARTER</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="s2">&quot;quarter&quot;</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="bp-3-criterio-de-ranking-multi-metrica-para-calidad-del-aire">BP-3 — Criterio de ranking multi-métrica para calidad del aire<a class="headerlink" href="#bp-3-criterio-de-ranking-multi-metrica-para-calidad-del-aire" title="Permanent link">&para;</a></h3>
+<p>El RMSE global mezcla estaciones con escalas distintas (media 8–25 µg/m³ por estación).
+Score validado en 34 estaciones SISAIRE:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>score = 0.30 × RMSE_normalizado      # RMSE / media_estación
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>      + 0.10 × NRMSE                  # escala-invariante
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>      + 0.25 × HitRate_ICA            # % días en categoría correcta
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>      + 0.20 × F1_weighted            # F1 multi-clase ICA
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>      + 0.15 × Recall_gt55            # recall episodios críticos &gt;55 µg/m³
+</span></code></pre></div>
+<p>El 15% en <code>Recall_gt55</code> es el diferenciador crítico para alertas tempranas:
+XGBoost detectó 15.5% de episodios &gt;55 µg/m³ vs. 0% de SARIMA.</p>
+<h3 id="bp-4-outliers-vs-episodios-criticos-validacion-espacial">BP-4 — Outliers vs. episodios críticos: validación espacial<a class="headerlink" href="#bp-4-outliers-vs-episodios-criticos-validacion-espacial" title="Permanent link">&para;</a></h3>
+<p>Un pico IQR×3.0 sostenido ≥4h con ≥1 estación vecina (dentro de 50km) también elevada
+→ episodio real: PRESERVAR con <code>flag='episodio_critico'</code>.
+Sin confirmación espacial → error de sensor: reemplazar con mediana local limpia.
+Ratio estimado en SISAIRE 2016-2026: ~15% de outliers IQR×3 son episodios reales (ADR-002).</p>
+<h3 id="bp-5-criterio-de-exclusion-por-cobertura-en-entrenamiento">BP-5 — Criterio de exclusión por cobertura en entrenamiento<a class="headerlink" href="#bp-5-criterio-de-exclusion-por-cobertura-en-entrenamiento" title="Permanent link">&para;</a></h3>
+<p>Si <code>flag_imputacion != 'original'</code> &gt; 30% del período → excluir la estación del entrenamiento.
+Los datos siguen disponibles para análisis descriptivo y reportes de cobertura.
+KNN con &gt;30% de gaps introduce patrones sintéticos que sesgan el modelo.</p>
+<h3 id="bp-6-renombres-y-discontinuidades-historicas-en-etl">BP-6 — Renombres y discontinuidades históricas en ETL<a class="headerlink" href="#bp-6-renombres-y-discontinuidades-historicas-en-etl" title="Permanent link">&para;</a></h3>
+<p>Aplicar dict de normalización de nombres de estaciones <strong>antes</strong> de cualquier join/merge.
+En SISAIRE/CAR se encontraron 3 renombres confirmados (2026):
+- <code>TAUSA - ESCUELA</code> → <code>TAUSA - URBANO</code>
+- <code>FUNZA - COLEGIO</code> → <code>MOSQUERA - URBANO</code>
+- <code>NEMOCÓN - PATIO BONITO</code> → excluir (falla de sensor documentada)</p>
+<p>Este patrón aplica igualmente a redes de caudales (IDEAM/DHIME) y estaciones meteorológicas.</p>
+<h3 id="bp-7-periodo-de-retorno-de-excedencias-como-metrica-de-gestion">BP-7 — Período de retorno de excedencias como métrica de gestión<a class="headerlink" href="#bp-7-periodo-de-retorno-de-excedencias-como-metrica-de-gestion" title="Permanent link">&para;</a></h3>
+<p>Complementa <code>exceedance_report()</code> con una métrica intuitiva para gestores:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">exceedance_return_period</span><span class="p">(</span><span class="n">series_daily</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">37</span><span class="p">):</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Período de retorno de un día con PM2.5 &gt; umbral (en días).&quot;&quot;&quot;</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">pct</span> <span class="o">=</span> <span class="p">(</span><span class="n">series_daily</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">pct</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">pct</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># Ejemplo: 8.3% días &gt; norma → T_retorno ≈ 12 días</span>
+</span></code></pre></div>
+<hr />
+<h2 id="preguntas-abiertas-oportunidades">Preguntas abiertas / oportunidades<a class="headerlink" href="#preguntas-abiertas-oportunidades" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Calibración automática de sensores de bajo costo vs. estaciones de referencia.</li>
+<li>Modelos bayesianos jerárquicos multi-estación para incertidumbre espacial.</li>
+<li>ENSO/ONI como covariables en SARIMAX (vía <code>features/climate.py</code>).</li>
+<li>Nowcasting con datos satelitales en tiempo real para zonas sin cobertura.</li>
+<li>Sistemas de alerta temprana con threshold dinámico adaptado a meteorología.</li>
+<li>Source apportionment con PMF o análisis factorial.</li>
+</ul>
+<hr />
+<h2 id="referencias">Referencias<a class="headerlink" href="#referencias" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Resolución 2254/2017 — Ministerio de Ambiente y Desarrollo Sostenible, Colombia.</li>
+<li>WHO Air Quality Guidelines 2021 — World Health Organization.</li>
+<li>IDEAM. Protocolo para el Monitoreo y Seguimiento de la Calidad del Aire, 2010.</li>
+<li>Ver NotebookLM fuente para referencias científicas completas.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Volver al principio
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Pie" >
+        
+          
+          <a href="../areas_protegidas/" class="md-footer__link md-footer__link--prev" aria-label="Anterior: Áreas protegidas">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Anterior
+              </span>
+              <div class="md-ellipsis">
+                Áreas protegidas
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../cambio_climatico/" class="md-footer__link md-footer__link--next" aria-label="Siguiente: Cambio climático">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Siguiente
+              </span>
+              <div class="md-ellipsis">
+                Cambio climático
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; Dan Méndez — MIT License
+    </div>
+  
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/DanMendezZz/Estadistica_Ambiental" target="_blank" rel="noopener" title="Repositorio en GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.indexes", "navigation.footer", "toc.integrate", "search.highlight", "search.suggest", "search.share", "content.code.copy", "content.code.annotate", "content.action.edit", "content.action.view"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
