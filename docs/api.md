@@ -56,6 +56,45 @@ genera automáticamente a partir de los docstrings con [mkdocstrings](https://mk
       show_source: false
       heading_level: 4
 
+### eda.viz
+
+::: estadistica_ambiental.eda.viz
+    options:
+      show_source: false
+      heading_level: 4
+
+---
+
+## Preprocesamiento
+
+### preprocessing.air_quality
+
+::: estadistica_ambiental.preprocessing.air_quality
+    options:
+      show_source: false
+      heading_level: 4
+
+### preprocessing.imputation
+
+::: estadistica_ambiental.preprocessing.imputation
+    options:
+      show_source: false
+      heading_level: 4
+
+### preprocessing.outliers
+
+::: estadistica_ambiental.preprocessing.outliers
+    options:
+      show_source: false
+      heading_level: 4
+
+### preprocessing.resampling
+
+::: estadistica_ambiental.preprocessing.resampling
+    options:
+      show_source: false
+      heading_level: 4
+
 ---
 
 ## Estadística descriptiva
@@ -67,9 +106,37 @@ genera automáticamente a partir de los docstrings con [mkdocstrings](https://mk
       show_source: false
       heading_level: 4
 
+### descriptive.bivariate
+
+::: estadistica_ambiental.descriptive.bivariate
+    options:
+      show_source: false
+      heading_level: 4
+
+### descriptive.temporal
+
+::: estadistica_ambiental.descriptive.temporal
+    options:
+      show_source: false
+      heading_level: 4
+
 ---
 
 ## Inferencia
+
+### inference.distributions
+
+::: estadistica_ambiental.inference.distributions
+    options:
+      show_source: false
+      heading_level: 4
+
+### inference.hypothesis
+
+::: estadistica_ambiental.inference.hypothesis
+    options:
+      show_source: false
+      heading_level: 4
 
 ### inference.intervals
 
@@ -96,6 +163,13 @@ genera automáticamente a partir de los docstrings con [mkdocstrings](https://mk
 
 ## Modelos predictivos
 
+### predictive.base
+
+::: estadistica_ambiental.predictive.base
+    options:
+      show_source: false
+      heading_level: 4
+
 ### predictive.classical
 
 ::: estadistica_ambiental.predictive.classical
@@ -106,6 +180,48 @@ genera automáticamente a partir de los docstrings con [mkdocstrings](https://mk
 ### predictive.ml
 
 ::: estadistica_ambiental.predictive.ml
+    options:
+      show_source: false
+      heading_level: 4
+
+### predictive.deep
+
+> Requiere `pip install estadistica-ambiental[deep]` (PyTorch + Lightning).
+
+::: estadistica_ambiental.predictive.deep
+    options:
+      show_source: false
+      heading_level: 4
+
+### predictive.bayesian
+
+> Requiere `pip install estadistica-ambiental[bayes]` (PyMC + ArviZ). Ver
+> [ADR-016](adr/ADR-016-pymc-bayesiano-fase10.md).
+
+::: estadistica_ambiental.predictive.bayesian
+    options:
+      show_source: false
+      heading_level: 4
+
+### predictive.prophet_model
+
+> Requiere `pip install estadistica-ambiental[prophet]`.
+
+::: estadistica_ambiental.predictive.prophet_model
+    options:
+      show_source: false
+      heading_level: 4
+
+### predictive.residual_ar
+
+::: estadistica_ambiental.predictive.residual_ar
+    options:
+      show_source: false
+      heading_level: 4
+
+### predictive.spatial_models
+
+::: estadistica_ambiental.predictive.spatial_models
     options:
       show_source: false
       heading_level: 4
@@ -135,6 +251,20 @@ genera automáticamente a partir de los docstrings con [mkdocstrings](https://mk
       show_source: false
       heading_level: 4
 
+### evaluation.anomaly
+
+::: estadistica_ambiental.evaluation.anomaly
+    options:
+      show_source: false
+      heading_level: 4
+
+### evaluation.comparison
+
+::: estadistica_ambiental.evaluation.comparison
+    options:
+      show_source: false
+      heading_level: 4
+
 ---
 
 ## Features
@@ -149,6 +279,80 @@ genera automáticamente a partir de los docstrings con [mkdocstrings](https://mk
 ### features.lags
 
 ::: estadistica_ambiental.features.lags
+    options:
+      show_source: false
+      heading_level: 4
+
+### features.calendar
+
+::: estadistica_ambiental.features.calendar
+    options:
+      show_source: false
+      heading_level: 4
+
+### features.exogenous
+
+::: estadistica_ambiental.features.exogenous
+    options:
+      show_source: false
+      heading_level: 4
+
+---
+
+## Optimización
+
+### optimization.bayes_opt
+
+::: estadistica_ambiental.optimization.bayes_opt
+    options:
+      show_source: false
+      heading_level: 4
+
+---
+
+## Análisis espacial
+
+> Requiere `pip install estadistica-ambiental[spatial]` (geopandas + rasterio +
+> pysal + esda + folium). Ver [ADR-013](decisiones.md#adr-013--decisiones-de-diseño-del-módulo-spatial-retroalimentación-juanministerio).
+
+### spatial.io
+
+::: estadistica_ambiental.spatial.io
+    options:
+      show_source: false
+      heading_level: 4
+
+### spatial.projections
+
+::: estadistica_ambiental.spatial.projections
+    options:
+      show_source: false
+      heading_level: 4
+
+### spatial.analysis
+
+::: estadistica_ambiental.spatial.analysis
+    options:
+      show_source: false
+      heading_level: 4
+
+### spatial.autocorrelation
+
+::: estadistica_ambiental.spatial.autocorrelation
+    options:
+      show_source: false
+      heading_level: 4
+
+### spatial.interpolation
+
+::: estadistica_ambiental.spatial.interpolation
+    options:
+      show_source: false
+      heading_level: 4
+
+### spatial.viz
+
+::: estadistica_ambiental.spatial.viz
     options:
       show_source: false
       heading_level: 4
