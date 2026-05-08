@@ -141,6 +141,10 @@ nav:
       - Decisiones de diseño: decisiones.md
       - ADR-014 — Mediana contaminada (IQR rolling): adr/ADR-014-mediana-contaminada-iqr-rolling.md
       - ADR-015 — Validación espacial filtra vecinos originales: adr/ADR-015-validacion-espacial-filtra-vecinos-originales.md
+      - ADR-016 — PyMC bayesiano (Fase 10): adr/ADR-016-pymc-bayesiano-fase10.md
+      - ADR-017 — JupyterLite + Pyodide: adr/ADR-017-jupyterlite-pyodide.md
+      - ADR-018 — Patrón base↔satélite: adr/ADR-018-base-satelite-governance.md
+      - ADR-019 — Trusted Publishing (OIDC) PyPI: adr/ADR-019-trusted-publishing-oidc-pypi.md
   - Plantillas e intake:
       - Intake del líder: intake_lider.md
       - Plantilla de output: intake_output_template.md

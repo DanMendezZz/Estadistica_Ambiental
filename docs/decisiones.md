@@ -26,6 +26,10 @@
 | 013 | Diseño del módulo `spatial/` (sin GEE, CRS auto, warnings perf.)    | 2026-04-30 | Aceptado  |
 | 014 | B1 — Mediana contaminada en IQR rolling (lección desde CAR)         | 2026-05-07 | Aceptado  |
 | 015 | B2 — Validación espacial filtra vecinos `flag == "original"`        | 2026-05-07 | Aceptado  |
+| 016 | PyMC como motor bayesiano para Fase 10                              | 2026-05-07 | Aceptado  |
+| 017 | JupyterLite + Pyodide para notebooks ejecutables en navegador       | 2026-05-07 | Aceptado  |
+| 018 | Patrón base↔satélite (separación librería ↔ productos)              | 2026-05-07 | Aceptado  |
+| 019 | Trusted Publishing (OIDC) en PyPI sin tokens de larga vida          | 2026-05-07 | Aceptado  |
 
 ---
 
