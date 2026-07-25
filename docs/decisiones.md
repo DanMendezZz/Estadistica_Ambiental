@@ -22,7 +22,7 @@
 | 009 | Conectores oficiales a fuentes colombianas                          | 2026-04-22 | Aceptado  |
 | 010 | Correcciones PR #6 (10 bugs en aire/optuna/base/metrics)            | 2026-04-22 | Aceptado  |
 | 011 | Fork vs. dependencia de `boa-sarima-forecaster`                     | 2026-04-23 | Aceptado  |
-| 012 | `ModelSpec` Protocol como deuda técnica documentada                 | 2026-04-29 | Aceptado  |
+| 012 | `ModelSpec` Protocol como deuda técnica documentada                 | 2026-04-29 | Superado* |
 | 013 | Diseño del módulo `spatial/` (sin GEE, CRS auto, warnings perf.)    | 2026-04-30 | Aceptado  |
 | 014 | B1 — Mediana contaminada en IQR rolling (lección desde CAR)         | 2026-05-07 | Aceptado  |
 | 015 | B2 — Validación espacial filtra vecinos `flag == "original"`        | 2026-05-07 | Aceptado  |
@@ -30,6 +30,10 @@
 | 017 | JupyterLite + Pyodide para notebooks ejecutables en navegador       | 2026-05-07 | Aceptado  |
 | 018 | Patrón base↔satélite (separación librería ↔ productos)              | 2026-05-07 | Aceptado  |
 | 019 | Trusted Publishing (OIDC) en PyPI sin tokens de larga vida          | 2026-05-07 | Aceptado  |
+| 020 | `NORMA_FUENTES`: procedencia legal verificada de umbrales normativos | 2026-07-25 | Aceptado  |
+
+\* ADR-012: la decisión original de no implementar `ModelSpec` quedó superada por el commit
+`bf8e93c` (2026-04-23), anterior a la propia fecha de este ADR. Ver actualización 2026-07-25 en la entrada.
 
 ---
 
@@ -235,15 +239,15 @@ La lógica de cálculo vive en `inference/intervals.py::exceedance_report()` (te
 ## ADR-012 — ModelSpec Protocol: deuda técnica conocida y alcance del repositorio
 
 **Fecha:** 2026-04-29
-**Estado:** Aceptado como deuda técnica documentada
+**Estado:** Superado por implementación — ver actualización 2026-07-25
 
-**Contexto:** `predictive/base.py` define `ModelSpec` como `Protocol` runtime-checkable
-con tres métodos: `warm_starts`, `suggest_params` y `build_model`. `optimization/bayes_opt.py::optimize_model()`
-los consume. Sin embargo, ningún modelo concreto del registro (`SARIMAModel`, `XGBoostModel`,
-`RandomForestModel`, etc.) implementa esos métodos. El path `optimize_model(model_spec, ...)` con
-warm-starts y construcción del modelo final es código muerto en la versión actual.
+**Contexto (histórico, al momento de redactar este ADR):** `predictive/base.py` define `ModelSpec`
+como `Protocol` runtime-checkable con tres métodos: `warm_starts`, `suggest_params` y `build_model`.
+`optimization/bayes_opt.py::optimize_model()` los consume. Al redactar este ADR se creía que ningún
+modelo concreto del registro (`SARIMAModel`, `XGBoostModel`, `RandomForestModel`, etc.) implementaba
+esos métodos.
 
-**Decisión:** **Mantener el estado actual con documentación explícita** por las siguientes razones:
+**Decisión (histórica):** **Mantener el estado actual con documentación explícita** por las siguientes razones:
 
 1. Este repositorio es una **base de conocimiento metodológico**, no un pipeline de producción.
    Los modelos concretos funcionan a través de `walk_forward` + `evaluate` sin necesidad de `ModelSpec`.
@@ -252,14 +256,25 @@ warm-starts y construcción del modelo final es código muerto en la versión ac
 3. La referencia correcta ya existe: `boa-sarima-forecaster` tiene `SARIMASpec`, `RandomForestSpec`,
    `XGBoostSpec` implementados. El patrón de diseño queda documentado en el repo origen.
 
-**Acción tomada:** Agregar docstring en `predictive/base.py::ModelSpec` y en `bayes_opt.py::optimize_model()`
-que indiquen explícitamente que esta interfaz es una especificación de diseño (ver boa-sarima-forecaster)
-y que el flujo operacional usa `walk_forward` en su lugar.
+**Acción tomada (histórica):** Agregar docstring en `predictive/base.py::ModelSpec` y en
+`bayes_opt.py::optimize_model()` que indiquen explícitamente que esta interfaz es una especificación
+de diseño (ver boa-sarima-forecaster) y que el flujo operacional usa `walk_forward` en su lugar.
+
+**Actualización — 2026-07-25:** Esta premisa era incorrecta ya en el momento de escribir el ADR: el
+commit `bf8e93c` (2026-04-23, seis días *antes* de esta entrada) ya había implementado `ModelSpec`
+en `SARIMAModel`, `SARIMAXModel`, `ARIMAModel`, `ETSModel` (`predictive/classical.py`), `XGBoostModel`,
+`RandomForestModel`, `LightGBMModel` (`predictive/ml.py`) y `ProphetModel` (`predictive/prophet_model.py`),
+cada uno con `warm_starts`, `suggest_params` y `build_model` reales y cubiertos por
+`tests/test_regression_pr6.py` (incluye el caso de 6+ fallos consecutivos activando el fallback de
+`optimize_model` sin propagar la excepción). Revisión externa de Tomás (`Plan/Feedback/feed_repo_dan.md`,
+P0-3) señaló esta entrada como desactualizada frente al código. Se corrige aquí para que el ADR no
+contradiga el estado real del repositorio; no se requirió ningún cambio de código adicional.
 
 **Consecuencias:**
-- Quien clone el repo y llame `optimize_model(model_spec, ...)` obtendrá un error claro si el modelo
-  no implementa `ModelSpec`. No hay fallo silencioso.
-- Reevaluar si el repo evoluciona hacia un pipeline operacional con datos reales en producción.
+- Quien clone el repo y llame `optimize_model(model_spec, ...)` con un modelo del registro obtiene
+  warm-starts reales y un `modelo_final` construido, no solo un error claro por atributos ausentes.
+- Si se agrega un modelo nuevo al registro sin implementar `ModelSpec`, `optimize_model` sigue
+  degradando de forma segura (sin warm-starts, sin `model` en el resultado), sin fallo silencioso.
 
 ---
 
