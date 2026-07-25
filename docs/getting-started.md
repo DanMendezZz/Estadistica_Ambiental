@@ -10,24 +10,31 @@ Esta guía cubre la instalación del paquete y un quick start de uso típico.
 
 ## Instalación
 
-### Desde Git (recomendado)
+### Desde PyPI (recomendado)
+
+```bash
+pip install estadistica-ambiental
+```
+
+Para pinear a una versión exacta (en producción / repos satélite):
+
+```bash
+pip install "estadistica-ambiental==1.3.2"
+```
+
+### Desde GitHub (commits sin tag, ramas o forks)
 
 ```bash
 pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental.git@main"
+pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental.git@v1.3.2"
 ```
 
-Para fijar a una versión publicada (etiqueta de Git):
-
-```bash
-pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental.git@v1.2.0"
-```
-
-### Desde un clon local
+### Desde un clon local (para desarrollar el repo)
 
 ```bash
 git clone https://github.com/DanMendezZz/Estadistica_Ambiental.git
 cd Estadistica_Ambiental
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 ### Extras opcionales

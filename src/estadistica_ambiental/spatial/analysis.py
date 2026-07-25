@@ -20,8 +20,8 @@ _PROJ_COLOMBIA = 9377  # CTM12 — cálculo preciso de áreas en Colombia (Res. 
 
 
 def intersection_area(
-    gdf1,
-    gdf2,
+    gdf1: "geopandas.GeoDataFrame",
+    gdf2: "geopandas.GeoDataFrame",
     id_col1: str,
     id_col2: str,
 ) -> "geopandas.GeoDataFrame":
@@ -98,7 +98,7 @@ def intersection_area(
 
 def zonal_statistics(
     raster_path: Union[str],
-    zones_gdf,
+    zones_gdf: "geopandas.GeoDataFrame",
     zone_id_col: str,
     stats: List[str] = None,
 ) -> "geopandas.GeoDataFrame":
