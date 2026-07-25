@@ -22,7 +22,6 @@ pip install estadistica-ambiental
 
 📚 **Documentación:** <https://danmendezzz.github.io/Estadistica_Ambiental/>
 📓 **Notebooks navegables sin instalar (Pyodide):** [JupyterLite live](https://danmendezzz.github.io/Estadistica_Ambiental/lite/)
-🛰️ **Satélite de ejemplo:** [`Estadistica_Ambiental_Dashboard`](https://github.com/DanMendezZz/Estadistica_Ambiental_Dashboard) (Streamlit Cloud)
 
 ---
 
@@ -70,7 +69,7 @@ Este repo es **base de conocimiento + librería reutilizable**, no un producto f
 | **Analista en CAR / IDEAM / MADS / alcaldía** | [Quick Start](#quick-start) → [16 Líneas temáticas](#16-líneas-temáticas) → notebooks en `notebooks/lineas_tematicas/` |
 | **Estudiante de estadística ambiental** | [JupyterLite live](https://danmendezzz.github.io/Estadistica_Ambiental/lite/) (sin instalar nada) → [Resultados y validación](#resultados-y-validación) → [`docs/decisiones.md`](docs/decisiones.md) |
 | **Docente o investigador** | [`docs/decisiones.md`](docs/decisiones.md) (19 ADRs) → [`docs/fuentes/`](docs/fuentes/) (fichas de dominio) → [Catálogo de modelos](#catálogo-de-modelos) |
-| **Desarrollador de un satélite** | [Consumir desde otro proyecto](#consumir-desde-otro-proyecto-este-repo-es-base-de-conocimiento) → ejemplo real en [`Estadistica_Ambiental_Dashboard`](https://github.com/DanMendezZz/Estadistica_Ambiental_Dashboard) (Streamlit Cloud) |
+| **Desarrollador de un satélite** | [Consumir desde otro proyecto](#consumir-desde-otro-proyecto-este-repo-es-base-de-conocimiento) → patrón documentado en [ADR-018](docs/adr/ADR-018-base-satelite-governance.md) |
 
 > **Nota didáctica:** las decisiones difíciles (cuándo usar SARIMA vs ML, por qué obligamos ADF+KPSS, cuándo
 > validar contra OMS y cuándo contra Res. 2254) están **documentadas como ADR** — no escondidas en el código.
@@ -87,7 +86,7 @@ ciclo analítico es siempre el mismo — cargar, validar, describir, inferir, mo
 Este repositorio resuelve eso con una **base de conocimiento reutilizable** que combina tres cosas
 que raramente aparecen juntas en un solo lugar:
 
-- **Metodología documentada** — decisiones de diseño (ADR-001 a ADR-013), buenas prácticas calibradas
+- **Metodología documentada** — decisiones de diseño (ADR-001 a ADR-019), buenas prácticas calibradas
   sobre datos reales y fichas de dominio por línea temática.
 - **Normas colombianas en el código** — Res. 2254/2017 (calidad del aire), 2115/2007 (agua potable),
   631/2015 (vertimientos) e índices IDEAM listos para usarse con un solo import, sin hardcodear umbrales.
