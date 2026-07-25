@@ -1,0 +1,11 @@
+# Dependencias instalables en Pyodide para los notebooks demo de JupyterLite.
+# Mantener conservador: solo librerías que Pyodide tiene precompiladas o son puro Python.
+# NO añadir: geopandas, xgboost, lightgbm, prophet, pymc, torch, optuna (su backend SQLAlchemy
+# falla en Pyodide), rasterio, pykrige, pysal — fallarían al cargar.
+pandas
+numpy
+scipy
+statsmodels
+matplotlib
+seaborn
+pymannkendall

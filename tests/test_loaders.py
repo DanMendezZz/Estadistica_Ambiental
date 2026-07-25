@@ -148,15 +148,21 @@ class TestLoadTsv:
 
 
 class TestLoadNetcdf:
-    def test_no_xarray_raises_import_error(self, tmp_path):
+    def test_no_xarray_raises_import_error(self, tmp_path, monkeypatch):
         """load_netcdf: ImportError cuando xarray no está instalado."""
+        import sys
+
+        monkeypatch.setitem(sys.modules, "xarray", None)
         from estadistica_ambiental.io.loaders import load_netcdf
 
         with pytest.raises(ImportError, match="xarray"):
             load_netcdf(tmp_path / "fake.nc")
 
-    def test_no_xarray_dispatch_raises(self, tmp_path):
+    def test_no_xarray_dispatch_raises(self, tmp_path, monkeypatch):
         """load (dispatcher) con .nc levanta ImportError por falta de xarray."""
+        import sys
+
+        monkeypatch.setitem(sys.modules, "xarray", None)
         from estadistica_ambiental.io.loaders import load
 
         f = tmp_path / "datos.nc"
