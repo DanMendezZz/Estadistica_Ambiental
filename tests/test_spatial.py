@@ -83,6 +83,8 @@ class TestGearyC:
     @pytest.fixture
     def spatial_gdf(self):
         gpd = pytest.importorskip("geopandas")
+        pytest.importorskip("libpysal")
+        pytest.importorskip("esda")
         from shapely.geometry import box
 
         geoms = [box(i, j, i + 1, j + 1) for i in range(4) for j in range(4)]
@@ -109,6 +111,8 @@ class TestGetisOrdG:
     @pytest.fixture
     def spatial_gdf(self):
         gpd = pytest.importorskip("geopandas")
+        pytest.importorskip("libpysal")
+        pytest.importorskip("esda")
         from shapely.geometry import box
 
         geoms = [box(i, j, i + 1, j + 1) for i in range(4) for j in range(4)]

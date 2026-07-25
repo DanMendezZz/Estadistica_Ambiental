@@ -110,6 +110,56 @@ jobs:
           --cov-report=xml:coverage-ml.xml
 
   # ─────────────────────────────────────────────
+  # JOB 3b: Tests con extras Deep Learning (torch / lightning)
+  # ─────────────────────────────────────────────
+  test-deep:
+    name: Tests con [deep]
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install con extras Deep Learning
+        run: pip install -e ".[dev,deep]"
+
+      - name: Run tests con cobertura Deep Learning
+        run: >
+          python -m pytest tests/
+          --tb=short -q
+          --cov=src/estadistica_ambiental
+          --cov-report=xml:coverage-deep.xml
+
+  # ─────────────────────────────────────────────
+  # JOB 3c: Tests con extras Bayesianos (pymc / arviz)
+  # ─────────────────────────────────────────────
+  test-bayes:
+    name: Tests con [bayes]
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install con extras Bayesianos
+        run: pip install -e ".[dev,bayes]"
+
+      - name: Run tests con cobertura Bayesiana
+        run: >
+          python -m pytest tests/
+          --tb=short -q
+          --cov=src/estadistica_ambiental
+          --cov-report=xml:coverage-bayes.xml
+
+  # ─────────────────────────────────────────────
   # JOB 4: Tests con dependencias espaciales
   # ─────────────────────────────────────────────
   test-spatial:
