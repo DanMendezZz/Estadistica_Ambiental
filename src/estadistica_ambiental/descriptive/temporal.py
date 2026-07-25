@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import Tuple
 
 import pandas as pd
-import numpy as np
 
 
 def decompose_stl(
@@ -18,20 +17,25 @@ def decompose_stl(
     Returns DataFrame con columnas: observed, trend, seasonal, residual.
     """
     from statsmodels.tsa.seasonal import STL
+
     stl = STL(series.dropna(), period=period, robust=robust)
     result = stl.fit()
     idx = series.dropna().index
-    return pd.DataFrame({
-        "observed": result.observed,
-        "trend":    result.trend,
-        "seasonal": result.seasonal,
-        "residual": result.resid,
-    }, index=idx)
+    return pd.DataFrame(
+        {
+            "observed": result.observed,
+            "trend": result.trend,
+            "seasonal": result.seasonal,
+            "residual": result.resid,
+        },
+        index=idx,
+    )
 
 
 def acf_values(series: pd.Series, nlags: int = 40) -> pd.Series:
     """Autocorrelación (ACF) hasta nlags."""
     from statsmodels.tsa.stattools import acf
+
     vals = acf(series.dropna(), nlags=nlags, fft=True)
     return pd.Series(vals, name="acf")
 
@@ -39,6 +43,7 @@ def acf_values(series: pd.Series, nlags: int = 40) -> pd.Series:
 def pacf_values(series: pd.Series, nlags: int = 40) -> pd.Series:
     """Autocorrelación parcial (PACF) hasta nlags."""
     from statsmodels.tsa.stattools import pacf
+
     vals = pacf(series.dropna(), nlags=nlags)
     return pd.Series(vals, name="pacf")
 

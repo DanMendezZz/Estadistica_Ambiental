@@ -85,7 +85,32 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   # ─────────────────────────────────────────────
-  # JOB 3: Tests con dependencias espaciales
+  # JOB 3: Tests con extras ML (xgboost / lightgbm)
+  # ─────────────────────────────────────────────
+  test-ml:
+    name: Tests con [ml]
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install con extras ML
+        run: pip install -e ".[dev,ml]"
+
+      - name: Run tests con cobertura ML
+        run: >
+          python -m pytest tests/
+          --tb=short -q
+          --cov=src/estadistica_ambiental
+          --cov-report=xml:coverage-ml.xml
+
+  # ─────────────────────────────────────────────
+  # JOB 4: Tests con dependencias espaciales
   # ─────────────────────────────────────────────
   test-spatial:
     name: Tests con [spatial]
@@ -99,11 +124,14 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install con extras espaciales
-        # GDAL puede fallar en CI — usamos conda o ignoramos si falla
-        run: |
-          pip install -e ".[dev]" || true
-          pip install geopandas pykrige pysal esda folium branca || true
+      - name: Install core + dev
+        run: pip install -e ".[dev]"
+
+      - name: Install spatial extras (GDAL puede fallar en CI)
+        # continue-on-error expone el fallo en la UI sin cancelar el job.
+        # Los tests espaciales usan pytest.importorskip y se saltean si geopandas no instala.
+        continue-on-error: true
+        run: pip install geopandas pykrige pysal esda folium branca
 
       - name: Run tests (incluyendo espaciales)
         run: python -m pytest tests/ --tb=short -q

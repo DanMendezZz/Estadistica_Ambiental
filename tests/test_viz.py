@@ -1,6 +1,7 @@
 """Tests para estadistica_ambiental.eda.viz."""
 
 import matplotlib
+
 matplotlib.use("Agg")  # sin ventana gráfica en CI/tests
 
 import matplotlib.pyplot as plt
@@ -8,14 +9,14 @@ import pandas as pd
 import pytest
 
 from estadistica_ambiental.eda.viz import (
-    plot_series,
-    plot_missing_heatmap,
-    plot_histogram,
     plot_boxplot,
     plot_correlation_heatmap,
-    plot_seasonal_means,
+    plot_histogram,
+    plot_missing_heatmap,
     plot_multi_series,
     plot_scatter,
+    plot_seasonal_means,
+    plot_series,
 )
 
 
@@ -27,18 +28,21 @@ def close_figures():
 
 @pytest.fixture
 def env_df():
-    return pd.DataFrame({
-        "fecha":      pd.date_range("2023-01-01", periods=60, freq="D"),
-        "estacion":   (["Kennedy", "Usme"] * 30),
-        "pm25":       [10 + i % 15 + (i % 3) * 0.5 for i in range(60)],
-        "pm10":       [20 + i % 20 for i in range(60)],
-        "temperatura": [14 + (i % 7) * 0.3 for i in range(60)],
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2023-01-01", periods=60, freq="D"),
+            "estacion": (["Kennedy", "Usme"] * 30),
+            "pm25": [10 + i % 15 + (i % 3) * 0.5 for i in range(60)],
+            "pm10": [20 + i % 20 for i in range(60)],
+            "temperatura": [14 + (i % 7) * 0.3 for i in range(60)],
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # plot_series
 # ---------------------------------------------------------------------------
+
 
 class TestPlotSeries:
     def test_returns_figure(self, env_df):
@@ -58,6 +62,7 @@ class TestPlotSeries:
 # plot_missing_heatmap
 # ---------------------------------------------------------------------------
 
+
 class TestPlotMissingHeatmap:
     def test_returns_figure(self, env_df):
         fig = plot_missing_heatmap(env_df)
@@ -73,6 +78,7 @@ class TestPlotMissingHeatmap:
 # plot_histogram
 # ---------------------------------------------------------------------------
 
+
 class TestPlotHistogram:
     def test_returns_figure(self, env_df):
         fig = plot_histogram(env_df, "pm25")
@@ -87,6 +93,7 @@ class TestPlotHistogram:
 # plot_boxplot
 # ---------------------------------------------------------------------------
 
+
 class TestPlotBoxplot:
     def test_global(self, env_df):
         fig = plot_boxplot(env_df, "pm25")
@@ -100,6 +107,7 @@ class TestPlotBoxplot:
 # ---------------------------------------------------------------------------
 # plot_correlation_heatmap
 # ---------------------------------------------------------------------------
+
 
 class TestPlotCorrelationHeatmap:
     def test_returns_figure(self, env_df):
@@ -120,6 +128,7 @@ class TestPlotCorrelationHeatmap:
 # plot_seasonal_means
 # ---------------------------------------------------------------------------
 
+
 class TestPlotSeasonalMeans:
     def test_monthly(self, env_df):
         fig = plot_seasonal_means(env_df, "fecha", "pm25", period="month")
@@ -130,10 +139,12 @@ class TestPlotSeasonalMeans:
         assert isinstance(fig, plt.Figure)
 
     def test_hour(self):
-        df = pd.DataFrame({
-            "fecha": pd.date_range("2023-01-01", periods=48, freq="h"),
-            "pm25": range(48),
-        })
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=48, freq="h"),
+                "pm25": range(48),
+            }
+        )
         fig = plot_seasonal_means(df, "fecha", "pm25", period="hour")
         assert isinstance(fig, plt.Figure)
 
@@ -145,6 +156,7 @@ class TestPlotSeasonalMeans:
 # ---------------------------------------------------------------------------
 # plot_multi_series
 # ---------------------------------------------------------------------------
+
 
 class TestPlotMultiSeries:
     def test_returns_figure(self, env_df):
@@ -159,6 +171,7 @@ class TestPlotMultiSeries:
 # ---------------------------------------------------------------------------
 # plot_scatter
 # ---------------------------------------------------------------------------
+
 
 class TestPlotScatter:
     def test_basic(self, env_df):
