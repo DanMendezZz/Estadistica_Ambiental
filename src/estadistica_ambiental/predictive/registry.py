@@ -5,24 +5,45 @@ from __future__ import annotations
 from typing import Dict, List, Type
 
 from estadistica_ambiental.predictive.base import BaseModel
-from estadistica_ambiental.predictive.classical import ARIMAModel, ETSModel, SARIMAModel, SARIMAXModel
+from estadistica_ambiental.predictive.classical import (
+    ARIMAModel,
+    ETSModel,
+    SARIMAModel,
+    SARIMAXModel,
+)
 from estadistica_ambiental.predictive.ml import LightGBMModel, RandomForestModel, XGBoostModel
 
 _REGISTRY: Dict[str, Type[BaseModel]] = {
-    "arima":        ARIMAModel,
-    "sarima":       SARIMAModel,
-    "sarimax":      SARIMAXModel,
-    "ets":          ETSModel,
-    "xgboost":      XGBoostModel,
-    "random_forest":RandomForestModel,
-    "lightgbm":     LightGBMModel,
+    "arima": ARIMAModel,
+    "sarima": SARIMAModel,
+    "sarimax": SARIMAXModel,
+    "ets": ETSModel,
+    "xgboost": XGBoostModel,
+    "random_forest": RandomForestModel,
+    "lightgbm": LightGBMModel,
 }
 
 # Modelos deep learning — se registran solo si PyTorch está disponible
 try:
-    from estadistica_ambiental.predictive.deep import LSTMModel, GRUModel
+    from estadistica_ambiental.predictive.deep import BiLSTMModel, GRUModel, LSTMModel
+
     _REGISTRY["lstm"] = LSTMModel
-    _REGISTRY["gru"]  = GRUModel
+    _REGISTRY["bilstm"] = BiLSTMModel
+    _REGISTRY["gru"] = GRUModel
+except ImportError:
+    pass
+
+# Modelos bayesianos — se registran solo si PyMC + ArviZ están disponibles
+try:
+    from estadistica_ambiental.predictive.bayesian import (
+        PYMC_AVAILABLE,
+        BayesianARIMA,
+        HierarchicalModel,
+    )
+
+    if PYMC_AVAILABLE:
+        _REGISTRY["bayesian_arima"] = BayesianARIMA
+        _REGISTRY["hierarchical"] = HierarchicalModel
 except ImportError:
     pass
 

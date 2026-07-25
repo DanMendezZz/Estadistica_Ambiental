@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-import numpy as np
 import pandas as pd
 from scipy import stats as spstats
 
@@ -33,7 +32,7 @@ def correlation_table(
     col_list = num.columns.tolist()
     rows = []
     for i, c1 in enumerate(col_list):
-        for c2 in col_list[i + 1:]:
+        for c2 in col_list[i + 1 :]:
             s1 = num[c1].dropna()
             s2 = num[c2].dropna()
             common = s1.index.intersection(s2.index)
@@ -47,12 +46,21 @@ def correlation_table(
             elif method == "kendall":
                 r, p = spstats.kendalltau(a, b)
             else:
-                raise ValueError(f"method debe ser pearson, spearman o kendall")
+                raise ValueError("method debe ser pearson, spearman o kendall")
             if abs(r) >= min_abs_corr:
-                rows.append({"var1": c1, "var2": c2,
-                             "correlation": round(r, 4), "pval": round(p, 6),
-                             "n": len(common)})
-    return pd.DataFrame(rows).sort_values("correlation", key=abs, ascending=False)
+                rows.append(
+                    {
+                        "var1": c1,
+                        "var2": c2,
+                        "correlation": round(r, 4),
+                        "pval": round(p, 6),
+                        "n": len(common),
+                    }
+                )
+    result = pd.DataFrame(rows)
+    if result.empty:
+        return result
+    return result.sort_values("correlation", key=abs, ascending=False)
 
 
 def contingency_table(
@@ -72,7 +80,7 @@ def chi2_test(df: pd.DataFrame, col1: str, col2: str) -> dict:
     chi2, p, dof, expected = spstats.chi2_contingency(ct)
     return {
         "statistic": round(chi2, 4),
-        "pval":      round(p, 6),
-        "dof":       dof,
+        "pval": round(p, 6),
+        "dof": dof,
         "interpretation": "dependientes" if p < 0.05 else "independientes",
     }

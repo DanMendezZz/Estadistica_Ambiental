@@ -4,44 +4,49 @@ import pandas as pd
 import pytest
 
 from estadistica_ambiental.io.validators import (
+    PHYSICAL_RANGES,
     ValidationReport,
-    validate,
-    _check_missing,
     _check_duplicates,
+    _check_missing,
     _check_ranges,
     _check_temporal,
-    PHYSICAL_RANGES,
+    validate,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def clean_df():
-    return pd.DataFrame({
-        "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
-        "estacion": ["Kennedy"] * 5,
-        "pm25": [12.0, 15.0, 18.0, 10.0, 14.0],
-        "temperatura": [14.5, 15.0, 13.0, 16.0, 14.0],
-    })
+    return pd.DataFrame(
+        {
+            "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
+            "estacion": ["Kennedy"] * 5,
+            "pm25": [12.0, 15.0, 18.0, 10.0, 14.0],
+            "temperatura": [14.5, 15.0, 13.0, 16.0, 14.0],
+        }
+    )
 
 
 @pytest.fixture
 def dirty_df():
-    return pd.DataFrame({
-        "fecha": ["2023-01-01", "2023-01-02", "2023-01-02", "2030-01-01", "2023-01-04"],
-        "estacion": ["Kennedy"] * 5,
-        "pm25": [12.0, None, 18.0, 9999.0, 14.0],  # None y valor imposible
-        "temperatura": [14.5, 15.0, 13.0, 16.0, 14.0],
-        "ph": [7.0, 7.5, 8.0, 20.0, 6.5],           # pH=20 imposible
-    })
+    return pd.DataFrame(
+        {
+            "fecha": ["2023-01-01", "2023-01-02", "2023-01-02", "2030-01-01", "2023-01-04"],
+            "estacion": ["Kennedy"] * 5,
+            "pm25": [12.0, None, 18.0, 9999.0, 14.0],  # None y valor imposible
+            "temperatura": [14.5, 15.0, 13.0, 16.0, 14.0],
+            "ph": [7.0, 7.5, 8.0, 20.0, 6.5],  # pH=20 imposible
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # _check_missing
 # ---------------------------------------------------------------------------
+
 
 class TestCheckMissing:
     def test_no_missing(self, clean_df):
@@ -62,6 +67,7 @@ class TestCheckMissing:
 # ---------------------------------------------------------------------------
 # _check_duplicates
 # ---------------------------------------------------------------------------
+
 
 class TestCheckDuplicates:
     def test_no_duplicates(self, clean_df):
@@ -88,6 +94,7 @@ class TestCheckDuplicates:
 # _check_ranges
 # ---------------------------------------------------------------------------
 
+
 class TestCheckRanges:
     def test_clean_df_no_violations(self, clean_df):
         result = _check_ranges(clean_df, PHYSICAL_RANGES)
@@ -95,7 +102,9 @@ class TestCheckRanges:
         assert "temperatura" not in result
 
     def test_detects_pm25_violation(self):
-        df = pd.DataFrame({"pm25": [10.0, 600.0, 15.0]})  # 600 > 500
+        # Rango plausible actualizado a 999 µg/m³ (episodios extremos Colombia).
+        # Un sensor mal calibrado o error de digitación puede reportar 1500+.
+        df = pd.DataFrame({"pm25": [10.0, 1500.0, 15.0]})  # 1500 > 999
         result = _check_ranges(df, PHYSICAL_RANGES)
         assert "pm25" in result
         assert result["pm25"]["n"] == 1
@@ -115,6 +124,7 @@ class TestCheckRanges:
 # ---------------------------------------------------------------------------
 # _check_temporal
 # ---------------------------------------------------------------------------
+
 
 class TestCheckTemporal:
     def test_clean_dates(self, clean_df):
@@ -138,6 +148,7 @@ class TestCheckTemporal:
 # validate (integración)
 # ---------------------------------------------------------------------------
 
+
 class TestValidate:
     def test_returns_report(self, clean_df):
         report = validate(clean_df, date_col="fecha")
@@ -159,3 +170,89 @@ class TestValidate:
         df = pd.DataFrame({"pm25": [1.0] + [None] * 9})
         report = validate(df)
         assert any("pm25" in w for w in report.warnings)
+
+    def test_linea_tematica_calidad_aire(self, clean_df):
+        report = validate(clean_df, date_col="fecha", linea_tematica="calidad_aire")
+        assert isinstance(report, ValidationReport)
+
+    def test_linea_tematica_paramos(self):
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
+                "temperatura": [5.0, 6.0, 7.0, 8.0, 9.0],
+            }
+        )
+        report = validate(df, date_col="fecha", linea_tematica="paramos")
+        assert isinstance(report, ValidationReport)
+
+    def test_linea_tematica_oferta_hidrica(self):
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
+                "caudal": [10.0, 15.0, 20.0, 12.0, 18.0],
+            }
+        )
+        report = validate(df, date_col="fecha", linea_tematica="oferta_hidrica")
+        assert isinstance(report, ValidationReport)
+
+    def test_unknown_linea_tematica_does_not_crash(self, clean_df):
+        report = validate(clean_df, date_col="fecha", linea_tematica="linea_inexistente")
+        assert isinstance(report, ValidationReport)
+
+    def test_summary_with_issues_contains_missing_info(self):
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=5, freq="D"),
+                "pm25": [12.0, None, None, None, 14.0],
+            }
+        )
+        report = validate(df, date_col="fecha")
+        summary = report.summary()
+        assert "pm25" in summary
+
+    def test_summary_with_range_violations(self):
+        df = pd.DataFrame(
+            {
+                "fecha": pd.date_range("2023-01-01", periods=3, freq="D"),
+                "pm25": [12.0, 9999.0, 14.0],  # 9999 viola rango físico
+            }
+        )
+        report = validate(df, date_col="fecha")
+        summary = report.summary()
+        assert isinstance(summary, str)
+
+    def test_summary_with_temporal_issues(self):
+        df = pd.DataFrame(
+            {
+                "fecha": ["not_a_date", "2023-01-02", "2023-01-03"],
+                "pm25": [12.0, 15.0, 14.0],
+            }
+        )
+        report = validate(df, date_col="fecha")
+        summary = report.summary()
+        assert isinstance(summary, str)
+
+    def test_summary_with_key_duplicates(self):
+        df = pd.DataFrame(
+            {
+                "fecha": pd.to_datetime(["2023-01-01", "2023-01-01", "2023-01-02"]),
+                "estacion": ["A", "A", "A"],
+                "pm25": [12.0, 13.0, 14.0],
+            }
+        )
+        report = validate(df, date_col="fecha", key_cols=["estacion", "fecha"])
+        summary = report.summary()
+        assert isinstance(summary, str)
+
+    def test_colombia_coords_false_removes_lat_lon(self, clean_df):
+        df = clean_df.copy()
+        df["latitud"] = [4.5] * 5
+        df["longitud"] = [-74.0] * 5
+        report = validate(df, date_col="fecha", colombia_coords=False)
+        assert isinstance(report, ValidationReport)
+
+    def test_custom_ranges_applied(self, clean_df):
+        report = validate(
+            clean_df, date_col="fecha", ranges={"pm25": (0, 10)}
+        )  # umbral muy bajo → violations
+        assert isinstance(report, ValidationReport)

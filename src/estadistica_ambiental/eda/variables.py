@@ -22,15 +22,16 @@ logger = logging.getLogger(__name__)
 # Tipos de variable
 # ---------------------------------------------------------------------------
 
+
 class VariableType(str, Enum):
-    NUMERIC_CONTINUOUS  = "numerica_continua"
-    NUMERIC_DISCRETE    = "numerica_discreta"
+    NUMERIC_CONTINUOUS = "numerica_continua"
+    NUMERIC_DISCRETE = "numerica_discreta"
     CATEGORICAL_NOMINAL = "categorica_nominal"
     CATEGORICAL_ORDINAL = "categorica_ordinal"
-    TEMPORAL            = "temporal"
-    SPATIAL             = "espacial"
-    TEXT                = "texto_libre"
-    UNKNOWN             = "desconocida"
+    TEMPORAL = "temporal"
+    SPATIAL = "espacial"
+    TEXT = "texto_libre"
+    UNKNOWN = "desconocida"
 
 
 # ---------------------------------------------------------------------------
@@ -76,6 +77,7 @@ _DISCRETE_RANGE_THRESHOLD = 200
 # Dataclasses de resultado
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class VariableInfo:
     name: str
@@ -100,7 +102,9 @@ class VariableCatalog:
         return [n for n, v in self.variables.items() if v.var_type == var_type]
 
     def numerics(self) -> List[str]:
-        return self.by_type(VariableType.NUMERIC_CONTINUOUS) + self.by_type(VariableType.NUMERIC_DISCRETE)
+        return self.by_type(VariableType.NUMERIC_CONTINUOUS) + self.by_type(
+            VariableType.NUMERIC_DISCRETE
+        )
 
     def continuous(self) -> List[str]:
         return self.by_type(VariableType.NUMERIC_CONTINUOUS)
@@ -109,7 +113,9 @@ class VariableCatalog:
         return self.by_type(VariableType.NUMERIC_DISCRETE)
 
     def categoricals(self) -> List[str]:
-        return self.by_type(VariableType.CATEGORICAL_NOMINAL) + self.by_type(VariableType.CATEGORICAL_ORDINAL)
+        return self.by_type(VariableType.CATEGORICAL_NOMINAL) + self.by_type(
+            VariableType.CATEGORICAL_ORDINAL
+        )
 
     def temporals(self) -> List[str]:
         return self.by_type(VariableType.TEMPORAL)
@@ -122,15 +128,17 @@ class VariableCatalog:
     def to_dataframe(self) -> pd.DataFrame:
         rows = []
         for info in self.variables.values():
-            rows.append({
-                "variable": info.name,
-                "tipo": info.var_type.value,
-                "dtype_pandas": info.dtype,
-                "n_unicos": info.n_unique,
-                "faltantes_%": info.missing_pct,
-                "muestra_valores": str(info.sample_values[:5]),
-                "nota": info.note,
-            })
+            rows.append(
+                {
+                    "variable": info.name,
+                    "tipo": info.var_type.value,
+                    "dtype_pandas": info.dtype,
+                    "n_unicos": info.n_unique,
+                    "faltantes_%": info.missing_pct,
+                    "muestra_valores": str(info.sample_values[:5]),
+                    "nota": info.note,
+                }
+            )
         return pd.DataFrame(rows)
 
     def summary(self) -> str:
@@ -140,8 +148,7 @@ class VariableCatalog:
 
         lines = [f"=== Catálogo de variables ({len(self.variables)} columnas) ==="]
         for vtype, n in sorted(counts.items()):
-            cols = [name for name, info in self.variables.items()
-                    if info.var_type.value == vtype]
+            cols = [name for name, info in self.variables.items() if info.var_type.value == vtype]
             lines.append(f"\n{vtype} ({n}): {', '.join(cols)}")
         return "\n".join(lines)
 
@@ -149,6 +156,7 @@ class VariableCatalog:
 # ---------------------------------------------------------------------------
 # Función principal
 # ---------------------------------------------------------------------------
+
 
 def classify(
     df: pd.DataFrame,
@@ -184,6 +192,7 @@ def classify(
 # ---------------------------------------------------------------------------
 # Lógica de clasificación por columna
 # ---------------------------------------------------------------------------
+
 
 def _classify_column(col: str, series: pd.Series) -> VariableInfo:
     n_total = len(series)
@@ -260,7 +269,11 @@ def _classify_numeric(valid: pd.Series, n_unique: int) -> tuple[VariableType, st
     all_integer = (valid == valid.round(0)).all()
     value_range = float(valid.max() - valid.min())
 
-    if all_integer and n_unique <= _DISCRETE_UNIQUE_THRESHOLD and value_range <= _DISCRETE_RANGE_THRESHOLD:
+    if (
+        all_integer
+        and n_unique <= _DISCRETE_UNIQUE_THRESHOLD
+        and value_range <= _DISCRETE_RANGE_THRESHOLD
+    ):
         return VariableType.NUMERIC_DISCRETE, f"{n_unique} valores únicos enteros"
 
     return VariableType.NUMERIC_CONTINUOUS, ""
@@ -287,6 +300,9 @@ def _classify_text(
         if lower_values.issubset(ordinal_set) or ordinal_set.issubset(lower_values):
             return VariableType.CATEGORICAL_ORDINAL, "valores coinciden con escala ordinal conocida"
         if len(lower_values & ordinal_set) >= 3:
-            return VariableType.CATEGORICAL_ORDINAL, "valores parcialmente coinciden con escala ordinal"
+            return (
+                VariableType.CATEGORICAL_ORDINAL,
+                "valores parcialmente coinciden con escala ordinal",
+            )
 
     return VariableType.CATEGORICAL_NOMINAL, f"{n_unique} categorías únicas"

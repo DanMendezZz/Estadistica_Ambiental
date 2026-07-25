@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 # API pública
 # ---------------------------------------------------------------------------
 
+
 def run_eda(
     df: pd.DataFrame,
     output: str = "reports/eda_report.html",
@@ -59,8 +60,8 @@ def run_eda(
     out_path = Path(output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    catalog   = classify(df)
-    quality   = assess_quality(df, date_col=date_col)
+    catalog = classify(df)
+    quality = assess_quality(df, date_col=date_col)
     val_report = validate(df, date_col=date_col)
 
     html_content = _build_html(df, title, catalog, quality, val_report, date_col)
@@ -79,6 +80,7 @@ def run_eda(
 # ---------------------------------------------------------------------------
 # Construcción del HTML propio
 # ---------------------------------------------------------------------------
+
 
 def _build_html(
     df: pd.DataFrame,
@@ -109,6 +111,7 @@ def _build_html(
 # Secciones del reporte
 # ---------------------------------------------------------------------------
 
+
 def _section_overview(df: pd.DataFrame, now: str, date_col: Optional[str]) -> str:
     rows_info = f"{len(df):,} filas × {len(df.columns)} columnas"
     size_kb = df.memory_usage(deep=True).sum() / 1024
@@ -122,7 +125,7 @@ def _section_overview(df: pd.DataFrame, now: str, date_col: Optional[str]) -> st
     <div class="cards">
       <div class="card"><span class="num">{len(df):,}</span><br>Filas</div>
       <div class="card"><span class="num">{len(df.columns)}</span><br>Columnas</div>
-      <div class="card"><span class="num">{df.isnull().mean().mean()*100:.1f}%</span><br>Faltantes (prom.)</div>
+      <div class="card"><span class="num">{df.isnull().mean().mean() * 100:.1f}%</span><br>Faltantes (prom.)</div>
       <div class="card"><span class="num">{size_kb:.1f} KB</span><br>Memoria</div>
     </div>
     <p>{rows_info}{date_range}</p>"""
@@ -165,7 +168,7 @@ def _section_temporal(quality: QualityReport) -> str:
         return ""
     color = "ok" if tg.completeness_pct >= 99 else "warn"
     content = f"""
-    <p>Frecuencia inferida: <b>{tg.inferred_freq or 'no inferida'}</b></p>
+    <p>Frecuencia inferida: <b>{tg.inferred_freq or "no inferida"}</b></p>
     <p>Registros esperados: {tg.expected_n:,} | Presentes: {tg.actual_n:,} |
        <span class='{color}'>{tg.completeness_pct:.1f}% completo</span></p>
     <p>Gaps detectados: {tg.n_gaps} | Mayor gap: {tg.max_gap_periods} periodos</p>"""
@@ -248,9 +251,11 @@ def _section_descriptive(df: pd.DataFrame) -> str:
 # Integraciones opcionales
 # ---------------------------------------------------------------------------
 
+
 def _try_ydata(df: pd.DataFrame, base_path: Path) -> None:
     try:
         from ydata_profiling import ProfileReport
+
         out = base_path.with_name(base_path.stem + "_ydata.html")
         profile = ProfileReport(df, title="ydata-profiling", minimal=True)
         profile.to_file(out)
@@ -264,6 +269,7 @@ def _try_ydata(df: pd.DataFrame, base_path: Path) -> None:
 def _try_sweetviz(df: pd.DataFrame, base_path: Path) -> None:
     try:
         import sweetviz as sv
+
         out = str(base_path.with_name(base_path.stem + "_sweetviz.html"))
         report = sv.analyze(df)
         report.show_html(out, open_browser=False)
@@ -277,6 +283,7 @@ def _try_sweetviz(df: pd.DataFrame, base_path: Path) -> None:
 # ---------------------------------------------------------------------------
 # Helpers HTML
 # ---------------------------------------------------------------------------
+
 
 def _df_to_html(df: pd.DataFrame) -> str:
     header = "".join(f"<th>{html.escape(str(c))}</th>" for c in df.columns)
