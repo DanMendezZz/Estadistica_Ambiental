@@ -7,14 +7,16 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
-import pandas as pd
+if TYPE_CHECKING:
+    import geopandas
+    import xarray
 
 logger = logging.getLogger(__name__)
 
-_VECTOR_EXTS  = {".shp", ".gpkg", ".geojson", ".json"}
-_RASTER_EXTS  = {".tif", ".tiff", ".nc", ".nc4"}
+_VECTOR_EXTS = {".shp", ".gpkg", ".geojson", ".json"}
+_RASTER_EXTS = {".tif", ".tiff", ".nc", ".nc4"}
 
 
 def load_vector(
@@ -45,6 +47,18 @@ def load_vector(
     gdf = gpd.read_file(**kwargs)
     logger.info("Cargado '%s': %d features | CRS=%s", path.name, len(gdf), gdf.crs)
 
+    invalid_mask = ~gdf.geometry.is_valid
+    if invalid_mask.any():
+        n_invalid = int(invalid_mask.sum())
+        logger.warning(
+            "%d geometría(s) inválida(s) en '%s'. Aplicando buffer(0) para corrección.",
+            n_invalid,
+            path.name,
+        )
+        gdf.loc[invalid_mask, gdf.geometry.name] = gdf.loc[invalid_mask, gdf.geometry.name].buffer(
+            0
+        )
+
     if to_epsg and gdf.crs and gdf.crs.to_epsg() != to_epsg:
         gdf = gdf.to_crs(epsg=to_epsg)
         logger.info("Reproyectado a EPSG:%d", to_epsg)
@@ -70,16 +84,21 @@ def load_raster(
     with rasterio.open(path) as src:
         data = src.read(band)
         result = {
-            "data":      data,
+            "data": data,
             "transform": src.transform,
-            "crs":       src.crs,
-            "shape":     src.shape,
-            "nodata":    src.nodata,
-            "bounds":    src.bounds,
-            "res":       src.res,
+            "crs": src.crs,
+            "shape": src.shape,
+            "nodata": src.nodata,
+            "bounds": src.bounds,
+            "res": src.res,
         }
-    logger.info("Raster '%s': shape=%s | CRS=%s | nodata=%s",
-                path.name, result["shape"], result["crs"], result["nodata"])
+    logger.info(
+        "Raster '%s': shape=%s | CRS=%s | nodata=%s",
+        path.name,
+        result["shape"],
+        result["crs"],
+        result["nodata"],
+    )
     return result
 
 
@@ -107,8 +126,7 @@ def load_netcdf_spatial(
     if time_slice and "time" in ds.dims:
         ds = ds.sel(time=time_slice)
 
-    logger.info("NetCDF '%s': variables=%s | dims=%s",
-                path.name, list(ds.data_vars), dict(ds.dims))
+    logger.info("NetCDF '%s': variables=%s | dims=%s", path.name, list(ds.data_vars), dict(ds.dims))
     return ds
 
 

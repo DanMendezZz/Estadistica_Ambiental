@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
-import numpy as np
 import pandas as pd
 
 from estadistica_ambiental.evaluation.metrics import evaluate
@@ -23,6 +22,8 @@ def walk_forward(
     X: Optional[pd.DataFrame] = None,
     domain: str = "general",
     strategy: str = "expanding",
+    pollutant: str = "pm25",
+    gap: int = 0,
 ) -> Dict:
     """Walk-forward backtesting con ventana expansiva o deslizante.
 
@@ -35,6 +36,11 @@ def walk_forward(
         X: Exógenas (si el modelo las soporta).
         domain: 'general' | 'hydrology' | 'air_quality' para métricas.
         strategy: 'expanding' (crece) | 'sliding' (tamaño fijo).
+        pollutant: Contaminante para breakpoints ICA ('pm25', 'pm10', 'o3',
+            'no2', 'so2', 'co'). Solo aplica con domain='air_quality'.
+        gap: Observaciones de purga entre fin de train y comienzo de test.
+            Evita leakage por autocorrelación alta (PM2.5 horario, caudal diario).
+            Default 0 (sin purga) para compatibilidad retroactiva.
 
     Returns:
         Dict con 'metrics' (promedio), 'folds' (lista por fold) y 'predictions'.
@@ -53,8 +59,8 @@ def walk_forward(
             train_start = fold_idx * step
             train_end = min_train + fold_idx * step
 
-        test_start = train_end
-        test_end   = min(test_start + horizon, n)
+        test_start = train_end + gap
+        test_end = min(test_start + horizon, n)
 
         if test_end > n or test_start >= n:
             break
@@ -73,32 +79,37 @@ def walk_forward(
             model.fit(y_train, X_train)
             preds = model.predict(len(y_test), X_test)
             actual = y_test.values
-            metrics = evaluate(actual, preds, domain=domain)
+            metrics = evaluate(actual, preds, domain=domain, pollutant=pollutant)
         except Exception as e:
             logger.warning("Fold %d falló: %s", fold_idx, e)
             continue
 
-        folds.append({"fold": fold_idx, "train_size": len(y_train),
-                      "test_size": len(y_test), **metrics})
+        folds.append(
+            {"fold": fold_idx, "train_size": len(y_train), "test_size": len(y_test), **metrics}
+        )
         all_actual.extend(actual)
         all_pred.extend(preds)
 
     if not folds:
         return {"metrics": {}, "folds": [], "predictions": pd.DataFrame()}
 
-    folds_df   = pd.DataFrame(folds)
+    folds_df = pd.DataFrame(folds)
     avg_metrics = folds_df.drop(columns=["fold", "train_size", "test_size"]).mean().to_dict()
-    avg_metrics = {k: round(v, 4) for k, v in avg_metrics.items()}
 
-    preds_df = pd.DataFrame({
-        "actual":    all_actual,
-        "predicted": all_pred,
-    })
+    preds_df = pd.DataFrame(
+        {
+            "actual": all_actual,
+            "predicted": all_pred,
+        }
+    )
 
-    logger.info("%s backtesting: %d folds | RMSE=%.4f | MAE=%.4f",
-                model.name, len(folds),
-                avg_metrics.get("rmse", float("nan")),
-                avg_metrics.get("mae", float("nan")))
+    logger.info(
+        "%s backtesting: %d folds | RMSE=%.4f | MAE=%.4f",
+        model.name,
+        len(folds),
+        avg_metrics.get("rmse", float("nan")),
+        avg_metrics.get("mae", float("nan")),
+    )
 
     return {"metrics": avg_metrics, "folds": folds_df, "predictions": preds_df}
 
@@ -112,4 +123,5 @@ def compare_backtests(results: Dict[str, Dict]) -> pd.DataFrame:
     for model_name, result in results.items():
         row = {"model": model_name, **result.get("metrics", {})}
         rows.append(row)
-    return pd.DataFrame(rows).set_index("model").sort_values("rmse")
+    df = pd.DataFrame(rows).set_index("model")
+    return df.sort_values("rmse") if "rmse" in df.columns else df

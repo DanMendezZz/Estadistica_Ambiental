@@ -56,9 +56,27 @@ El enfoque dominante es la transición de modelos estadísticos clásicos (ARIMA
 
 ## Indicadores y métricas oficiales
 
-- **ICA Colombia:** Buena (0–25), Aceptable (26–50), Dañina sensibles (51–100), Dañina (101–150), Muy dañina (151–200), Peligrosa (>200).
-- **Resolución 2254/2017:** PM2.5 anual = 25 µg/m³; 24h = 37 µg/m³.
-- **Guías OMS 2021:** PM2.5 anual = 5 µg/m³; 24h = 15 µg/m³ (más estrictas).
+### ICA Colombia — Resolución 2254/2017 (concentraciones reales en µg/m³)
+
+> ⚠️ **Error frecuente:** el ICA colombiano opera en **concentraciones de contaminante (µg/m³)**,
+> no en la escala adimensional AQI 0–500 de EPA/US. Los umbrales de abajo son los que
+> usa `exceedance_report()` y `hit_rate_ica()` en el repositorio.
+
+| Categoría | PM2.5 (µg/m³) | Color oficial |
+|---|---|---|
+| Buena | 0 – 12 | `#00E400` verde |
+| Aceptable | 12 – 37 | `#FFFF00` amarillo — **umbral norma 24h** |
+| Dañina sensibles | 37 – 55 | `#FF7E00` naranja |
+| Dañina | 55 – 150 | `#FF0000` rojo |
+| Muy dañina | 150 – 250 | `#8F3F97` morado |
+| Peligrosa | 250 – 500 | `#7E0023` marrón |
+
+Los colores son **obligatorios en reportes a entidades regulatorias** (CAR, MinAmbiente).
+Para PM10, O3, NO2, SO2 y CO los breakpoints están en `config.py → NORMA_CO` y en
+`preprocessing/air_quality.py → _ICA_BREAKPOINTS`.
+
+- **Resolución 2254/2017:** PM2.5 anual = 25 µg/m³; PM2.5 24h = 37 µg/m³.
+- **Guías OMS 2021:** PM2.5 anual = 5 µg/m³; PM2.5 24h = 15 µg/m³ (más estrictas).
 
 ---
 
@@ -99,12 +117,29 @@ El enfoque dominante es la transición de modelos estadísticos clásicos (ARIMA
 3. MICE — gaps largos con otras variables disponibles.
 4. BRITS / SAITS / GAIN — gaps extremos (>40%).
 
-**Predictiva (MVP):**
-- SARIMA — baseline; estacionalidad diaria/semanal/anual.
-- SARIMAX — SARIMA + meteorología (mejora documentada en literatura).
-- Prophet — múltiples estacionalidades, robusto a outliers.
-- XGBoost / LightGBM — con lag features + calendario.
-- LSTM / GRU — horizontes cortos (1–24h) con datos horarios.
+**Predictiva — jerarquía empírica para PM2.5 horario (validada con datos SISAIRE CAR 2016-2026):**
+
+| Modelo | RMSE típico | HitRate ICA | Rol recomendado |
+|---|---|---|---|
+| RF / XGBoost / LGB | ~3.7 µg/m³ | ~88% | **Producción** — 32 lag/calendar features |
+| AR(1) doble-escala | — | — | Pronóstico con bandas P10/P50/P90 sin reentrenar el RF |
+| SARIMAX | ~4.5 µg/m³ | ~75% | Con covariables meteorológicas horarias disponibles |
+| SARIMA | ~5.9 µg/m³ | ~69% | **Solo como benchmark estadístico** — no para producción |
+| Prophet | variable | — | Estacionalidades múltiples o eventos especiales; NO para series horarias |
+| LSTM / GRU | ~10 µg/m³ | ~63% | Necesita >5 años + GPU; última opción |
+
+> **Hallazgo clave (pipeline CAR 2026):** SARIMA es el modelo más débil para PM2.5
+> horario — no captura la autocorrelación diaria (ACF significativo hasta lag 48–72h)
+> y es computacionalmente prohibitivo en producción.
+> XGBoost con lag features es el benchmark real. SARIMAX solo compite cuando se
+> tienen covariables meteorológicas horarias completas y sin gaps.
+
+**Nota metodológica — walk-forward con gap para series horarias:**
+```python
+# OBLIGATORIO para PM2.5 horario (ACF≈0.97 en lag-1h):
+walk_forward(model, y, gap=24, n_splits=4)
+# Sin gap, R² se infla 8-40 puntos porcentuales por leakage de autocorrelación.
+```
 
 **Espacial:**
 - Kriging ordinario / universal.
@@ -173,6 +208,85 @@ RMSE, MAE, R², MAPE, PBIAS, MSE, NSE, Willmott Index, a20-index, TIC, CRPS.
 - **LUR:** Land Use Regression — modelo de exposición urbana.
 - **MAR:** Missing At Random — faltantes relacionados con otras variables observadas.
 - **MNAR:** Missing Not At Random — faltantes relacionados con el propio valor.
+
+---
+
+## Buenas prácticas metodológicas (lecciones del pipeline SISAIRE CAR 2016-2026)
+
+> Estas lecciones surgieron del análisis de 34 estaciones y ~1.350.000 registros horarios
+> de PM2.5 en Cundinamarca. Son transferibles a cualquier red de monitoreo de calidad del aire.
+
+### BP-1 — Walk-forward con gap obligatorio para series horarias
+
+Series con ACF alta (ACF≈0.97 en lag-1h para PM2.5) producen R² inflado si el set de
+entrenamiento termina en `t` y el test comienza en `t+1`. Usar `gap=24h` como mínimo:
+
+```python
+walk_forward(model, y, horizon=8760, n_splits=4, gap=24)
+# Evidencia: LC gap bajó de 0.38 a 0.048 al implementar gap=24h en RF.
+```
+
+### BP-2 — Corrección de sesgo por quarter (no por mes) para régimen andino bimodal
+
+Colombia (zona andina) tiene dos ciclos secos y dos lluviosos. La corrección mensual sobreajusta.
+Usar corrección por trimestre calibrada sobre residuos del backtesting:
+
+```python
+BIAS_QUARTER = {1: +0.03, 2: -0.15, 3: -0.23, 4: -0.07}  # µg/m³, Cundinamarca 2025
+pred["predicho_corr"] = pred.apply(
+    lambda r: r["predicho"] + BIAS_QUARTER.get(r["quarter"], 0), axis=1)
+```
+
+### BP-3 — Criterio de ranking multi-métrica para calidad del aire
+
+El RMSE global mezcla estaciones con escalas distintas (media 8–25 µg/m³ por estación).
+Score validado en 34 estaciones SISAIRE:
+
+```
+score = 0.30 × RMSE_normalizado      # RMSE / media_estación
+      + 0.10 × NRMSE                  # escala-invariante
+      + 0.25 × HitRate_ICA            # % días en categoría correcta
+      + 0.20 × F1_weighted            # F1 multi-clase ICA
+      + 0.15 × Recall_gt55            # recall episodios críticos >55 µg/m³
+```
+
+El 15% en `Recall_gt55` es el diferenciador crítico para alertas tempranas:
+XGBoost detectó 15.5% de episodios >55 µg/m³ vs. 0% de SARIMA.
+
+### BP-4 — Outliers vs. episodios críticos: validación espacial
+
+Un pico IQR×3.0 sostenido ≥4h con ≥1 estación vecina (dentro de 50km) también elevada
+→ episodio real: PRESERVAR con `flag='episodio_critico'`.
+Sin confirmación espacial → error de sensor: reemplazar con mediana local limpia.
+Ratio estimado en SISAIRE 2016-2026: ~15% de outliers IQR×3 son episodios reales (ADR-002).
+
+### BP-5 — Criterio de exclusión por cobertura en entrenamiento
+
+Si `flag_imputacion != 'original'` > 30% del período → excluir la estación del entrenamiento.
+Los datos siguen disponibles para análisis descriptivo y reportes de cobertura.
+KNN con >30% de gaps introduce patrones sintéticos que sesgan el modelo.
+
+### BP-6 — Renombres y discontinuidades históricas en ETL
+
+Aplicar dict de normalización de nombres de estaciones **antes** de cualquier join/merge.
+En SISAIRE/CAR se encontraron 3 renombres confirmados (2026):
+- `TAUSA - ESCUELA` → `TAUSA - URBANO`
+- `FUNZA - COLEGIO` → `MOSQUERA - URBANO`
+- `NEMOCÓN - PATIO BONITO` → excluir (falla de sensor documentada)
+
+Este patrón aplica igualmente a redes de caudales (IDEAM/DHIME) y estaciones meteorológicas.
+
+### BP-7 — Período de retorno de excedencias como métrica de gestión
+
+Complementa `exceedance_report()` con una métrica intuitiva para gestores:
+
+```python
+def exceedance_return_period(series_daily, threshold=37):
+    """Período de retorno de un día con PM2.5 > umbral (en días)."""
+    pct = (series_daily > threshold).mean()
+    return round(1 / pct, 1) if pct > 0 else float('inf')
+# Ejemplo: 8.3% días > norma → T_retorno ≈ 12 días
+```
 
 ---
 

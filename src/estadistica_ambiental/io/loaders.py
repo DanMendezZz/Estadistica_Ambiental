@@ -137,7 +137,9 @@ def load_shapefile(
     try:
         import geopandas as gpd
     except ImportError:
-        raise ImportError("geopandas es necesario para leer archivos espaciales: pip install geopandas")
+        raise ImportError(
+            "geopandas es necesario para leer archivos espaciales: pip install geopandas"
+        )
 
     path = Path(path)
     gdf = gpd.read_file(path, **kwargs)
@@ -154,15 +156,21 @@ def load_shapefile(
 # Helpers internos
 # ---------------------------------------------------------------------------
 
+
 def _detect_encoding(path: Path) -> str:
     """Detecta encoding de un archivo de texto usando chardet si está disponible."""
     try:
         import chardet
+
         raw = path.read_bytes()
         result = chardet.detect(raw[:50_000])
         encoding = result.get("encoding") or "utf-8"
-        logger.debug("Encoding detectado para %s: %s (confianza %.0f%%)",
-                     path.name, encoding, (result.get("confidence") or 0) * 100)
+        logger.debug(
+            "Encoding detectado para %s: %s (confianza %.0f%%)",
+            path.name,
+            encoding,
+            (result.get("confidence") or 0) * 100,
+        )
         return encoding
     except ImportError:
         return "utf-8"
@@ -187,5 +195,8 @@ def _log_summary(path: Path, df: pd.DataFrame) -> None:
     missing_pct = df.isnull().mean().mean() * 100
     logger.info(
         "Cargado '%s': %d filas × %d columnas | %.1f%% faltantes",
-        path.name, n_rows, n_cols, missing_pct,
+        path.name,
+        n_rows,
+        n_cols,
+        missing_pct,
     )

@@ -1,0 +1,16 @@
+{
+  "jupyter-lite-schema-version": 0,
+  "jupyter-config-data": {
+    "appName": "Estadística Ambiental — Lite",
+    "appVersion": "1.3.2",
+    "faviconUrl": "./lab/favicon.ico",
+    "fullStaticUrl": "./build",
+    "settingsUrl": "./build/schemas",
+    "themesUrl": "./build/themes",
+    "litePluginSettings": {
+      "@jupyterlite/pyodide-kernel-extension:kernel": {
+        "pipliteUrls": []
+      }
+    }
+  }
+}

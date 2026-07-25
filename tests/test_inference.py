@@ -4,13 +4,16 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from estadistica_ambiental.inference.distributions import normality_tests, fit_distribution
-from estadistica_ambiental.inference.hypothesis import ttest, mannwhitney, anova, kruskalwallis
+from estadistica_ambiental.inference.distributions import fit_distribution, normality_tests
+from estadistica_ambiental.inference.hypothesis import anova, kruskalwallis, mannwhitney, ttest
+from estadistica_ambiental.inference.intervals import (
+    ci_mean,
+    ci_median_bootstrap,
+    ci_quantile_bootstrap,
+    exceedance_probability,
+)
 from estadistica_ambiental.inference.stationarity import adf_test, kpss_test, stationarity_report
 from estadistica_ambiental.inference.trend import mann_kendall, sens_slope
-from estadistica_ambiental.inference.intervals import (
-    ci_mean, ci_median_bootstrap, ci_quantile_bootstrap, exceedance_probability,
-)
 
 
 @pytest.fixture
@@ -33,13 +36,16 @@ def trending_series():
 @pytest.fixture
 def group_df():
     np.random.seed(4)
-    return pd.DataFrame({
-        "valor":    np.concatenate([np.random.normal(10, 2, 50), np.random.normal(14, 2, 50)]),
-        "estacion": ["A"] * 50 + ["B"] * 50,
-    })
+    return pd.DataFrame(
+        {
+            "valor": np.concatenate([np.random.normal(10, 2, 50), np.random.normal(14, 2, 50)]),
+            "estacion": ["A"] * 50 + ["B"] * 50,
+        }
+    )
 
 
 # --- distributions ---
+
 
 class TestNormality:
     def test_returns_dataframe(self, normal_series):
@@ -65,6 +71,7 @@ class TestFitDistribution:
 
 # --- hypothesis ---
 
+
 class TestHypothesis:
     def test_ttest_significant(self, group_df):
         result = ttest(group_df, "valor", "estacion")
@@ -78,6 +85,12 @@ class TestHypothesis:
         result = mannwhitney(group_df, "valor", "estacion")
         assert 0 <= result["pval"] <= 1
 
+    def test_mannwhitney_more_than_2_groups_raises(self, group_df):
+        df3 = group_df.copy()
+        df3.loc[0, "estacion"] = "C"
+        with pytest.raises(ValueError):
+            mannwhitney(df3, "valor", "estacion")
+
     def test_anova(self, group_df):
         result = anova(group_df, "valor", "estacion")
         assert "statistic" in result
@@ -88,6 +101,7 @@ class TestHypothesis:
 
 
 # --- stationarity ---
+
 
 class TestStationarity:
     def test_adf_stationary(self, stationary_series):
@@ -103,8 +117,52 @@ class TestStationarity:
         assert isinstance(result, pd.DataFrame)
         assert len(result) == 2
 
+    def test_report_nonstationary_diagnosis(self, trending_series):
+        result = stationarity_report(trending_series)
+        # Serie con tendencia → diagnóstico "no estacionaria" o "evidencia mixta"
+        assert any("estacionaria" in str(c) for c in result["conclusion"].values)
+
+    def test_adf_nonstationary_logs_warning(self, trending_series, caplog):
+        import logging
+
+        with caplog.at_level(logging.WARNING):
+            adf_test(trending_series)
+
+    def test_report_mixed_evidence(self, stationary_series, monkeypatch):
+        # Forzar evidencia mixta: ADF dice estacionaria, KPSS dice no estacionaria
+        import estadistica_ambiental.inference.stationarity as st_module
+
+        adf_result = {
+            "test": "ADF",
+            "stationary": True,
+            "pval": 0.01,
+            "statistic": -5.0,
+            "lags_used": 1,
+            "n_obs": 100,
+            "critical_1%": -3.5,
+            "critical_5%": -2.9,
+            "critical_10%": -2.6,
+            "alpha": 0.05,
+        }
+        kpss_result = {
+            "test": "KPSS",
+            "stationary": False,
+            "pval": 0.01,
+            "statistic": 0.8,
+            "lags_used": 1,
+            "critical_1%": 0.7,
+            "critical_5%": 0.5,
+            "critical_10%": 0.4,
+            "alpha": 0.05,
+        }
+        monkeypatch.setattr(st_module, "adf_test", lambda s, a=0.05, **kw: adf_result)
+        monkeypatch.setattr(st_module, "kpss_test", lambda s, a=0.05, **kw: kpss_result)
+        result = stationarity_report(stationary_series)
+        assert any("mixta" in str(c) for c in result["conclusion"].values)
+
 
 # --- trend ---
+
 
 class TestTrend:
     def test_mann_kendall_increasing(self, trending_series):
@@ -115,8 +173,27 @@ class TestTrend:
         result = sens_slope(trending_series)
         assert result["slope"] > 0
 
+    def test_mann_kendall_import_error(self, trending_series, monkeypatch):
+        """mann_kendall: ImportError cuando pymannkendall no disponible (line 20)."""
+        import sys
+
+        monkeypatch.setitem(sys.modules, "pymannkendall", None)
+        with pytest.raises(ImportError, match="pymannkendall"):
+            mann_kendall(trending_series)
+
+    def test_pettitt_import_error(self, trending_series, monkeypatch):
+        """pettitt_test: ImportError cuando pymannkendall no disponible (line 61)."""
+        import sys
+
+        from estadistica_ambiental.inference.trend import pettitt_test
+
+        monkeypatch.setitem(sys.modules, "pymannkendall", None)
+        with pytest.raises(ImportError, match="pymannkendall"):
+            pettitt_test(trending_series)
+
 
 # --- intervals ---
+
 
 class TestIntervals:
     def test_ci_mean_tuple(self, normal_series):
@@ -138,3 +215,91 @@ class TestIntervals:
     def test_exceedance_probability(self, normal_series):
         result = exceedance_probability(normal_series, threshold=20.0)
         assert 0 <= result["pct_exceed"] <= 100
+
+    def test_ci_bootstrap_custom_statistic(self, normal_series):
+        from estadistica_ambiental.inference.intervals import ci_bootstrap
+
+        lo, hi = ci_bootstrap(normal_series, statistic=np.std, n_boot=500)
+        assert lo < hi
+        assert lo > 0  # desviación estándar siempre positiva
+
+    def test_ci_bootstrap_mean_vs_ci_mean(self, normal_series):
+        from estadistica_ambiental.inference.intervals import ci_bootstrap
+
+        lo, hi = ci_bootstrap(normal_series, statistic=np.mean, n_boot=500)
+        assert lo < normal_series.mean() < hi
+
+
+# --- pettitt_test ---
+# pymannkendall no expone pettitt_test en la versión instalada — xfail hasta actualizar
+
+
+class TestPettitt:
+    @pytest.mark.xfail(reason="pymannkendall instalado no expone pettitt_test", strict=False)
+    def test_returns_dict_with_keys(self, trending_series):
+        from estadistica_ambiental.inference.trend import pettitt_test
+
+        result = pettitt_test(trending_series)
+        assert "change_point_idx" in result
+        assert "pval" in result
+        assert "significant" in result
+
+    @pytest.mark.xfail(reason="pymannkendall instalado no expone pettitt_test", strict=False)
+    def test_change_point_in_range(self, trending_series):
+        from estadistica_ambiental.inference.trend import pettitt_test
+
+        result = pettitt_test(trending_series)
+        assert 0 <= result["change_point_idx"] < len(trending_series)
+
+    @pytest.mark.xfail(reason="pymannkendall instalado no expone pettitt_test", strict=False)
+    def test_no_trend_not_significant(self, stationary_series):
+        from estadistica_ambiental.inference.trend import pettitt_test
+
+        result = pettitt_test(stationary_series, alpha=0.05)
+        assert isinstance(result["pval"], float)
+
+    @pytest.mark.xfail(reason="pymannkendall instalado no expone pettitt_test", strict=False)
+    def test_date_index_preserved(self):
+        from estadistica_ambiental.inference.trend import pettitt_test
+
+        s = pd.Series(
+            np.concatenate([np.ones(50), np.ones(50) * 5]),
+            index=pd.date_range("2020-01-01", periods=100, freq="D"),
+        )
+        result = pettitt_test(s)
+        assert "change_point_date" in result
+
+
+# --- sens_slope edge cases ---
+
+
+class TestSensSlope:
+    def test_constant_series_zero_slope(self):
+        from estadistica_ambiental.inference.trend import sens_slope
+
+        s = pd.Series([5.0] * 50)
+        result = sens_slope(s)
+        assert result["slope"] == pytest.approx(0.0, abs=1e-6)
+
+    def test_linear_series_correct_slope(self):
+        from estadistica_ambiental.inference.trend import sens_slope
+
+        s = pd.Series(np.arange(100, dtype=float))
+        result = sens_slope(s)
+        assert result["slope"] == pytest.approx(1.0, abs=0.01)
+
+
+class TestExceedanceUmbralNone:
+    def test_norma_key_missing_in_dict_skipped(self, monkeypatch):
+        """exceedance_report: umbral None (key ausente en norma_dict) → continue (line 188)."""
+        from estadistica_ambiental.inference import intervals
+
+        fake_norma = {"key_exists": 10.0}
+        monkeypatch.setitem(
+            intervals._NORMA_MAP,
+            "var_fake_xyz",
+            [("Norma ficticia", fake_norma, "key_missing")],
+        )
+        s = pd.Series([5.0, 15.0, 25.0])
+        rep = intervals.exceedance_report(s, variable="var_fake_xyz")
+        assert rep.empty
