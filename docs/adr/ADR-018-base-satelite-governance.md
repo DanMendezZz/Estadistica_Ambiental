@@ -1,7 +1,7 @@
 # ADR-018 — Patrón base↔satélite: separación entre librería y productos consumidores
 
 **Fecha:** 2026-05-07
-**Estado:** Aceptado — instanciado por primera vez con `Estadistica_Ambiental_Dashboard`
+**Estado:** Aceptado — patrón vigente (primer ejemplo retirado, ver [nota abajo](#scaffolding-del-primer-satélite-referencia-histórica-repo-retirado))
 
 ## Contexto
 
@@ -31,7 +31,7 @@ estadistica-ambiental` desde cualquier proyecto.
 
 - **Satélites** — repos separados que importan `estadistica-ambiental` como
   dependencia. Ejemplos materializados o previstos:
-  - `Estadistica_Ambiental_Dashboard` (Streamlit, calidad del aire genérico) — ✅ activo.
+  - `Estadistica_Ambiental_Dashboard` (Streamlit, calidad del aire genérico) — ❌ retirado 2026-07-24 (repo eliminado; el patrón sigue vigente para futuros satélites).
   - `calidad-aire-CAR` (dashboard CAR-específico) — previsto.
   - `paramos-rabanal`, `pomca-magdalena`, etc. — previstos.
 
@@ -73,9 +73,10 @@ estadistica-ambiental` desde cualquier proyecto.
 - La base **nunca** depende de un satélite. La dirección del coupling es
   unidireccional: satélite → base.
 
-## Scaffolding del primer satélite (referencia)
+## Scaffolding del primer satélite (referencia histórica, repo retirado)
 
-`Estadistica_Ambiental_Dashboard` establece el patrón replicable:
+`Estadistica_Ambiental_Dashboard` estableció el patrón replicable antes de su retiro el 2026-07-24.
+La estructura se conserva aquí como referencia para el próximo satélite que se instancie:
 
 ```
 Estadistica_Ambiental_Dashboard/
@@ -113,7 +114,7 @@ páginas. La base permanece intacta.
 
 ## Referencias
 
-- Primer satélite: <https://github.com/DanMendezZz/Estadistica_Ambiental_Dashboard>.
+- Primer satélite (retirado 2026-07-24): `Estadistica_Ambiental_Dashboard` — repo eliminado, sin URL activa.
 - Memoria correlacionada: `feedback_repo_es_base_de_conocimiento.md`.
 - Plan §13 entry "2026-05-07 — Release v1.3.2 + JupyterLite + Fase 10 + primer satélite".
 - Commit: scaffolding del satélite (repo aparte), referencia desde la base.
