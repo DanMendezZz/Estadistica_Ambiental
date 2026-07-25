@@ -1,7 +1,7 @@
 # ADR-018 — Patrón base↔satélite: separación entre librería y productos consumidores
 
 **Fecha:** 2026-05-07
-**Estado:** Aceptado — patrón vigente. Primera instancia (`Estadistica_Ambiental_Dashboard`) retirada el 2026-07-24; ver nota en "Scaffolding del primer satélite" más abajo.
+**Estado:** Aceptado — patrón vigente (primer ejemplo retirado, ver [nota abajo](#scaffolding-del-primer-satélite-referencia-histórica-repo-retirado))
 
 ## Contexto
 

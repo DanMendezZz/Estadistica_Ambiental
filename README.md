@@ -329,7 +329,8 @@ Estadistica_Ambiental/
 ├── docs/
 │   ├── fuentes/                   ← 16 fichas técnicas de dominio ✅
 │   │   └── calidad_aire.md        ← variables · ICA µg/m³ · buenas prácticas BP-1 a BP-7
-│   ├── decisiones.md              ← ADR-001 a ADR-019
+│   ├── decisiones.md              ← ADR-001 a ADR-013
+│   ├── adr/                       ← ADR-014 a ADR-019
 │   ├── metodologia.md             ← ciclo estadístico detallado
 │   ├── modelos.md                 ← catálogo de modelos y cuándo usar cada uno
 │   └── intake_lider.md            ← cuestionario onboarding líderes de área (18 preguntas)
