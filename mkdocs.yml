@@ -145,7 +145,7 @@ nav:
       - ADR-017 — JupyterLite + Pyodide: adr/ADR-017-jupyterlite-pyodide.md
       - ADR-018 — Patrón base↔satélite: adr/ADR-018-base-satelite-governance.md
       - ADR-019 — Trusted Publishing (OIDC) PyPI: adr/ADR-019-trusted-publishing-oidc-pypi.md
-      - ADR-020: NORMA_FUENTES, verificación legal: adr/ADR-020-norma-fuentes-verificacion-legal.md
+      - "ADR-020: NORMA_FUENTES, verificación legal": adr/ADR-020-norma-fuentes-verificacion-legal.md
   - Plantillas e intake:
       - Intake del líder: intake_lider.md
       - Plantilla de output: intake_output_template.md
