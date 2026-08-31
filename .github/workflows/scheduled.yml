@@ -58,7 +58,13 @@ jobs:
 
       - name: Audit requirements
         id: audit
-        run: pip-audit -r requirements.txt --progress-spinner off
+        # --no-deps: audita exactamente lo declarado (requirements.txt es un
+        # espejo plano de pyproject.toml, no un árbol instalable con 52 specs
+        # sin pin que deban resolver juntas -- torch/pymc/prophet/pysal/rasterio
+        # a la vez). Sin esto, un fallo de RESOLUCIÓN se reporta como
+        # vulnerabilidad y abre un issue falso. Los transitivos ya los cubre
+        # el pip-audit sobre el entorno instalado en ci.yml.
+        run: pip-audit -r requirements.txt --no-deps --progress-spinner off
 
       - name: Create issue si hay vulnerabilidades (evita duplicados)
         if: always() && steps.audit.outcome == 'failure'
