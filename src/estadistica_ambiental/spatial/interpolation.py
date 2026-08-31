@@ -136,4 +136,6 @@ def universal_kriging(
         variogram_model,
         drift_order,
     )
-    return np.array(z), np.array(ss)
+    # La varianza kriging nunca es negativa; valores como -5.90e-14 son ruido
+    # de punto flotante del álgebra lineal de pykrige, no un error real (issue #16).
+    return np.array(z), np.clip(np.array(ss), 0, None)
