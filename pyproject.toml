@@ -59,7 +59,7 @@ deep = [
     "lightning>=2.1",
 ]
 bayes = [
-    "pymc>=5.9",
+    "pymc>=5.9,<6",
     "arviz>=0.18",
 ]
 spatial = [
