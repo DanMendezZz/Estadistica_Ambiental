@@ -25,9 +25,14 @@ def _clip_variance(ss: np.ndarray) -> np.ndarray:
     confianza perfecta, el peor valor posible para un resultado inválido.
     """
     ss = np.array(ss)
-    if ss.size and np.isfinite(ss).any():
-        peor = float(np.nanmin(ss))
-        escala = max(float(np.nanmax(ss)), 1.0)
+    finitos = ss[np.isfinite(ss)]
+    if finitos.size:
+        peor = float(finitos.min())
+        # Sin piso artificial de 1.0: para campos de magnitud chica (mg/L,
+        # proporciones) ese piso volvía el umbral demasiado laxo y dejaba
+        # pasar negativos reales sin avisar. Excluye +-inf del cálculo (si
+        # no, un solo +inf legítimo en ss desactivaba el warning entero).
+        escala = max(float(finitos.max()), 0.0)
         if peor < -1e-6 * escala:
             logger.warning(
                 "Varianza kriging negativa no despreciable (min=%.3g, escala=%.3g): "
