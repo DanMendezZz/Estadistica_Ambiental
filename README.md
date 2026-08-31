@@ -90,7 +90,7 @@ Este repo es **base de conocimiento + librería reutilizable**, no un producto f
 
 - **11 módulos del pipeline estadístico** (ver [tabla de módulos](#estructura-del-proyecto)) instalables con `pip install estadistica-ambiental`.
 - **16 notebooks plantilla** por línea temática (calidad del aire, oferta hídrica, páramos, humedales, …) que recorren el ciclo completo end-to-end con datos sintéticos o reales.
-- **19 ADRs** ([`docs/decisiones.md`](docs/decisiones.md) + [`docs/adr/`](docs/adr/)) con el porqué de cada decisión metodológica: outliers como señal real, RMSLE en variables negativas, ENSO con lag por ecosistema, normas centralizadas, base↔satélite, OIDC para PyPI.
+- **20 ADRs** ([`docs/decisiones.md`](docs/decisiones.md) + [`docs/adr/`](docs/adr/)) con el porqué de cada decisión metodológica: outliers como señal real, RMSLE en variables negativas, ENSO con lag por ecosistema, normas centralizadas, base↔satélite, OIDC para PyPI.
 - **16 fichas de dominio** ([`docs/fuentes/<linea>.md`](docs/fuentes/)) con normas regulatorias, fuentes públicas, umbrales y buenas prácticas por línea temática.
 - **Normas colombianas centralizadas** en `config.py` (Res. 2254/2017, 2115/2007, 631/2015, IUA, IRH, ICA, ENSO).
 - **639 tests · CI verde · cobertura ~80 %** sobre Linux + Windows; sitio mkdocs auto-publicado a GitHub Pages tras cada push a `main`.
@@ -103,7 +103,7 @@ Este repo es **base de conocimiento + librería reutilizable**, no un producto f
 | --- | --- |
 | **Analista en CAR / IDEAM / MADS / alcaldía** | [Quick Start](#quick-start) → [16 Líneas temáticas](#16-líneas-temáticas) → notebooks en `notebooks/lineas_tematicas/` |
 | **Estudiante de estadística ambiental** | [JupyterLite live](https://danmendezzz.github.io/Estadistica_Ambiental/lite/) (sin instalar nada) → [Resultados y validación](#resultados-y-validación) → [`docs/decisiones.md`](docs/decisiones.md) |
-| **Docente o investigador** | [`docs/decisiones.md`](docs/decisiones.md) (19 ADRs) → [`docs/fuentes/`](docs/fuentes/) (fichas de dominio) → [Catálogo de modelos](#catálogo-de-modelos) |
+| **Docente o investigador** | [`docs/decisiones.md`](docs/decisiones.md) (20 ADRs) → [`docs/fuentes/`](docs/fuentes/) (fichas de dominio) → [Catálogo de modelos](#catálogo-de-modelos) |
 | **Desarrollador de un satélite** | [Consumir desde otro proyecto](#consumir-desde-otro-proyecto-este-repo-es-base-de-conocimiento) → patrón documentado en [ADR-018](docs/adr/ADR-018-base-satelite-governance.md) |
 
 > **Nota didáctica:** las decisiones difíciles (cuándo usar SARIMA vs ML, por qué obligamos ADF+KPSS, cuándo

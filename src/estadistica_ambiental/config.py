@@ -98,7 +98,7 @@ ICA_BREAKPOINTS: dict[str, list[float]] = {
     # seleccionable), con un corte (el 2º) reconstruido por consistencia
     # aritmética del factor ppm->mg/m3 tras una revision que detecto un digito
     # de OCR mal transcrito (10.189 -> 10.789; ver
-    # test_ica_co_breakpoints_conversion_consistente). Reverificar contra el
+    # test_co_breakpoints_conversion_consistente). Reverificar contra el
     # PDF oficial de alta resolucion si la precision exacta del corte importa
     # para un caso de uso especifico.
     "co": [-math.inf, 5.094, 10.789, 14.254, 17.688, 34.867, math.inf],
@@ -184,7 +184,7 @@ NORMA_VERTIMIENTOS: dict[str, float] = {
 # verificacion vencida (>12 meses).
 # ---------------------------------------------------------------------------
 
-NORMA_FUENTES: dict[str, dict[str, str]] = {
+NORMA_FUENTES: dict[str, dict[str, str | list[str]]] = {
     "NORMA_CO": {
         "codigo": "Resolución 2254 de 2017 (MinAmbiente)",
         "articulo": "Art. 2 y Parágrafo 1 (Tabla 1, valores vigentes desde 2018-07-01)",
@@ -228,6 +228,7 @@ NORMA_FUENTES: dict[str, dict[str, str]] = {
         "decreto-1076-de-2015.pdf",
         "fecha_verificacion": "2026-07-25",
         "estado": "derogado_sin_reemplazo_fijo: hoy se fija por PORH caso a caso",
+        "cubre": ["NORMA_AGUA_POTABLE.od_min", "NORMA_AGUA_POTABLE.dbo5_max"],
     },
     "NORMA_VERTIMIENTOS": {
         "codigo": "Resolución 631 de 2015 (MinAmbiente)",
@@ -246,6 +247,7 @@ NORMA_FUENTES: dict[str, dict[str, str]] = {
         "decreto-1076-de-2015.pdf",
         "fecha_verificacion": "2026-07-25",
         "estado": "derogado_sin_reemplazo_fijo: hoy se fija por PORH caso a caso",
+        "cubre": ["NORMA_VERTIMIENTOS.od_min"],
     },
 }
 

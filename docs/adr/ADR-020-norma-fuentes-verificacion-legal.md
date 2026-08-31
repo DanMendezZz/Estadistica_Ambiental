@@ -35,10 +35,13 @@ EPA en **ppm** mal etiquetada como mg/m³; nunca fue la tabla colombiana.
    - ICA: la cita "Anexo 3" era incorrecta; la Res. 2254/2017 no tiene ese
      anexo. Corregido a **Arts. 19 y 20 (Tablas 5 y 6)**.
    - `ICA_BREAKPOINTS["co"]`: `[4.4, 9.4, 12.4, 15.4, 30.4]` (tabla EPA en ppm)
-     → **`[5.094, 10.189, 14.254, 17.688, 34.867]`** mg/m³ (Res. 2254/2017
+     → **`[5.094, 10.789, 14.254, 17.688, 34.867]`** mg/m³ (Res. 2254/2017
      Art. 20, Tabla 6). Extraídos de una tabla incrustada como imagen en el
-     PDF oficial (OCR); el último dígito tiene incertidumbre residual,
-     documentada en el comentario del código.
+     PDF oficial (OCR); el 2º corte se corrigió de 10.189 a 10.789 por
+     consistencia aritmética del factor ppm→mg/m³ tras detectar un dígito
+     de OCR mal transcrito (ver comentario en `config.py` y
+     `test_co_breakpoints_conversion_consistente`); el resto conserva
+     incertidumbre residual documentada en el código.
    - `NORMA_AGUA_POTABLE["nitratos_max"]`: 50.0 → **10.0** mg/L NO₃⁻ (Res.
      2115/2007 Art. 6, Cuadro 3). El 50 no tiene respaldo en la norma
      colombiana verificada.
@@ -95,9 +98,9 @@ EPA en **ppm** mal etiquetada como mg/m³; nunca fue la tabla colombiana.
   distintas a las que reportaban antes de esta corrección (más estrictas
   para CO y nitratos, donde el valor anterior era mucho más permisivo que la
   ley; ligeramente distintas para PM10/NO2 anual). La clasificación ICA de
-  CO también cambia (antes usaba cortes ~1000x más bajos por el error de
-  unidades). Cualquier reporte HTML generado antes de este commit con esas
-  variables queda desactualizado.
+  CO también cambia (antes usaba cortes ~1.15x más bajos por el error de
+  unidades ppm→mg/m³, no un orden de magnitud). Cualquier reporte HTML
+  generado antes de este commit con esas variables queda desactualizado.
 - El proceso de verificación queda documentado y repetible: la auditoría
   normativa (corrida NotebookLM + revisión de texto oficial) es lo que
   refresca `fecha_verificacion` en el futuro.

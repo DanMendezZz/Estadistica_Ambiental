@@ -26,21 +26,20 @@ _CONSTANTES_NORMA_EN_CONFIG = {
     if (nombre.startswith("NORMA_") or nombre == "ICA_BREAKPOINTS") and nombre != "NORMA_FUENTES"
 }
 
-# Entradas de NORMA_FUENTES cuya key NO es un nombre de constante de config.py
-# (son sub-campos de una constante mayor, ej. "agua_potable_od_dbo5" documenta
-# solo od_min/dbo5_max dentro de NORMA_AGUA_POTABLE, no el dict completo).
-_KEYS_NO_CONSTANTE = {"agua_potable_od_dbo5", "vertimientos_od"}
-
-
 class TestNormaFuentesCompletitud:
     def test_todas_las_normas_de_config_tienen_entrada(self):
         faltantes = _CONSTANTES_NORMA_EN_CONFIG - set(NORMA_FUENTES)
         assert not faltantes, f"Faltan en NORMA_FUENTES: {sorted(faltantes)}"
 
     def test_keys_en_mayusculas_corresponden_a_constantes_reales(self):
-        """Si se renombra o elimina una constante, su entrada no debe quedar huérfana."""
+        """Si se renombra o elimina una constante, su entrada no debe quedar huérfana.
+
+        Las keys en minúsculas (ej. "agua_potable_od_dbo5") son entradas de
+        sub-campo, no constantes de config.py, y se validan aparte en
+        test_campos_excluidos_existen_y_estan_cubiertos.
+        """
         for clave in NORMA_FUENTES:
-            if clave in _KEYS_NO_CONSTANTE:
+            if not clave.isupper():
                 continue
             assert hasattr(config, clave), (
                 f"NORMA_FUENTES['{clave}'] no corresponde a ninguna constante en config.py"
@@ -72,16 +71,23 @@ class TestNormaFuentesCompletitud:
                     f"{codigo_estado!r} (validos: {sorted(ESTADOS_VALIDOS)})"
                 )
 
-    def test_campos_excluidos_tienen_entrada_propia(self):
-        """Si NORMA_FUENTES['X']['excluye'] = ['campo'], debe existir alguna entrada
-        de _KEYS_NO_CONSTANTE (documentación aparte) que cubra ese campo; no puede
-        quedar excluido sin que otra entrada explique su fuente real."""
-        entradas_aparte_presentes = _KEYS_NO_CONSTANTE & set(NORMA_FUENTES)
+    def test_campos_excluidos_existen_y_estan_cubiertos(self):
+        """Si NORMA_FUENTES['X']['excluye'] = ['campo'], 'campo' debe existir en
+        config.X, y alguna otra entrada debe declararlo en su 'cubre' — no basta con
+        que exista *alguna* entrada de sub-campo, tiene que ser la que documenta
+        justo ese campo excluido."""
+        cubiertos = {c for f in NORMA_FUENTES.values() for c in f.get("cubre", ())}
         for clave, fuente in NORMA_FUENTES.items():
-            if fuente.get("excluye"):
-                assert entradas_aparte_presentes, (
-                    f"NORMA_FUENTES['{clave}'] excluye {fuente['excluye']} pero no hay "
-                    f"ninguna entrada en _KEYS_NO_CONSTANTE que documente esos campos"
+            for campo in fuente.get("excluye", ()):
+                assert hasattr(config, clave) and hasattr(getattr(config, clave), "__contains__"), (
+                    f"NORMA_FUENTES['{clave}'] no corresponde a una constante indexable en config.py"
+                )
+                assert campo in getattr(config, clave), (
+                    f"NORMA_FUENTES['{clave}'] excluye '{campo}', que no existe en config.{clave}"
+                )
+                assert f"{clave}.{campo}" in cubiertos, (
+                    f"{clave}.{campo} está excluido pero ninguna entrada de NORMA_FUENTES "
+                    f"lo declara en su campo 'cubre'"
                 )
 
 
