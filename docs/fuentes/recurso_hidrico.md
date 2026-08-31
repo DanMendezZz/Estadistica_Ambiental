@@ -1,7 +1,7 @@
 # Recurso Hídrico — Plan de Ordenamiento del Recurso Hídrico (PORH)
 
 > **NotebookLM fuente:** https://notebooklm.google.com/notebook/be2d8b70-bfda-4925-8624-8a8e8290201a
-> **Última sincronización:** 2026-04-22
+> **Última sincronización:** 2026-07-25
 > **Responsable de la ficha:** Dan Méndez
 > **Bloque:** A (gestión)
 > **Relación con otras líneas:** Oferta hídrica, POMCA, Cambio climático, Sistemas de información ambiental
@@ -146,3 +146,17 @@ Este proceso se articula dentro del Sistema Nacional Ambiental (SINA) y se desar
 ## Referencias
 
 - Fuentes del notebook: documentos técnicos del MADS, IDEAM, CARs y literatura de modelación de calidad del agua (QUAL2K, CE-QUAL-W2).
+
+## Componente normativo auditado
+
+> Auditoría NotebookLM 2026-07-25: ver informe consolidado en el vault
+> (`03_Resources/Ambiental/Normativa/_Auditorias/2026-07-25 Auditoria normativa NotebookLM.md`).
+
+**Vacío**: al preguntar explícitamente por normas colombianas citadas, el cuaderno devolvió
+una bibliografía de guías técnicas (Guía Nacional de Modelación del Recurso Hídrico 2018/2021,
+Guía para el Ordenamiento del Recurso Hídrico 2018, protocolos IDEAM de monitoreo 2004/2007,
+hojas metodológicas de indicadores IDEAM) **sin citar explícitamente una ley, decreto o
+resolución con número y año**. Esto es relevante porque `NORMA_FUENTES["vertimientos_od"]` en
+`config.py` (ver ADR-020) ya identificó que el criterio de OD en cuerpo receptor hoy se fija
+vía PORH (Decreto 1076/2015) caso por caso; la respuesta del cuaderno es consistente con esa
+conclusión (no hay una tabla nacional fija que citar).

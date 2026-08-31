@@ -1,7 +1,7 @@
 # Gestión del Riesgo de Desastres (GRD) en Colombia
 
 > **NotebookLM fuente:** https://notebooklm.google.com/notebook/62fe34e3-04b0-40ea-bd80-46a79ed82961
-> **Última sincronización:** 2026-04-22
+> **Última sincronización:** 2026-07-25
 > **Responsable de la ficha:** Dan Méndez
 > **Bloque:** A (gestión)
 > **Relación con otras líneas:** Cambio climático, Oferta hídrica, Ordenamiento territorial, POMCA, Calidad del aire, Geoespacial
@@ -141,3 +141,23 @@ Técnicamente, el enfoque integra el uso de inteligencia geoespacial, modelació
 ## Referencias
 
 - Fuentes del notebook: Ley 1523 de 2012, Decreto 1807 de 2014, UNGRD, IDEAM, SGC, IGAC, DesInventar.
+
+## Componente normativo auditado
+
+> Auditoría NotebookLM 2026-07-25: ver informe consolidado en el vault
+> (`03_Resources/Ambiental/Normativa/_Auditorias/2026-07-25 Auditoria normativa NotebookLM.md`).
+> Lo declarado abajo es **lo que el cuaderno reportó**, no una verificación jurídica
+> independiente; cruzar con la fuente oficial antes de citarlo como definitivo.
+
+| Norma | Reportada como | Auditado el |
+|---|---|---|
+| Ley 1523 de 2012 | Adopta la Política Nacional de GRD y crea el SNGRD | 2026-07-25 |
+| Decreto 1807 de 2014 (compilado en Decreto 1077 de 2015) | Incorporación de la gestión del riesgo en los POT (estudios básicos/detallados) | 2026-07-25 |
+| Decreto 2157 de 2017 | Planes de Gestión del Riesgo de Entidades Públicas y Privadas (PGRDEPP) | 2026-07-25 |
+| Decreto 1640 de 2012 | Inclusión del riesgo como determinante ambiental en los POMCA | 2026-07-25 |
+| Ley 388 de 1997 | Determinación de zonas no urbanizables por riesgo | 2026-07-25 |
+
+**Vacíos**: el propio cuaderno no cita valores numéricos de umbral (ej. niveles de amenaza)
+ligados directamente a estas normas; los umbrales que usa `config.AMENAZA_PRECIPITACION`
+en el repo ya se documentaron (ADR-020) como convención metodológica propia, sin respaldo
+normativo formal confirmado en Ley 1523/2012 ni Decreto 1807/2014.
