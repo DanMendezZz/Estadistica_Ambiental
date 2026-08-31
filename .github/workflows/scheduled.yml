@@ -6,6 +6,9 @@ on:
     - cron: "0 8 * * 1"
   workflow_dispatch:   # permite ejecución manual desde GitHub UI
 
+permissions:
+  contents: read
+
 jobs:
   # ─────────────────────────────────────────────
   # JOB 1: Drift de dependencias
@@ -40,6 +43,9 @@ jobs:
   security-audit:
     name: Weekly security audit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@v6
 
@@ -51,14 +57,25 @@ jobs:
         run: pip install pip-audit
 
       - name: Audit requirements
+        id: audit
         run: pip-audit -r requirements.txt --progress-spinner off
 
-      - name: Create issue si hay vulnerabilidades
-        if: failure()
+      - name: Create issue si hay vulnerabilidades (evita duplicados)
+        if: always() && steps.audit.outcome == 'failure'
         uses: actions/github-script@v9
         with:
           script: |
-            github.rest.issues.create({
+            const abiertos = (await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'security,dependencies',
+            })).data.filter(i => !i.pull_request)
+            if (abiertos.length > 0) {
+              console.log('Ya hay un issue abierto de vulnerabilidades, no se crea otro.')
+              return
+            }
+            await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `⚠️ Vulnerabilidades detectadas — ${new Date().toISOString().split('T')[0]}`,
@@ -67,7 +84,55 @@ jobs:
             })
 
   # ─────────────────────────────────────────────
-  # JOB 3: Drift con versiones pre-release
+  # JOB 3: Vigencia de la trazabilidad normativa (NORMA_FUENTES, ver ADR-020)
+  # ─────────────────────────────────────────────
+  normativa-audit:
+    name: Auditoría semanal de vigencia normativa
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: pip install -e ".[dev]"
+
+      - name: Run normativa tests
+        id: normativa
+        # -m "" anula el filtro por defecto de addopts (que excluye
+        # normativa_vigencia de la suite normal) para correrlo aquí a proposito.
+        run: python -m pytest tests/test_config_normas.py -q --tb=short -m ""
+
+      - name: Create issue si una verificación normativa venció (evita duplicados)
+        if: always() && steps.normativa.outcome == 'failure'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const abiertos = (await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'normativa,compliance',
+            })).data.filter(i => !i.pull_request)
+            if (abiertos.length > 0) {
+              console.log('Ya hay un issue abierto de verificacion normativa, no se crea otro.')
+              return
+            }
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `⚠️ Verificación normativa vencida: ${new Date().toISOString().split('T')[0]}`,
+              body: 'tests/test_config_normas.py falló: un umbral en NORMA_FUENTES no tiene fuente o su fecha_verificacion supera 12 meses. Revisar config.py y ADR-020.',
+              labels: ['normativa', 'compliance']
+            })
+
+  # ─────────────────────────────────────────────
+  # JOB 4: Drift con versiones pre-release
   # Informativo — detecta breaking changes antes de que lleguen a estable
   # ─────────────────────────────────────────────
   dependency-drift-pre:

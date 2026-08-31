@@ -1,7 +1,7 @@
 # Calidad del Aire
 
 > **NotebookLM fuente:** https://notebooklm.google.com/notebook/96050780-400c-4522-945a-211c406dc516
-> **Última sincronización:** 2026-04-22
+> **Última sincronización:** 2026-07-25
 > **Responsable de la ficha:** Dan Méndez
 > **Bloque:** B (transversal temática) — Alimenta: gestión de riesgo, sistemas de información ambiental
 
@@ -307,3 +307,16 @@ def exceedance_return_period(series_daily, threshold=37):
 - WHO Air Quality Guidelines 2021 — World Health Organization.
 - IDEAM. Protocolo para el Monitoreo y Seguimiento de la Calidad del Aire, 2010.
 - Ver NotebookLM fuente para referencias científicas completas.
+
+## Componente normativo auditado
+
+> Auditoría NotebookLM 2026-07-25: ver informe consolidado en el vault
+> (`03_Resources/Ambiental/Normativa/_Auditorias/2026-07-25 Auditoria normativa NotebookLM.md`).
+
+**Incidencia técnica**: la consulta normativa no obtuvo una respuesta directa; el cuaderno
+respondió sugiriendo reformular la pregunta hacia temas más hiperlocales (Cundinamarca,
+CARs, ladrilleras de Mochuelo), en vez de listar normas citadas. Sí confirmó, como dato
+lateral, que las fuentes cargadas **no mencionan** estructura institucional de CARs en
+Cundinamarca ni normativa administrativa específica; solo estudios técnicos sobre monitoreo
+y modelación (SDAS Bogotá, DAGMA Cali, AERMOD, lógica difusa para ICA). Pendiente un sondeo
+dirigido más corto en el próximo ciclo.

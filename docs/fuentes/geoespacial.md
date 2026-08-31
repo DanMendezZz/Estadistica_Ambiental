@@ -1,7 +1,7 @@
 # Geoespacial — Capa técnica transversal
 
 > **NotebookLM fuente:** https://notebooklm.google.com/notebook/d8dddf1a-463b-4d6b-91b7-bb3832e661f8
-> **Última sincronización:** 2026-04-22
+> **Última sincronización:** 2026-07-25
 > **Responsable de la ficha:** Dan Méndez
 > **Bloque:** C (capa técnica)
 > **Alimenta a:** Áreas protegidas, humedales, páramos, rondas hídricas, POMCA, predios para conservación, ordenamiento territorial, gestión de riesgo, cambio climático
@@ -153,3 +153,16 @@ Sentinel-2 L2A → SEN2SR (2.5m) → exportar GeoTIFF → load_raster() → zona
 ## Referencias
 
 - Fuentes del notebook: IGAC (Resolución 370 de 2021 — CTM12), IDEAM (DHIME, SMByC), NASA/SERVIR, Copernicus, literatura de geoestadística y SIG para Colombia.
+
+## Componente normativo auditado
+
+> Auditoría NotebookLM 2026-07-25: ver informe consolidado en el vault
+> (`03_Resources/Ambiental/Normativa/_Auditorias/2026-07-25 Auditoria normativa NotebookLM.md`).
+
+**Vacío**: al preguntar explícitamente por normas colombianas citadas, el cuaderno devolvió
+únicamente una bibliografía académica (estadística espacial, geoestadística, hidrología),
+**ninguna ley, decreto o resolución colombiana explícita**. Es consistente con el rol de este
+cuaderno como capa técnica transversal (metodología, no marco normativo), pero confirma que
+no hay respaldo normativo cargado si en algún momento se necesitara citar uno (ej. Resolución
+370/2021 de IGAC sobre CTM12, que sí aparece en `docs/fuentes/geoespacial.md` pero no fue
+confirmada por el cuaderno en esta auditoría).

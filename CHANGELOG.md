@@ -10,6 +10,23 @@ Versiones: [Semver](https://semver.org/lang/es/).
 
 ---
 
+## [Unreleased]
+
+### Corregido
+- `config.py` — 6 valores normativos hardcodeados no coincidían con la
+  norma colombiana vigente (auditoría artículo por artículo, ver ADR-020):
+  `NORMA_CO.pm10_annual`, `NORMA_CO.no2_annual`, `NORMA_CO.co_8h`,
+  `NORMA_AGUA_POTABLE.nitratos_max`, `NORMA_VERTIMIENTOS.dqo_max`, y los
+  breakpoints de CO en `ICA_BREAKPOINTS` (antes la tabla AQI de la EPA en
+  ppm mal etiquetada como mg/m³). **Cambia el resultado** de
+  `compliance_report()` / `exceedance_report()` para esas variables y la
+  clasificación ICA de CO — cualquier reporte generado con una versión
+  anterior queda desactualizado para esos umbrales.
+- Nuevo diccionario `NORMA_FUENTES` documenta la procedencia legal
+  (código, artículo, URL oficial, fecha de verificación, estado) de cada
+  constante normativa, validado por `tests/test_config_normas.py` y
+  revisado semanalmente por el job `normativa-audit`.
+
 ## [1.3.2] — 2026-05-07
 
 ### Agregado

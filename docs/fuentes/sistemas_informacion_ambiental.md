@@ -1,7 +1,7 @@
 # Sistemas de Información Ambiental — SIAC (Sistema de Información Ambiental de Colombia)
 
 > **NotebookLM fuente:** https://notebooklm.google.com/notebook/ec194313-e870-4121-b75d-8cc2e0a716a6
-> **Última sincronización:** 2026-04-22
+> **Última sincronización:** 2026-07-25
 > **Responsable de la ficha:** Dan Méndez
 > **Bloque:** A (gestión)
 > **Relación con otras líneas:** Todas las líneas temáticas — el SIAC es la plataforma de datos transversal del SINA
@@ -136,3 +136,23 @@ Este sistema estratégico tiene como propósito fundamental facilitar la generac
 ## Referencias
 
 - Fuentes del notebook: Ley 99 de 1993, Decreto 1076 de 2015, Resolución 839 de 2023, IDEAM, INVEMAR, Instituto Humboldt, SINCHI, IIAP, CARs.
+
+## Componente normativo auditado
+
+> Auditoría NotebookLM 2026-07-25: ver informe consolidado en el vault
+> (`03_Resources/Ambiental/Normativa/_Auditorias/2026-07-25 Auditoria normativa NotebookLM.md`).
+> Lo declarado abajo es **lo que el cuaderno reportó**, no una verificación jurídica
+> independiente.
+
+| Norma | Reportada como | Auditado el |
+|---|---|---|
+| Ley 2294 de 2023, Art. 230 (Plan Nacional de Desarrollo 2022-2026) | Ordena a MinAmbiente definir operatividad e interoperabilidad del RENARE | 2026-07-25 |
+| Decreto 298 de 2016 | Organiza el SISCLIMA (Sistema Nacional de Cambio Climático) | 2026-07-25 |
+| Ley 164 de 1994 | Aprueba la CMNUCC | 2026-07-25 |
+| Resolución 839 de 2023 | Integra el RETC al RUA para unificar reporte de emisiones | 2026-07-25 |
+
+**Vacíos confirmados por el propio cuaderno** (evidencia negativa explícita, no inferida): las
+fuentes cargadas **no contienen** las Resoluciones 1383 de 2023, 1447 de 2018 ni 418 de 2024;
+pese a que estas dos últimas sí son parte del núcleo normativo mínimo documentado en el vault
+para el módulo PQR RENARE (`05_PQR/`). Candidatas a carga manual si este cuaderno necesita
+respaldar consultas sobre esas resoluciones en el futuro.

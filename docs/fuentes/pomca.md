@@ -1,7 +1,7 @@
 # POMCA — Plan de Ordenación y Manejo de Cuencas Hidrográficas
 
 > **NotebookLM fuente:** https://notebooklm.google.com/notebook/b31e1fbb-9b42-456a-ace9-2a61e12c8d05
-> **Última sincronización:** 2026-04-22
+> **Última sincronización:** 2026-07-25
 > **Responsable de la ficha:** Dan Méndez
 > **Bloque:** A (gestión)
 > **Relación con otras líneas:** Oferta hídrica, Recurso hídrico, Rondas hídricas, Gestión de riesgo, Ordenamiento territorial, Cambio climático, Geoespacial
@@ -131,3 +131,18 @@ El POMCA se concibe como un proceso continuo y sistemático desarrollado a lo la
 ## Referencias
 
 - Fuentes del notebook: Decreto 1640 de 2012, Decreto 1076 de 2015, IDEAM (DHIME, SIRH), IGAC, SWAT, literatura de modelación hidrológica en Colombia.
+
+## Componente normativo auditado
+
+> Auditoría NotebookLM 2026-07-25: ver informe consolidado en el vault
+> (`03_Resources/Ambiental/Normativa/_Auditorias/2026-07-25 Auditoria normativa NotebookLM.md`).
+> Lo declarado abajo es **lo que el cuaderno reportó**, no una verificación jurídica
+> independiente.
+
+| Norma | Reportada como | Auditado el |
+|---|---|---|
+| Decreto 1640 de 2012 (compilado en Decreto 1076 de 2015) | Reglamenta el proceso de formulación del POMCA en 6 fases (aprestamiento, diagnóstico, prospectiva, zonificación, formulación, ejecución) | 2026-07-25 |
+
+**Incidencia técnica**: la respuesta se cortó a mitad de la Fase 2 (Diagnóstico) por el
+límite de longitud de la consulta; no se llegó a cubrir explícitamente huecos normativos
+ni artículos específicos. Pendiente de un sondeo dirigido más corto en un ciclo futuro.

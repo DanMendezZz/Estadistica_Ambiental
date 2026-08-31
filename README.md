@@ -1,31 +1,63 @@
-# Estadística Ambiental
+<div align="center">
 
-> Base de conocimiento Python para el **ciclo estadístico completo** aplicado a datos ambientales —
-> EDA, estadística descriptiva e inferencial, modelos predictivos y reportes de cumplimiento normativo.
-> Metodología de estándares internacionales (ISO, WMO, literatura peer-reviewed) con implementación de referencia para Colombia.
+# 🌎 Estadística Ambiental
 
-> **Nota:** el repositorio cubre 16 líneas temáticas (páramos, humedales, calidad del aire, oferta hídrica,
-> áreas protegidas y más). Cada línea tiene su propia ficha de dominio, notebook plantilla y normas
-> colombianas integradas en el código.
+**Base de conocimiento Python para el ciclo estadístico completo aplicado a datos ambientales colombianos**
 
-[![PyPI](https://img.shields.io/pypi/v/estadistica-ambiental.svg?label=PyPI)](https://pypi.org/project/estadistica-ambiental/)
-[![Python](https://img.shields.io/pypi/pyversions/estadistica-ambiental.svg)](https://pypi.org/project/estadistica-ambiental/)
+EDA · estadística descriptiva e inferencial · modelos predictivos · reportes de cumplimiento normativo.
+Metodología de estándares internacionales (ISO, WMO, literatura peer-reviewed) con implementación de referencia para Colombia.
+
+[![PyPI](https://img.shields.io/pypi/v/estadistica-ambiental.svg?label=PyPI&style=for-the-badge)](https://pypi.org/project/estadistica-ambiental/)
+[![Descargas PyPI](https://img.shields.io/pypi/dm/estadistica-ambiental.svg?label=descargas%2Fmes&style=for-the-badge)](https://pypi.org/project/estadistica-ambiental/)
+[![Release](https://img.shields.io/github/v/release/DanMendezZz/Estadistica_Ambiental?style=for-the-badge&label=release)](https://github.com/DanMendezZz/Estadistica_Ambiental/releases)
+[![Python](https://img.shields.io/pypi/pyversions/estadistica-ambiental.svg?style=for-the-badge&logo=python&logoColor=white)](https://pypi.org/project/estadistica-ambiental/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+
+[![pandas](https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
+[![statsmodels](https://img.shields.io/badge/statsmodels-3776AB?style=for-the-badge)](https://www.statsmodels.org/)
+[![Optuna](https://img.shields.io/badge/Optuna-0078D4?style=for-the-badge)](https://optuna.org/)
+[![XGBoost](https://img.shields.io/badge/XGBoost-EB0028?style=for-the-badge)](https://xgboost.readthedocs.io/)
+[![LightGBM](https://img.shields.io/badge/LightGBM-02569B?style=for-the-badge)](https://lightgbm.readthedocs.io/)
+[![GeoPandas](https://img.shields.io/badge/GeoPandas-139C5A?style=for-the-badge)](https://geopandas.org/)
+[![mkdocs](https://img.shields.io/badge/docs-mkdocs--material-blue.svg?style=for-the-badge)](https://danmendezzz.github.io/Estadistica_Ambiental/)
+
 [![CI](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/ci.yml/badge.svg)](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/ci.yml)
-[![Release](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/release.yml/badge.svg)](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/release.yml)
+[![Release workflow](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/release.yml/badge.svg)](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/release.yml)
+[![Docs](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/docs.yml/badge.svg)](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/docs.yml)
+[![Pages](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/pages.yml/badge.svg)](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/pages.yml)
+[![Scheduled checks](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/scheduled.yml/badge.svg)](https://github.com/DanMendezZz/Estadistica_Ambiental/actions/workflows/scheduled.yml)
 [![codecov](https://codecov.io/gh/DanMendezZz/Estadistica_Ambiental/branch/main/graph/badge.svg)](https://codecov.io/gh/DanMendezZz/Estadistica_Ambiental)
-[![docs](https://img.shields.io/badge/docs-mkdocs--material-blue.svg)](https://danmendezzz.github.io/Estadistica_Ambiental/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ```bash
 pip install estadistica-ambiental
 ```
 
-📚 **Documentación:** <https://danmendezzz.github.io/Estadistica_Ambiental/>
-📓 **Notebooks navegables sin instalar (Pyodide):** [JupyterLite live](https://danmendezzz.github.io/Estadistica_Ambiental/lite/)
+📚 **Documentación:** <https://danmendezzz.github.io/Estadistica_Ambiental/>  ·  📓 **Notebooks sin instalar (Pyodide):** [JupyterLite live](https://danmendezzz.github.io/Estadistica_Ambiental/lite/)
+
+<p>
+<a href="#qué-encontrás-en-este-repo">Qué hay</a> ·
+<a href="#metodología">Metodología</a> ·
+<a href="#resultados-y-validación">Resultados</a> ·
+<a href="#estructura-del-proyecto">Estructura</a> ·
+<a href="#instalación">Instalación</a> ·
+<a href="#quick-start">Quick Start</a> ·
+<a href="#catálogo-de-modelos">Modelos</a> ·
+<a href="#16-líneas-temáticas">16 Líneas temáticas</a> ·
+<a href="#normativa-colombiana-integrada">Normativa</a> ·
+<a href="#trabajo-futuro">Roadmap</a>
+</p>
+
+> **Nota:** el repositorio cubre 16 líneas temáticas (páramos, humedales, calidad del aire, oferta hídrica,
+> áreas protegidas y más). Cada línea tiene su propia ficha de dominio, notebook plantilla y normas
+> colombianas integradas en el código.
+
+</div>
 
 ---
 
-## Tabla de contenido
+<details>
+<summary><b>📑 Tabla de contenido</b> (click para expandir)</summary>
 
 1. [¿Qué encontrás en este repo?](#qué-encontrás-en-este-repo)
 2. [¿Para quién es este repo?](#para-quién-es-este-repo)
@@ -33,19 +65,22 @@ pip install estadistica-ambiental
 4. [Metodología](#metodología)
 5. [Resultados y validación](#resultados-y-validación)
 6. [Estructura del proyecto](#estructura-del-proyecto)
-7. [Instalación](#instalación)
-8. [Consumir desde otro proyecto (este repo es base de conocimiento)](#consumir-desde-otro-proyecto-este-repo-es-base-de-conocimiento)
-9. [Probá sin instalar nada — JupyterLite](#probá-sin-instalar-nada--jupyterlite)
-10. [Datos reales (uso opcional, sin duplicar)](#datos-reales-uso-opcional-sin-duplicar)
-11. [Quick Start](#quick-start)
-12. [Catálogo de modelos](#catálogo-de-modelos)
-13. [16 Líneas temáticas](#16-líneas-temáticas)
-14. [Normativa colombiana integrada](#normativa-colombiana-integrada)
-15. [Reportes automáticos](#reportes-automáticos)
-16. [Flujo por línea temática](#flujo-por-línea-temática)
-17. [Compatibilidad y extras](#compatibilidad-y-extras)
-18. [Trabajo futuro](#trabajo-futuro)
-19. [Atribución](#atribución)
+7. [Arquitectura base ↔ satélite](#arquitectura-base--satélite)
+8. [Instalación](#instalación)
+9. [Consumir desde otro proyecto (este repo es base de conocimiento)](#consumir-desde-otro-proyecto-este-repo-es-base-de-conocimiento)
+10. [Probá sin instalar nada (JupyterLite)](#probá-sin-instalar-nada--jupyterlite)
+11. [Datos reales (uso opcional, sin duplicar)](#datos-reales-uso-opcional-sin-duplicar)
+12. [Quick Start](#quick-start)
+13. [Catálogo de modelos](#catálogo-de-modelos)
+14. [16 Líneas temáticas](#16-líneas-temáticas)
+15. [Normativa colombiana integrada](#normativa-colombiana-integrada)
+16. [Reportes automáticos](#reportes-automáticos)
+17. [Flujo por línea temática](#flujo-por-línea-temática)
+18. [Compatibilidad y extras](#compatibilidad-y-extras)
+19. [Trabajo futuro](#trabajo-futuro)
+20. [Atribución](#atribución)
+
+</details>
 
 ---
 
@@ -53,9 +88,9 @@ pip install estadistica-ambiental
 
 Este repo es **base de conocimiento + librería reutilizable**, no un producto final. Concretamente:
 
-- **11 módulos del pipeline estadístico** (`io · eda · descriptive · inference · features · predictive · evaluation · reporting · spatial · preprocessing · optimization`) instalables con `pip install estadistica-ambiental`.
+- **11 módulos del pipeline estadístico** (ver [tabla de módulos](#estructura-del-proyecto)) instalables con `pip install estadistica-ambiental`.
 - **16 notebooks plantilla** por línea temática (calidad del aire, oferta hídrica, páramos, humedales, …) que recorren el ciclo completo end-to-end con datos sintéticos o reales.
-- **19 ADRs** ([`docs/decisiones.md`](docs/decisiones.md) + [`docs/adr/`](docs/adr/)) con el porqué de cada decisión metodológica — outliers como señal real, RMSLE en variables negativas, ENSO con lag por ecosistema, normas centralizadas, base↔satélite, OIDC para PyPI.
+- **20 ADRs** ([`docs/decisiones.md`](docs/decisiones.md) + [`docs/adr/`](docs/adr/)) con el porqué de cada decisión metodológica: outliers como señal real, RMSLE en variables negativas, ENSO con lag por ecosistema, normas centralizadas, base↔satélite, OIDC para PyPI.
 - **16 fichas de dominio** ([`docs/fuentes/<linea>.md`](docs/fuentes/)) con normas regulatorias, fuentes públicas, umbrales y buenas prácticas por línea temática.
 - **Normas colombianas centralizadas** en `config.py` (Res. 2254/2017, 2115/2007, 631/2015, IUA, IRH, ICA, ENSO).
 - **639 tests · CI verde · cobertura ~80 %** sobre Linux + Windows; sitio mkdocs auto-publicado a GitHub Pages tras cada push a `main`.
@@ -68,11 +103,11 @@ Este repo es **base de conocimiento + librería reutilizable**, no un producto f
 | --- | --- |
 | **Analista en CAR / IDEAM / MADS / alcaldía** | [Quick Start](#quick-start) → [16 Líneas temáticas](#16-líneas-temáticas) → notebooks en `notebooks/lineas_tematicas/` |
 | **Estudiante de estadística ambiental** | [JupyterLite live](https://danmendezzz.github.io/Estadistica_Ambiental/lite/) (sin instalar nada) → [Resultados y validación](#resultados-y-validación) → [`docs/decisiones.md`](docs/decisiones.md) |
-| **Docente o investigador** | [`docs/decisiones.md`](docs/decisiones.md) (19 ADRs) → [`docs/fuentes/`](docs/fuentes/) (fichas de dominio) → [Catálogo de modelos](#catálogo-de-modelos) |
+| **Docente o investigador** | [`docs/decisiones.md`](docs/decisiones.md) (20 ADRs) → [`docs/fuentes/`](docs/fuentes/) (fichas de dominio) → [Catálogo de modelos](#catálogo-de-modelos) |
 | **Desarrollador de un satélite** | [Consumir desde otro proyecto](#consumir-desde-otro-proyecto-este-repo-es-base-de-conocimiento) → patrón documentado en [ADR-018](docs/adr/ADR-018-base-satelite-governance.md) |
 
 > **Nota didáctica:** las decisiones difíciles (cuándo usar SARIMA vs ML, por qué obligamos ADF+KPSS, cuándo
-> validar contra OMS y cuándo contra Res. 2254) están **documentadas como ADR** — no escondidas en el código.
+> validar contra OMS y cuándo contra Res. 2254) están **documentadas como ADR**, no escondidas en el código.
 > Si vas a defender una metodología, los ADRs son el insumo principal.
 
 ---
@@ -81,16 +116,16 @@ Este repo es **base de conocimiento + librería reutilizable**, no un producto f
 
 Los analistas de entidades ambientales colombianas (CAR, IDEAM, MADS, alcaldías) enfrentan un problema
 recurrente: **cada proyecto estadístico parte de cero**. Los datos cambian, la variable también, pero el
-ciclo analítico es siempre el mismo — cargar, validar, describir, inferir, modelar, reportar.
+ciclo analítico es siempre el mismo: cargar, validar, describir, inferir, modelar, reportar.
 
 Este repositorio resuelve eso con una **base de conocimiento reutilizable** que combina tres cosas
 que raramente aparecen juntas en un solo lugar:
 
-- **Metodología documentada** — decisiones de diseño (ADR-001 a ADR-019), buenas prácticas calibradas
+- **Metodología documentada**: decisiones de diseño (ADR-001 a ADR-019), buenas prácticas calibradas
   sobre datos reales y fichas de dominio por línea temática.
-- **Normas colombianas en el código** — Res. 2254/2017 (calidad del aire), 2115/2007 (agua potable),
+- **Normas colombianas en el código**: Res. 2254/2017 (calidad del aire), 2115/2007 (agua potable),
   631/2015 (vertimientos) e índices IDEAM listos para usarse con un solo import, sin hardcodear umbrales.
-- **Código validado sobre datos reales** — el pipeline de calidad del aire fue ejecutado sobre series
+- **Código validado sobre datos reales**: el pipeline de calidad del aire fue ejecutado sobre series
   horarias de PM2.5 de una red de monitoreo en Cundinamarca (fuente: SISAIRE / IDEAM). Los resultados
   son reproducibles con los datos públicos de la plataforma.
 
@@ -99,7 +134,7 @@ cada vez.
 
 > **Alcance metodológico:** los métodos estadísticos implementados (SARIMA, Kriging, GWR, I de Moran,
 > XGBoost, Prophet, etc.) son estándares internacionales aplicables a cualquier contexto ambiental.
-> La capa de dominio — normas regulatorias, fuentes de datos, umbrales, índices — está calibrada para
+> La capa de dominio (normas regulatorias, fuentes de datos, umbrales, índices) está calibrada para
 > Colombia y el Sistema Nacional Ambiental (SINA). Adaptar el repo a otro país implica únicamente
 > reemplazar las constantes de `config.py` con la normativa local.
 
@@ -196,7 +231,7 @@ rank_models(results)[["rmse", "nrmse", "hit_rate_ica", "rank"]]
 
 `reporting/compliance_report.py` genera un HTML independiente con semáforo por variable,
 tabla de excedencias con cada norma colombiana aplicable y período de retorno. La lógica de
-cálculo vive en `inference/intervals.py` (testeable de forma aislada — ADR-008):
+cálculo vive en `inference/intervals.py` (testeable de forma aislada, ADR-008):
 
 ```python
 from estadistica_ambiental.reporting.compliance_report import compliance_report
@@ -220,7 +255,7 @@ Fuente de datos: SISAIRE / IDEAM, red de monitoreo calidad del aire, Cundinamarc
 | **XGBoost** | **3.717** | **0.426** | 88.61% | **15.50%** | Producción |
 | LightGBM | 3.724 | 0.427 | 88.62% | 13.69% | Producción |
 | Random Forest | 3.716 | 0.426 | **88.67%** | 13.15% | Producción |
-| SARIMAX | ~4.5 | — | ~75% | — | Con meteo disponible |
+| SARIMAX | ~4.5 | – | ~75% | – | Con meteo disponible |
 | SARIMA | 5.916 | 0.872 | 69.39% | 0% | Benchmark estadístico |
 | LSTM | 10.178 | 1.211 | 63.44% | 0.82% | Referencia deep |
 
@@ -228,9 +263,11 @@ Fuente de datos: SISAIRE / IDEAM, red de monitoreo calidad del aire, Cundinamarc
 
 ![Comparación de modelos](docs/img/model_comparison.png)
 
+*Comparación de RMSE, NRMSE y HitRate ICA entre los 6 modelos evaluados en backtesting walk-forward sobre PM2.5 horario (fuente: SISAIRE / IDEAM, Cundinamarca).*
+
 **Hallazgo clave:** para series horarias con ACF alta (≈ 0.97 en lag-1h), los modelos ML con
 lag features superan ampliamente a SARIMA. El gap de 24h en walk-forward redujo el learning
-curve gap de 0.38 a 0.048 — sin gap, el R² está inflado por leakage de autocorrelación.
+curve gap de 0.38 a 0.048; sin gap, el R² está inflado por leakage de autocorrelación.
 
 ### Pronóstico con bandas de incertidumbre
 
@@ -245,15 +282,28 @@ reentrenar el modelo base:
 
 ![Pronóstico PM2.5 con incertidumbre](docs/img/forecast_ar1.png)
 
+*Pronóstico PM2.5 con bandas P10/P50/P90 generadas por el componente AR(1) horario sobre la corrección de nivel sinóptica del modelo base RF.*
+
+### Showcase: cumplimiento normativo PM2.5/PM10 (estación Kennedy)
+
+El sitio auto-publicado [`docs/showcase/index.html`](docs/showcase/index.html) (workflow `pages.yml`,
+regenerado cada lunes vía `scripts/generate_showcase.py`) muestra el semáforo de cumplimiento normativo
+para PM2.5 y PM10 sobre la estación Kennedy (red RMCAB Bogotá, 2022–2024): excedencias contra Res.
+2254/2017 y OMS 2021, con tabla detallada por norma y gráficos Chart.js interactivos.
+
+<!-- TODO: falta generar una captura real (screenshot) de docs/showcase/index.html para embeber aquí.
+     No se genera una imagen inventada: el HTML vive en docs/showcase/index.html y también se
+     publica en vivo vía GitHub Pages (workflow pages.yml). -->
+
 ### Caso de uso productivo: pipeline CAR (Cundinamarca)
 
 El proyecto hermano **"Calidad de aire CAR"** (red SISAIRE / IDEAM, 34 estaciones, 2016–2026)
 es la primera validación operacional del repo en datos reales. Confirma de forma independiente
 varias decisiones del repo:
 
-- `walk_forward(gap=24)` — el gap de 24 h fue redescubierto en CAR por leakage de autocorrelación PM2.5 (r ≈ 0.97 lag-1h).
-- `exceedance_report()` con Res. 2254/2017 y OMS 2021 — utilizado en backtesting 2025 y reporte ejecutivo.
-- `enso_lagged(lag_meses=2)` para calidad del aire — coincidencia con la literatura colombiana.
+- `walk_forward(gap=24)`: el gap de 24 h fue redescubierto en CAR por leakage de autocorrelación PM2.5 (r ≈ 0.97 lag-1h).
+- `exceedance_report()` con Res. 2254/2017 y OMS 2021: utilizado en backtesting 2025 y reporte ejecutivo.
+- `enso_lagged(lag_meses=2)` para calidad del aire: coincidencia con la literatura colombiana.
 
 Métricas en producción: **RMSE = 3.717 µg/m³**, **HitRate ICA = 88.61 %**, **27/31 estaciones AR(1) PASS**
 (tests T1–T4 + KS + Ljung-Box + Jarque-Bera). El feedback recíproco está documentado en
@@ -262,6 +312,39 @@ Métricas en producción: **RMSE = 3.717 µg/m³**, **HitRate ICA = 88.61 %**, *
 ---
 
 ## Estructura del proyecto
+
+### Los 11 módulos del pipeline
+
+| Módulo | Qué hace | Función clave | Doc |
+|---|---|---|---|
+| `io` | Carga (CSV · Excel · Parquet · NetCDF · Shapefile) y validación con 74 rangos físicos calibrados | `load_csv()` · `validate()` | [`docs/metodologia.md`](docs/metodologia.md) |
+| `eda` | Perfilado automático, calidad de datos (faltantes, duplicados, congelamiento de sensor) | `run_eda()` | [`docs/metodologia.md`](docs/metodologia.md) |
+| `preprocessing` | Imputación (lineal · rolling · KNN · MICE) y outliers opt-in (ADR-002) | `impute()` | [ADR-002](docs/decisiones.md) |
+| `descriptive` | Estadística univariada, bivariada y temporal (STL, ACF/PACF) | `univariate_summary()` | [`docs/metodologia.md`](docs/metodologia.md) |
+| `inference` | ADF+KPSS obligatorios, tendencia (Mann-Kendall), excedencias normativas | `exceedance_report()` | [ADR-004](docs/decisiones.md) · [ADR-008](docs/decisiones.md) |
+| `spatial` | Kriging, GWR, I de Moran, autocorrelación espacial | `moran_i()` | [`docs/modelos.md`](docs/modelos.md) |
+| `features` | Lags, encoding cíclico, ENSO/ONI con lag por línea temática | `enso_lagged()` | [ADR-007](docs/decisiones.md) |
+| `predictive` | Catálogo uniforme de 10 modelos (ARIMA a LSTM) | `get_model()` | [`docs/modelos.md`](docs/modelos.md) |
+| `optimization` | Optimización bayesiana de hiperparámetros con Optuna TPE | `optimize()` | [`docs/metodologia.md`](docs/metodologia.md) |
+| `evaluation` | Backtesting walk-forward con `gap=`, ranking multi-criterio, métricas NSE/KGE | `walk_forward()` · `rank_models()` | [`docs/metodologia.md`](docs/metodologia.md) |
+| `reporting` | Reportes HTML autocontenidos (cumplimiento, pronóstico, descriptiva) | `compliance_report()` | [ADR-008](docs/decisiones.md) |
+
+```mermaid
+flowchart TD
+    IO["io<br/>loaders · validators · connectors"] --> EDA["eda<br/>quality · profiling · viz"]
+    EDA --> PRE["preprocessing<br/>imputation · outliers"]
+    PRE --> DESC["descriptive<br/>univariate · bivariate · temporal"]
+    DESC --> INF["inference<br/>stationarity · trend · intervals"]
+    INF --> FEAT["features<br/>lags · calendar · climate(ENSO)"]
+    FEAT --> SPA["spatial<br/>kriging · GWR · Moran's I"]
+    SPA --> PRED["predictive<br/>registry · classical · ml · deep"]
+    PRED --> OPT["optimization<br/>bayes_opt (Optuna TPE)"]
+    OPT --> EVAL["evaluation<br/>backtesting · comparison · anomaly"]
+    EVAL --> REP["reporting<br/>compliance · forecast · stats"]
+```
+
+<details>
+<summary><b>🗂️ Árbol completo del repositorio</b> (click para expandir)</summary>
 
 ```
 Estadistica_Ambiental/
@@ -327,10 +410,12 @@ Estadistica_Ambiental/
 │       └── stats_report.py        ← HTML descriptiva + ADF/KPSS + Mann-Kendall
 │
 ├── docs/
-│   ├── fuentes/                   ← 16 fichas técnicas de dominio ✅
+│   ├── fuentes/                   ← 16 fichas técnicas de dominio
 │   │   └── calidad_aire.md        ← variables · ICA µg/m³ · buenas prácticas BP-1 a BP-7
 │   ├── decisiones.md              ← ADR-001 a ADR-013
 │   ├── adr/                       ← ADR-014 a ADR-019
+│   ├── showcase/                  ← index.html – cumplimiento normativo estación Kennedy (RMCAB)
+│   ├── img/                       ← model_comparison.png · forecast_ar1.png
 │   ├── metodologia.md             ← ciclo estadístico detallado
 │   ├── modelos.md                 ← catálogo de modelos y cuándo usar cada uno
 │   └── intake_lider.md            ← cuestionario onboarding líderes de área (18 preguntas)
@@ -343,10 +428,46 @@ Estadistica_Ambiental/
 ├── scripts/
 │   ├── run_linea_tematica.py      ← CLI unificado: --linea · --modelos · --list
 │   ├── fase8_calidad_aire.py      ← showcase con datos reales PM2.5 SISAIRE
+│   ├── generate_showcase.py       ← genera docs/showcase/index.html (workflow pages.yml)
 │   └── build_notebooks.py         ← regenera los 16 notebooks desde plantilla
 │
 └── tests/                         ← 639 tests · ~80% cobertura · CI ubuntu + windows
 ```
+
+</details>
+
+---
+
+## Arquitectura base ↔ satélite
+
+Este repo es la **base**: librería + metodología + notebooks plantilla, publicada en PyPI y sin
+dependencias de producto concreto. Los dashboards, ETLs y reportes ejecutivos para una entidad
+específica viven en **repos satélite** que importan `estadistica-ambiental` con versión pineada
+(patrón formalizado en [ADR-018](docs/adr/ADR-018-base-satelite-governance.md)).
+
+```mermaid
+flowchart LR
+    subgraph BASE["Estadistica_Ambiental (este repo - base)"]
+        direction TB
+        M["11 módulos del pipeline"]
+        N["16 notebooks plantilla"]
+        F["16 fichas de dominio"]
+        A["ADR-001 a ADR-019"]
+    end
+
+    BASE -->|"pip install<br/>estadistica-ambiental==X.Y.Z<br/>(pin exacto)"| S1["calidad-aire-CAR<br/>(dashboard CAR-específico)"]
+    BASE -->|pin exacto| S2["paramos-rabanal<br/>(satélite previsto)"]
+    BASE -->|pin exacto| S3["pomca-magdalena<br/>(satélite previsto)"]
+
+    S1 -.->|"nunca al revés:<br/>la base no depende<br/>de ningún satélite"| BASE
+```
+
+**Reglas clave del ADR:** la base nunca depende de un satélite (coupling unidireccional); cada
+satélite pinea la versión exacta de la base (`estadistica-ambiental==1.3.2`, no rangos abiertos);
+apps Streamlit/Dash, pipelines ETL nocturnos, configuraciones de deploy productivo y datos crudos
+de cliente **no** viven en este repo. El primer satélite materializado (`Estadistica_Ambiental_Dashboard`)
+validó el patrón y fue retirado el 2026-07-24 una vez cumplido su propósito de referencia; la
+estructura queda documentada en el ADR para el próximo satélite que se instancie.
 
 ---
 
@@ -403,23 +524,7 @@ python -m pytest tests/ -q
 Este repositorio es **base de conocimiento + librería reutilizable**, no un
 producto final. Los dashboards, apps Streamlit, reportes ejecutivos y pipelines
 productivos viven en **repos satélite** que importan `estadistica_ambiental`
-como dependencia.
-
-```
-Estadistica_Ambiental (este repo — base)
-   ├── 16 fichas de dominio
-   ├── 11 módulos del pipeline (io · eda · inference · predictive · ...)
-   ├── 16 notebooks plantilla
-   └── ADRs y decisiones metodológicas
-            ↑
-            │ pip install estadistica-ambiental
-            │
-   ┌────────┴────────┬─────────────────┬──────────────┐
-   │                 │                 │              │
-calidad-aire-car   pomca-magdalena   paramos-rabanal   …  ← repos satélite
-   ├── Streamlit    ├── ETL nocturno  ├── notebook ad-hoc
-   └── deploy       └── reportes      └── informe técnico
-```
+como dependencia (ver [arquitectura base ↔ satélite](#arquitectura-base--satélite) arriba).
 
 ### Instalación desde PyPI (preferida)
 
@@ -490,7 +595,7 @@ from estadistica_ambiental.reporting.compliance_report import compliance_report
 - Apps Streamlit / dashboards de cliente concreto.
 - Pipelines ETL nocturnos con configuración de deploy.
 - Reportes ejecutivos automatizados con identidad visual de una entidad.
-- Datos crudos (sin importar tamaño — usar `SISAIRE_LOCAL_DIR` u otro).
+- Datos crudos (sin importar tamaño; usar `SISAIRE_LOCAL_DIR` u otro).
 - Credenciales, tokens API, URLs internas.
 
 ### Compatibilidad de versiones
@@ -505,7 +610,7 @@ estables.
 ## Probá sin instalar nada — JupyterLite
 
 Tres notebooks didácticos corren **directo en el navegador** vía Pyodide (sin Python local, sin pip,
-sin descargas) — pensado para estudiantes y demos rápidas:
+sin descargas), pensado para estudiantes y demos rápidas:
 
 🔗 **<https://danmendezzz.github.io/Estadistica_Ambiental/lite/>**
 
@@ -525,7 +630,7 @@ sin descargas) — pensado para estudiantes y demos rápidas:
 
 El repo no incluye datos crudos. Para trabajar con descargas locales del portal
 **SISAIRE / IDEAM** (CSV anuales `CAR_<año>.csv`) se referencia la carpeta
-externa con una **variable de entorno** — el repo nunca asume una ruta fija.
+externa con una **variable de entorno**; el repo nunca asume una ruta fija.
 
 ### 1. Configurar la variable de entorno
 
@@ -642,16 +747,16 @@ sobre datos SISAIRE/CAR reales (vía `load_sisaire_local()`) o sintéticos
 
 | Modelo | Extra | Cuándo usarlo |
 |---|---|---|
-| ARIMA / SARIMA | — | Baseline; series mensuales o diarias con estacionalidad clara |
-| SARIMAX | — | SARIMA + covariables meteorológicas disponibles |
-| ETS / Holt-Winters | — | Baseline rápido sin exógenas |
+| ARIMA / SARIMA | – | Baseline; series mensuales o diarias con estacionalidad clara |
+| SARIMAX | – | SARIMA + covariables meteorológicas disponibles |
+| ETS / Holt-Winters | – | Baseline rápido sin exógenas |
 | Prophet | `[prophet]` | Estacionalidades múltiples, eventos especiales, gaps tolerables |
-| XGBoost | `[ml]` | **Producción** — PM2.5 horario · caudal diario · series con muchas exógenas |
+| XGBoost | `[ml]` | **Producción**: PM2.5 horario · caudal diario · series con muchas exógenas |
 | LightGBM | `[ml]` | Igual que XGBoost, más rápido en datasets grandes |
-| Random Forest | — | Robusto sin tuning agresivo; buena línea base ML |
+| Random Forest | – | Robusto sin tuning agresivo; buena línea base ML |
 | LSTM / GRU | `[deep]` | Series largas (>5 años), cuando hay GPU disponible |
 | Kriging / GP | `[spatial]` | Interpolación espacio-temporal entre estaciones |
-| PyMC / Bayesian | `[bayes]` | Incertidumbre jerárquica multi-estación (Fase 10 — ver [ADR-016](docs/adr/ADR-016-pymc-bayesiano-fase10.md)) |
+| PyMC / Bayesian | `[bayes]` | Incertidumbre jerárquica multi-estación (Fase 10, ver [ADR-016](docs/adr/ADR-016-pymc-bayesiano-fase10.md)) |
 
 Todos los modelos comparten la misma interfaz y son comparables con `walk_forward` + `rank_models`.
 
@@ -659,23 +764,26 @@ Todos los modelos comparten la misma interfaz y son comparables con `walk_forwar
 
 ## 16 Líneas temáticas
 
+<details>
+<summary><b>📋 Ver las 16 líneas por bloque</b> (click para expandir)</summary>
+
 ### Bloque A — Gestión ambiental (13 líneas)
 
 | Línea | Variable principal | Norma clave | ENSO lag |
 |---|---|---|---|
-| Áreas protegidas | cobertura (ha) · NDVI | SMByC deforestación | — |
+| Áreas protegidas | cobertura (ha) · NDVI | SMByC deforestación | – |
 | Humedales | nivel agua (m) | Protocolo IDEAM | 3m |
 | Páramos | temperatura (°C) · precipitación | Política Páramos | 2m |
 | Gestión de riesgo | precipitación (mm) | Ley 1523/2012 | 3m |
 | Oferta hídrica | caudal (m³/s) | IUA · IRH (IDEAM/ENA) | 4m |
 | POMCA | caudal (m³/s) | Decreto 1640/2012 | 4m |
 | PUEEA | consumo agua (m³) | Res. 2115/2007 | 3m |
-| Recurso hídrico | OD · pH · DBO5 | Res. 2115/2007 | 3m |
+| Recurso hídrico | OD · pH · DBO5 | Res. 2115/2007 (pH) / referencia técnica (OD, DBO5) | 3m |
 | Rondas hídricas | caudal (m³/s) · vegetación | Decreto 2811/1974 | 3m |
-| Sistemas de información | n_registros · cobertura | MIPG | — |
-| Predios conservación | NDVI · cobertura (ha) | SMByC | — |
-| Ordenamiento territorial | superficie (km²) | POT · POMCA | — |
-| Dirección directiva | indicadores PAI/MIPG | MIPG | — |
+| Sistemas de información | n_registros · cobertura | MIPG | – |
+| Predios conservación | NDVI · cobertura (ha) | SMByC | – |
+| Ordenamiento territorial | superficie (km²) | POT · POMCA | – |
+| Dirección directiva | indicadores PAI/MIPG | MIPG | – |
 
 ### Bloque B — Transversales temáticas (2 líneas)
 
@@ -688,7 +796,9 @@ Todos los modelos comparten la misma interfaz y son comparables con `walk_forwar
 
 | Línea | Alcance |
 |---|---|
-| Geoespacial | Kriging · IDW · I de Moran · GWR · folium — transversal a todas las líneas |
+| Geoespacial | Kriging · IDW · I de Moran · GWR · folium; transversal a todas las líneas |
+
+</details>
 
 ---
 
@@ -709,7 +819,7 @@ from estadistica_ambiental.config import (
 |---|---|---|
 | `NORMA_CO` | Res. 2254/2017 | PM2.5 · PM10 · O3 · NO2 · SO2 · CO |
 | `NORMA_OMS` | Guías OMS 2021 | PM2.5 · PM10 · O3 · NO2 |
-| `NORMA_AGUA_POTABLE` | Res. 2115/2007 | pH · OD · coliformes · DBO5 · conductividad |
+| `NORMA_AGUA_POTABLE` | Res. 2115/2007 (OD/DBO5: referencia técnica sin norma vigente, ver ADR-020) | pH · OD · coliformes · DBO5 · conductividad |
 | `NORMA_VERTIMIENTOS` | Res. 631/2015 | DBO5 · DQO · SST · pH · temperatura |
 | `IUA_THRESHOLDS` | IDEAM / ENA | Índice de Uso del Agua |
 | `IRH_THRESHOLDS` | IDEAM / ENA | Índice de Retención Hídrica |
@@ -736,38 +846,18 @@ Cada ejecución del ciclo genera en `data/output/`:
 
 ## Flujo por línea temática
 
-```
-Datos crudos
-    │
-    ▼  io/loaders.py + io/validators.py
-Carga · validación de rangos físicos
-    │
-    ▼  eda/
-EDA automatizado → reporte HTML
-    │
-    ▼  preprocessing/
-Limpieza · imputación
-    │
-    ▼  descriptive/
-Descriptiva: tablas y gráficos
-    │
-    ▼  inference/
-Inferencial: ADF+KPSS · Mann-Kendall · exceedance_report
-    │
-    ▼  features/
-Feature engineering: lags · calendario · ENSO
-    │
-    ▼  predictive/ + optimization/
-Modelado con optimización bayesiana (Optuna TPE)
-    │
-    ▼  evaluation/
-Backtesting walk-forward · ranking multi-criterio
-    │
-    ▼  reporting/
-Reporte de pronóstico HTML · Reporte de cumplimiento normativo
-    │
-    ▼
-docs/decisiones.md — registro ADR de decisiones metodológicas
+```mermaid
+flowchart TD
+    A["Datos crudos"] -->|"io/loaders.py + io/validators.py"| B["Carga · validación de rangos físicos"]
+    B -->|"eda/"| C["EDA automatizado → reporte HTML"]
+    C -->|"preprocessing/"| D["Limpieza · imputación"]
+    D -->|"descriptive/"| E["Descriptiva: tablas y gráficos"]
+    E -->|"inference/"| F["Inferencial: ADF+KPSS · Mann-Kendall · exceedance_report"]
+    F -->|"features/"| G["Feature engineering: lags · calendario · ENSO"]
+    G -->|"predictive/ + optimization/"| H["Modelado con optimización bayesiana (Optuna TPE)"]
+    H -->|"evaluation/"| I["Backtesting walk-forward · ranking multi-criterio"]
+    I -->|"reporting/"| J["Reporte de pronóstico HTML · Reporte de cumplimiento normativo"]
+    J --> K["docs/decisiones.md - registro ADR de decisiones metodológicas"]
 ```
 
 ---
@@ -790,19 +880,19 @@ docs/decisiones.md — registro ADR de decisiones metodológicas
 
 La base de conocimiento queda documentalmente cerrada en v1.3.2 (todas las decisiones grandes con ADR,
 cobertura de API completa en docs, tests verdes). Los siguientes frentes son **mejoras incrementales**,
-priorizadas por valor pedagógico — no por features de producto. Detalle completo en `Plan/Plan.md` §10.
+priorizadas por valor pedagógico, no por features de producto. Detalle completo en `Plan/Plan.md` §10.
 
 ### A. Pedagógico (alta prioridad)
 
 - **Glosario de dominio** (`docs/glosario.md`) con términos técnicos colombianos (IUA, IRH, ICA, ENSO, ICA-aire, ENA, MRV, REDD+).
-- **Índice "preguntas que el repo responde"** — ~30 preguntas frecuentes linkeando a notebook + función.
-- **Casos de estudio reproducibles** — 3-5 mini-casos cortos por bloque temático.
+- **Índice "preguntas que el repo responde"**: ~30 preguntas frecuentes linkeando a notebook + función.
+- **Casos de estudio reproducibles**: 3-5 mini-casos cortos por bloque temático.
 
 ### B. Cobertura (media prioridad)
 
 - Auditoría cruzada `Fuentes.md` ↔ notebooks (gap analysis).
 - Fichas operativas para los conectores ya implementados (limitaciones API, latencia, cobertura).
-- Línea adicional candidata: **ruido ambiental** (Res. 627/2006) — decisión pendiente.
+- Línea adicional candidata: **ruido ambiental** (Res. 627/2006), decisión pendiente.
 
 ### C. Calidad técnica (baja prioridad)
 
@@ -821,7 +911,7 @@ priorizadas por valor pedagógico — no por features de producto. Detalle compl
 
 Construido sobre el trabajo de **Tomás Cárdenas López** ([@TomCardeLo](https://github.com/TomCardeLo)):
 
-> **[boa-forecaster](https://github.com/TomCardeLo/boa-forecaster)** — pipeline multi-modelo con
+> **[boa-forecaster](https://github.com/TomCardeLo/boa-forecaster)**: pipeline multi-modelo con
 > optimización bayesiana (Optuna TPE), `ModelSpec` protocol y ensemble ponderado. v2.4.
 
 Los módulos `optimization/bayes_opt.py`, `evaluation/metrics.py`, `predictive/classical.py` y
@@ -831,8 +921,14 @@ Ver [`CITATION.cff`](CITATION.cff) para cita formal.
 
 ---
 
-**Dan Méndez** · Científico de Datos Ambiental · Colombia  
-*Modelado estadístico y machine learning aplicado a datos de monitoreo ambiental colombiano.*  
+<div align="center">
+
+**Dan Méndez** · Científico de Datos Ambiental · Colombia
+
+*Modelado estadístico y machine learning aplicado a datos de monitoreo ambiental colombiano.*
+
 [GitHub @DanMendezZz](https://github.com/DanMendezZz) · [LinkedIn](https://www.linkedin.com/in/daniel-m%C3%A9ndez-44161b1b3/)
 
 *Construido para las entidades del Sistema Nacional Ambiental (SINA) de Colombia.*
+
+</div>
