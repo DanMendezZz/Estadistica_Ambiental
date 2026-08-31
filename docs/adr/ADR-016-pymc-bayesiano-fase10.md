@@ -77,6 +77,14 @@ los modelos. Documentado en docstring.
   van como notebook descargable en `notebooks/lineas_tematicas/`.
 - **Reevaluar** si emerge un caso de uso real con N > 50_000 observaciones
   jerárquicas (entonces NumPyro/JAX entra en discusión).
+- **Pin de compatibilidad (2026-08-31):** `pymc<6` y `arviz<1` en el extra
+  `[bayes]`. `arviz` 1.x es un refactor mayor (paquete separado en
+  `arviz_base`/`arviz_stats`, renombra `hdi_prob` a `ci_prob`/`ci_kind`,
+  cambia sus defaults) y `pymc` 6.x lo exige como dependencia — sin techo,
+  una instalación fresca en CI resolvía ambos y rompía
+  `az.summary(hdi_prob=...)`/`az.hdi(hdi_prob=...)` en `bayesian.py`.
+  Reevaluar el techo cuando se decida migrar el código a la API de
+  `ci_prob`/`ci_kind`.
 
 ## Referencias
 

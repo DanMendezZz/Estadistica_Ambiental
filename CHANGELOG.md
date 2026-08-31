@@ -26,6 +26,11 @@ Versiones: [Semver](https://semver.org/lang/es/).
   (código, artículo, URL oficial, fecha de verificación, estado) de cada
   constante normativa, validado por `tests/test_config_normas.py` y
   revisado semanalmente por el job `normativa-audit`.
+- Extra `[bayes]` — pinneados `pymc<6` y `arviz<1` para evitar que una
+  instalación fresca resuelva arviz 1.x (refactor mayor que renombra
+  `hdi_prob` a `ci_prob`/`ci_kind` y cambia sus defaults), lo que rompía
+  4 tests de `tests/test_bayesian.py` en CI con
+  `TypeError: summary() got an unexpected keyword argument 'hdi_prob'`.
 
 ## [1.3.2] — 2026-05-07
 
