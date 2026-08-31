@@ -1,5 +1,7 @@
 """Tests para spatial/, features/ y reporting/stats_report.py"""
 
+import logging
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -14,7 +16,12 @@ from estadistica_ambiental.preprocessing.resampling import fill_missing_timestam
 from estadistica_ambiental.reporting.stats_report import stats_report
 from estadistica_ambiental.spatial.analysis import intersection_area
 from estadistica_ambiental.spatial.autocorrelation import geary_c, getis_ord_g
-from estadistica_ambiental.spatial.interpolation import idw, universal_kriging
+from estadistica_ambiental.spatial.interpolation import (
+    _clip_variance,
+    idw,
+    ordinary_kriging,
+    universal_kriging,
+)
 from estadistica_ambiental.spatial.projections import bounding_box_colombia, points_to_geodataframe
 
 # ---------------------------------------------------------------------------
@@ -166,6 +173,8 @@ class TestUniversalKriging:
         )
         _, ss = universal_kriging(stations, "lat", "lon", "temp", grid_lat, grid_lon)
         assert np.all(ss >= 0)
+        assert np.all(np.isfinite(ss))  # el clip de #16 no debe tapar NaN/inf real
+        assert np.any(ss > 0)  # no degeneró a todo-cero
 
     def test_import_error_without_pykrige(self, stations, monkeypatch):
         import builtins
@@ -183,6 +192,65 @@ class TestUniversalKriging:
         )
         with pytest.raises(ImportError):
             universal_kriging(stations, "lat", "lon", "temp", grid_lat, grid_lon)
+
+
+class TestClipVariance:
+    """No depende de pykrige -- ejercita _clip_variance() directo, sin
+    importorskip, para que el chequeo de negativos reales corra siempre
+    en CI aunque el extra [spatial] no esté instalado."""
+
+    def test_clips_float_noise(self):
+        out = _clip_variance(np.array([1.0, -5.90e-14, 0.5]))
+        assert np.all(out >= 0)
+
+    def test_warns_on_significant_negative(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            _clip_variance(np.array([1.0, -3.2, 0.5]))
+        assert any("negativa no despreciable" in r.message for r in caplog.records)
+
+    def test_no_warning_for_noise_only(self, caplog):
+        with caplog.at_level(logging.WARNING):
+            _clip_variance(np.array([1.0, -5.90e-14, 0.5]))
+        assert not any("negativa no despreciable" in r.message for r in caplog.records)
+
+    def test_preserves_nan(self):
+        out = _clip_variance(np.array([1.0, np.nan, 0.5]))
+        assert np.isnan(out[1])
+
+    def test_scale_ignores_infinite_values(self, caplog):
+        # Un +inf legitimo en ss no debe desactivar el aviso sobre un negativo real.
+        with caplog.at_level(logging.WARNING):
+            _clip_variance(np.array([np.inf, -3.2, 0.5]))
+        assert any("negativa no despreciable" in r.message for r in caplog.records)
+
+    def test_small_magnitude_field_no_artificial_floor(self, caplog):
+        # Campo con valores ~1e-3 (ej. mg/L): un negativo real de -5e-4 no debe
+        # esconderse detrás de un piso de escala artificial de 1.0.
+        with caplog.at_level(logging.WARNING):
+            _clip_variance(np.array([1e-3, -5e-4, 5e-4]))
+        assert any("negativa no despreciable" in r.message for r in caplog.records)
+
+
+class TestOrdinaryKriging:
+    @pytest.fixture
+    def stations(self):
+        return pd.DataFrame(
+            {
+                "lat": [4.0, 4.5, 5.0, 4.2, 4.8],
+                "lon": [-74.0, -74.5, -73.5, -73.8, -74.2],
+                "temp": [18.0, 15.0, 20.0, 17.0, 16.0],
+            }
+        )
+
+    def test_variance_non_negative(self, stations):
+        pytest.importorskip("pykrige")
+        grid_lat, grid_lon = np.meshgrid(
+            np.linspace(4.0, 5.0, 4), np.linspace(-74.5, -73.5, 4), indexing="ij"
+        )
+        _, ss = ordinary_kriging(stations, "lat", "lon", "temp", grid_lat, grid_lon)
+        assert np.all(ss >= 0)  # mismo clip de #16 (issue solo probaba universal_kriging)
+        assert np.all(np.isfinite(ss))
+        assert np.any(ss > 0)
 
 
 # ---------------------------------------------------------------------------

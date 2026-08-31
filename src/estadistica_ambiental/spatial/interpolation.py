@@ -14,6 +14,35 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
+def _clip_variance(ss: np.ndarray) -> np.ndarray:
+    """Varianza kriging >= 0.
+
+    Valores como -5.90e-14 son ruido de punto flotante del álgebra lineal de
+    pykrige, no un error real (issue #16). Un negativo de magnitud relevante
+    sí indica un sistema mal condicionado (puntos duplicados, variograma
+    degenerado): se clipea igual (la varianza real nunca es negativa), pero
+    se avisa en vez de silenciarlo — clipear sin avisar lo reportaría como
+    confianza perfecta, el peor valor posible para un resultado inválido.
+    """
+    ss = np.array(ss)
+    finitos = ss[np.isfinite(ss)]
+    if finitos.size:
+        peor = float(finitos.min())
+        # Sin piso artificial de 1.0: para campos de magnitud chica (mg/L,
+        # proporciones) ese piso volvía el umbral demasiado laxo y dejaba
+        # pasar negativos reales sin avisar. Excluye +-inf del cálculo (si
+        # no, un solo +inf legítimo en ss desactivaba el warning entero).
+        escala = max(float(finitos.max()), 0.0)
+        if peor < -1e-6 * escala:
+            logger.warning(
+                "Varianza kriging negativa no despreciable (min=%.3g, escala=%.3g): "
+                "revisar variograma y puntos duplicados/colineales.",
+                peor,
+                escala,
+            )
+    return np.clip(ss, 0, None)
+
+
 def idw(
     points: pd.DataFrame,
     lat_col: str,
@@ -87,7 +116,7 @@ def ordinary_kriging(
         enable_plotting=False,
     )
     z, ss = ok.execute("grid", grid_lon[0, :], grid_lat[:, 0])
-    return np.array(z), np.array(ss)
+    return np.array(z), _clip_variance(ss)
 
 
 def universal_kriging(
@@ -136,4 +165,4 @@ def universal_kriging(
         variogram_model,
         drift_order,
     )
-    return np.array(z), np.array(ss)
+    return np.array(z), _clip_variance(ss)
