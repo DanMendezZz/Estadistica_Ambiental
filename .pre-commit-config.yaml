@@ -41,3 +41,13 @@ repos:
         entry: "[A-Z]:[/\\\\]"
         exclude: "\\.(png|jpg|gif|ico|svg|woff|woff2|ttf|eot|pdf|exe|dll|so|dylib)$"
         types: [text]
+
+      # Mismo chequeo que el job docs.yml de CI, pero antes del push
+      # (issue #12: evitar commits reactivos de warnings de griffe/mkdocs).
+      # Requiere `pip install -e ".[docs]"` en el entorno local.
+      - id: mkdocs-build-strict
+        name: mkdocs build --strict
+        language: system
+        entry: mkdocs build --strict
+        pass_filenames: false
+        files: "^(docs/|mkdocs\\.yml$)"
