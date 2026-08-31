@@ -14,7 +14,7 @@ from estadistica_ambiental.preprocessing.resampling import fill_missing_timestam
 from estadistica_ambiental.reporting.stats_report import stats_report
 from estadistica_ambiental.spatial.analysis import intersection_area
 from estadistica_ambiental.spatial.autocorrelation import geary_c, getis_ord_g
-from estadistica_ambiental.spatial.interpolation import idw, universal_kriging
+from estadistica_ambiental.spatial.interpolation import idw, ordinary_kriging, universal_kriging
 from estadistica_ambiental.spatial.projections import bounding_box_colombia, points_to_geodataframe
 
 # ---------------------------------------------------------------------------
@@ -166,6 +166,8 @@ class TestUniversalKriging:
         )
         _, ss = universal_kriging(stations, "lat", "lon", "temp", grid_lat, grid_lon)
         assert np.all(ss >= 0)
+        assert np.all(np.isfinite(ss))  # el clip de #16 no debe tapar NaN/inf real
+        assert np.any(ss > 0)  # no degeneró a todo-cero
 
     def test_import_error_without_pykrige(self, stations, monkeypatch):
         import builtins
@@ -183,6 +185,28 @@ class TestUniversalKriging:
         )
         with pytest.raises(ImportError):
             universal_kriging(stations, "lat", "lon", "temp", grid_lat, grid_lon)
+
+
+class TestOrdinaryKriging:
+    @pytest.fixture
+    def stations(self):
+        return pd.DataFrame(
+            {
+                "lat": [4.0, 4.5, 5.0, 4.2, 4.8],
+                "lon": [-74.0, -74.5, -73.5, -73.8, -74.2],
+                "temp": [18.0, 15.0, 20.0, 17.0, 16.0],
+            }
+        )
+
+    def test_variance_non_negative(self, stations):
+        pytest.importorskip("pykrige")
+        grid_lat, grid_lon = np.meshgrid(
+            np.linspace(4.0, 5.0, 4), np.linspace(-74.5, -73.5, 4), indexing="ij"
+        )
+        _, ss = ordinary_kriging(stations, "lat", "lon", "temp", grid_lat, grid_lon)
+        assert np.all(ss >= 0)  # mismo clip de #16 (issue solo probaba universal_kriging)
+        assert np.all(np.isfinite(ss))
+        assert np.any(ss > 0)
 
 
 # ---------------------------------------------------------------------------

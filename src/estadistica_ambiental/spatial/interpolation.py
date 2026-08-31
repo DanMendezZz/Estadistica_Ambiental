@@ -14,6 +14,30 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
+def _clip_variance(ss: np.ndarray) -> np.ndarray:
+    """Varianza kriging >= 0.
+
+    Valores como -5.90e-14 son ruido de punto flotante del álgebra lineal de
+    pykrige, no un error real (issue #16). Un negativo de magnitud relevante
+    sí indica un sistema mal condicionado (puntos duplicados, variograma
+    degenerado): se clipea igual (la varianza real nunca es negativa), pero
+    se avisa en vez de silenciarlo — clipear sin avisar lo reportaría como
+    confianza perfecta, el peor valor posible para un resultado inválido.
+    """
+    ss = np.array(ss)
+    if ss.size and np.isfinite(ss).any():
+        peor = float(np.nanmin(ss))
+        escala = max(float(np.nanmax(ss)), 1.0)
+        if peor < -1e-6 * escala:
+            logger.warning(
+                "Varianza kriging negativa no despreciable (min=%.3g, escala=%.3g): "
+                "revisar variograma y puntos duplicados/colineales.",
+                peor,
+                escala,
+            )
+    return np.clip(ss, 0, None)
+
+
 def idw(
     points: pd.DataFrame,
     lat_col: str,
@@ -87,7 +111,7 @@ def ordinary_kriging(
         enable_plotting=False,
     )
     z, ss = ok.execute("grid", grid_lon[0, :], grid_lat[:, 0])
-    return np.array(z), np.array(ss)
+    return np.array(z), _clip_variance(ss)
 
 
 def universal_kriging(
@@ -136,6 +160,4 @@ def universal_kriging(
         variogram_model,
         drift_order,
     )
-    # La varianza kriging nunca es negativa; valores como -5.90e-14 son ruido
-    # de punto flotante del álgebra lineal de pykrige, no un error real (issue #16).
-    return np.array(z), np.clip(np.array(ss), 0, None)
+    return np.array(z), _clip_variance(ss)
