@@ -1,0 +1,57 @@
+{
+  "content": [
+    {
+      "content": null,
+      "created": "2026-08-31T22:54:10.887325Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-08-31T22:53:30.783852Z",
+      "mimetype": null,
+      "name": "03_excedencias_normativas.ipynb",
+      "path": "03_excedencias_normativas.ipynb",
+      "size": 2681,
+      "type": "notebook",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-08-31T22:54:10.886808Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-08-31T22:53:30.783784Z",
+      "mimetype": null,
+      "name": "01_calidad_demo.ipynb",
+      "path": "01_calidad_demo.ipynb",
+      "size": 2439,
+      "type": "notebook",
+      "writable": true
+    },
+    {
+      "content": null,
+      "created": "2026-08-31T22:54:10.887092Z",
+      "format": null,
+      "hash": null,
+      "hash_algorithm": null,
+      "last_modified": "2026-08-31T22:53:30.783852Z",
+      "mimetype": null,
+      "name": "02_tendencia_mann_kendall.ipynb",
+      "path": "02_tendencia_mann_kendall.ipynb",
+      "size": 2290,
+      "type": "notebook",
+      "writable": true
+    }
+  ],
+  "created": "2026-08-31T22:54:10.887325Z",
+  "format": "json",
+  "hash": null,
+  "hash_algorithm": null,
+  "last_modified": "2026-08-31T22:54:10.887325Z",
+  "mimetype": null,
+  "name": "",
+  "path": "",
+  "size": null,
+  "type": "directory",
+  "writable": true
+}
