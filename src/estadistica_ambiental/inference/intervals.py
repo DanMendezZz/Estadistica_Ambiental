@@ -124,13 +124,27 @@ _NORMA_MAP: Dict[str, list[tuple[str, dict, str]]] = {
     ],
     "so2": [("Res. 2254/2017 — 24h", NORMA_CO, "so2_24h")],
     "co": [("Res. 2254/2017 — 8h", NORMA_CO, "co_8h")],
-    "od": [("Res. 2115/2007 — agua potable min", NORMA_AGUA_POTABLE, "od_min")],
+    "od": [
+        (
+            "Decreto 1594/1984 Art. 45 (derogado, sin reemplazo fijo): referencia técnica",
+            NORMA_AGUA_POTABLE,
+            "od_min",
+        )
+    ],
     "dbo": [
-        ("Res. 2115/2007 — agua potable", NORMA_AGUA_POTABLE, "dbo5_max"),
+        (
+            "Decreto 1594/1984 Art. 45 (derogado, sin reemplazo fijo): referencia técnica",
+            NORMA_AGUA_POTABLE,
+            "dbo5_max",
+        ),
         ("Res. 631/2015 — vertimiento", NORMA_VERTIMIENTOS, "dbo5_max"),
     ],
     "dbo5": [
-        ("Res. 2115/2007 — agua potable", NORMA_AGUA_POTABLE, "dbo5_max"),
+        (
+            "Decreto 1594/1984 Art. 45 (derogado, sin reemplazo fijo): referencia técnica",
+            NORMA_AGUA_POTABLE,
+            "dbo5_max",
+        ),
         ("Res. 631/2015 — vertimiento", NORMA_VERTIMIENTOS, "dbo5_max"),
     ],
     "dqo": [("Res. 631/2015 — vertimiento", NORMA_VERTIMIENTOS, "dqo_max")],

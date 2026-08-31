@@ -1,7 +1,7 @@
 # Cambio Climático — Contabilidad de Carbono, MRV y Modelado Predictivo de Emisiones
 
 > **NotebookLM fuente:** https://notebooklm.google.com/notebook/c5870ed5-6bf0-4705-ad8c-738f2d6e439e
-> **Última sincronización:** 2026-04-22
+> **Última sincronización:** 2026-07-25
 > **Responsable de la ficha:** Dan Méndez
 > **Bloque:** B (transversal temática)
 > **Alimenta a:** Oferta hídrica, páramos, humedales, gestión de riesgo, recurso hídrico
@@ -141,3 +141,25 @@ Para garantizar la integridad ambiental y evitar la sobreestimación de crédito
 ## Referencias
 
 - Fuentes del notebook: documentos del MADS, IDEAM (INGEI, SMByC), UPME, Verra, Cercarbono y literatura de Machine Learning aplicado a contabilidad de carbono.
+
+## Componente normativo auditado
+
+> Auditoría NotebookLM 2026-07-25: ver informe consolidado en el vault
+> (`03_Resources/Ambiental/Normativa/_Auditorias/2026-07-25 Auditoria normativa NotebookLM.md`).
+> Lo declarado abajo es **lo que el cuaderno reportó**, no una verificación jurídica
+> independiente.
+
+| Norma | Reportada como | Auditado el |
+|---|---|---|
+| Ley 1753 de 2015, Art. 175 | Crea el RENARE (Registro Nacional de Reducción de Emisiones) | 2026-07-25 |
+| Decreto 926 de 2017 | Mecanismo de no causación del impuesto nacional al carbono | 2026-07-25 |
+| Ley 1931 de 2018 | Directrices de gestión del cambio climático; crea el SNICC | 2026-07-25 |
+| Resolución 1447 de 2018 (MADS) | Reglamenta el sistema MRV, reglas de RENARE y mecanismos contra doble contabilidad | 2026-07-25 |
+| Resolución 418 de 2024 (MADS) | Transfiere la administración de RENARE del IDEAM al MADS | 2026-07-25 |
+
+**Nota de mapeo importante**: la URL de NotebookLM de esta ficha (`c5870ed5-...`) es un cuaderno
+que **cambió de propósito** entre el 2026-04-24 (registrado originalmente como
+"Cambio Climático - ENSO Colombia") y hoy (renombrado a "Global Climate Action: Inventories,
+Standards, and AFOLU Mitigation", soporte de la tesis RENARE; ver Fase 0 de este mismo plan).
+El contenido auditado arriba es el que el cuaderno tiene **actualmente** (RENARE/AFOLU/carbono),
+no ENSO/vulnerabilidad climática.

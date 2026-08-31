@@ -114,7 +114,10 @@ ignore = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--tb=short"
+addopts = "--tb=short -m \"not normativa_vigencia\""
+markers = [
+    "normativa_vigencia: verifica que NORMA_FUENTES no tenga verificaciones vencidas (>12 meses); se excluye de la suite por defecto porque expira con el calendario, no con cambios de código; corre solo en el job normativa-audit de scheduled.yml",
+]
 
 [tool.coverage.run]
 source = ["src/estadistica_ambiental"]
