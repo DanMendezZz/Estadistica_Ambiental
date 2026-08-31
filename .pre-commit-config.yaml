@@ -50,4 +50,7 @@ repos:
         language: system
         entry: mkdocs build --strict
         pass_filenames: false
-        files: "^(docs/|mkdocs\\.yml$)"
+        # src/ incluido: mkdocstrings genera la API Reference desde los
+        # docstrings, así que un docstring roto también hace fallar el
+        # build --strict aunque nada de docs/ haya cambiado.
+        files: "^(docs/|src/|mkdocs\\.yml$|CHANGELOG\\.md$|pyproject\\.toml$)"
