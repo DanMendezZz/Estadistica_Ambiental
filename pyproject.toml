@@ -59,8 +59,12 @@ deep = [
     "lightning>=2.1",
 ]
 bayes = [
-    "pymc>=5.9",
-    "arviz>=0.18",
+    "pymc>=5.9,<6",
+    # el código usa az.summary(hdi_prob=)/az.hdi(hdi_prob=); arviz 1.x
+    # renombró el kwarg a ci_prob/ci_kind y cambió los defaults (HDI->ETI,
+    # 0.94->0.89). No alcanza con el techo de pymc: pymc<5.28.1 no declaraba
+    # arviz<1.0 por su cuenta, así que arviz necesita su propio techo.
+    "arviz>=0.18,<1",
 ]
 spatial = [
     "geopandas>=0.14",

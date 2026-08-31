@@ -25,7 +25,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install latest versions (sin pinning)
-        run: pip install -e ".[dev]" --upgrade
+        run: pip install -e ".[dev,bayes]" --upgrade
 
       - name: Run tests
         run: python -m pytest tests/ -q --tb=short
@@ -147,7 +147,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install pre-release versions
-        run: pip install -e ".[dev]" --pre --upgrade
+        run: pip install -e ".[dev,bayes]" --pre --upgrade
 
       - name: Run tests
         run: python -m pytest tests/ -q --tb=line
