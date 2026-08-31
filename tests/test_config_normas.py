@@ -26,6 +26,7 @@ _CONSTANTES_NORMA_EN_CONFIG = {
     if (nombre.startswith("NORMA_") or nombre == "ICA_BREAKPOINTS") and nombre != "NORMA_FUENTES"
 }
 
+
 class TestNormaFuentesCompletitud:
     def test_todas_las_normas_de_config_tienen_entrada(self):
         faltantes = _CONSTANTES_NORMA_EN_CONFIG - set(NORMA_FUENTES)
