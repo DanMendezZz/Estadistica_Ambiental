@@ -49,7 +49,7 @@ jobs:
             || (echo "✗ docs/showcase/index.html no encontrado" && exit 1)
 
       - name: Subir artefacto de Pages
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/showcase/
 
