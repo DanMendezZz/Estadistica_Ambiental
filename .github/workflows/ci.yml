@@ -159,6 +159,16 @@ jobs:
           --cov=src/estadistica_ambiental
           --cov-report=xml:coverage-bayes.xml
 
+      - name: Upload coverage to Codecov
+        # test_bayesian.py se salta entero en JOB 2 (solo instala [dev], sin
+        # pymc) via pytest.importorskip -- sin este upload, nada de lo que
+        # cubre esa suite cuenta para la cobertura reportada.
+        uses: codecov/codecov-action@v7
+        with:
+          files: coverage-bayes.xml
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   # ─────────────────────────────────────────────
   # JOB 4: Tests con dependencias espaciales
   # ─────────────────────────────────────────────
