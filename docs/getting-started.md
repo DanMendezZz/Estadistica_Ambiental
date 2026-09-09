@@ -46,7 +46,7 @@ El paquete declara grupos de dependencias opcionales en `pyproject.toml`:
 | `ml` | XGBoost y LightGBM para modelos de calidad del aire |
 | `prophet` | Forecasting con Prophet |
 | `profile` | `ydata-profiling`, `sweetviz`, `missingno`, `plotly` |
-| `deep` | PyTorch + Lightning (modelos profundos) |
+| `deep` | PyTorch (modelos profundos) |
 | `bayes` | PyMC + ArviZ (modelos jerárquicos bayesianos) |
 | `spatial` | Geopandas, Rasterio, PySAL, ESDA, Folium, etc. |
 | `netcdf` | Lectura de NetCDF y HDF5 |
