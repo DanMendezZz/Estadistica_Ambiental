@@ -110,7 +110,7 @@ jobs:
           --cov-report=xml:coverage-ml.xml
 
   # ─────────────────────────────────────────────
-  # JOB 3b: Tests con extras Deep Learning (torch / lightning)
+  # JOB 3b: Tests con extras Deep Learning (torch)
   # ─────────────────────────────────────────────
   test-deep:
     name: Tests con [deep]

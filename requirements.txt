@@ -33,7 +33,6 @@ plotly>=5.18
 
 # --- [deep] ---
 torch>=2.1
-lightning>=2.1
 
 # --- [bayes] (ver techo de arviz<1 en pyproject.toml) ---
 pymc>=5.9,<6

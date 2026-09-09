@@ -869,7 +869,7 @@ flowchart TD
 | `[ml]` | xgboost · lightgbm | Modelos ML en cualquier línea |
 | `[prophet]` | prophet | Líneas con estacionalidades múltiples |
 | `[spatial]` | geopandas · rasterio · pykrige · pysal · folium | Capa geoespacial |
-| `[deep]` | torch · lightning | LSTM / GRU en series largas |
+| `[deep]` | torch | LSTM / GRU en series largas |
 | `[bayes]` | pymc · arviz | Modelos jerárquicos (Fase 10, experimental) |
 | `[profile]` | ydata-profiling · sweetviz · missingno | EDA enriquecido |
 | `[fast]` | polars | Series horarias muy largas (>1M registros) |
