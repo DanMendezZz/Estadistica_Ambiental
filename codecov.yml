@@ -11,14 +11,14 @@ coverage:
   # Ignorar módulos con dependencias opcionales pesadas
   ignore:
     - "src/estadistica_ambiental/predictive/deep.py"
-    # bayesian.py sale de esta lista en el PR C de #11 (cuando los 3 lotes
-    # de tests ya suban su cobertura real); sacarlo en el PR A solo, que es
-    # el que menos cobertura aporta de los tres, deja ~0.4pp de margen contra
-    # el threshold de 5% de abajo.
-    - "src/estadistica_ambiental/predictive/bayesian.py"
-    - "src/estadistica_ambiental/spatial/autocorrelation.py"
-    - "src/estadistica_ambiental/spatial/viz.py"
     - "src/estadistica_ambiental/features/climate.py"
+    # bayesian.py: cobertura real ~97% (PRs A/B de #11), pero sin
+    # `after_n_builds` un fallo de instalación de pymc en CI (job sin
+    # continue-on-error) deja el upload de coverage-bayes.xml sin subir de
+    # forma silenciosa (fail_ci_if_error: false) y el status cae a la
+    # cobertura real del archivo sin pymc (~11%, ~270 statements). Sacarlo
+    # de acá requiere agregar ese guard primero -- ver issue de seguimiento.
+    - "src/estadistica_ambiental/predictive/bayesian.py"
 
 comment:
   layout: "reach,diff,flags,files"
