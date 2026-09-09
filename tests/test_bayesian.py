@@ -5,9 +5,14 @@ Si pymc/arviz no están instalados, los tests se SALTAN con importorskip.
 
 from __future__ import annotations
 
-import numpy as np
-import pandas as pd
-import pytest
+import matplotlib
+
+matplotlib.use("Agg")  # sin ventana gráfica en CI/tests
+
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+import pytest  # noqa: E402
 
 pm = pytest.importorskip("pymc")
 az = pytest.importorskip("arviz")
@@ -52,6 +57,13 @@ def panel_data() -> pd.DataFrame:
         for _ in range(40):
             rows.append({"estacion": est, "y": offset + rng.normal(0, 0.3)})
     return pd.DataFrame(rows)
+
+
+@pytest.fixture(autouse=True)
+def _close_matplotlib_figures():
+    """Cierra figuras de matplotlib también si el test falla a mitad de camino."""
+    yield
+    plt.close("all")
 
 
 # ---------------------------------------------------------------------------
@@ -312,6 +324,122 @@ class TestHierarchicalModelSpec:
         model.fit(panel_long)
         assert model.is_fitted
         assert set(model._stations) == {"A", "B", "C"}
+
+
+class TestBayesianARIMAMoreBranches:
+    """Ramas de fit()/_simulate_paths() no cubiertas por los tests de arriba."""
+
+    def test_ma_component_q_gt_0(self, ar_series):
+        model = BayesianARIMA(p=1, d=0, q=1, draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        model.fit(ar_series)
+        sims = model.predict(horizon=4, n_samples=20)
+        assert sims.shape == (20, 4)
+        assert np.isfinite(sims).all()
+
+    def test_ar_order_zero(self, ar_series):
+        # p=0: la rama `phi = None` en fit() y `phis = zeros` en _simulate_paths.
+        model = BayesianARIMA(p=0, d=0, q=0, draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        model.fit(ar_series)
+        sims = model.predict(horizon=4, n_samples=20)
+        assert sims.shape == (20, 4)
+        assert np.isfinite(sims).all()
+
+    def test_d_greater_than_one_undifferences_correctly(self, ar_series):
+        y = ar_series.cumsum().cumsum()  # doblemente integrada, nivel final ~90-100
+        model = BayesianARIMA(p=1, d=2, q=0, draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        model.fit(y)
+        sims = model.predict(horizon=3, n_samples=20)
+        assert sims.shape == (20, 3)
+        assert np.isfinite(sims).all()
+        # Si _simulate_paths se saltara el des-diferenciado (self.d>0), los sims
+        # quedarían en la escala de la 2da diferencia (<1 en este fixture) en vez
+        # de la escala del nivel de la serie (~90-100) -- shape/isfinite no lo detectan.
+        assert np.abs(sims).mean() > 20.0
+
+    def test_fit_samples_override(self, ar_series):
+        model = BayesianARIMA(p=1, d=0, q=0, draws=1, tune=TUNE, chains=CHAINS)
+        model.fit(ar_series, samples=SAMPLES)
+        assert model.samples == SAMPLES
+        assert model.draws == SAMPLES
+        assert model._trace.posterior.sizes["draw"] == SAMPLES
+
+    def test_series_too_short_raises_valueerror(self):
+        y = pd.Series([1.0, 2.0, 3.0])
+        model = BayesianARIMA(p=5, d=0, q=0, draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        with pytest.raises(ValueError, match="demasiado corta"):
+            model.fit(y)
+
+    def test_non_datetime_index_skips_future_index(self):
+        # La rama nueva es el `isinstance(..., DatetimeIndex)` de fit() (no
+        # asigna _last_index/_freq); ese caso ya lo cubre test_bayesian_helpers.py
+        # instanciando sin fit(), así que aquí solo se verifica el efecto tras
+        # un fit() real: predict_interval cae al índice entero por defecto.
+        rng = np.random.default_rng(0)
+        y = pd.Series(rng.normal(size=50))  # RangeIndex, no datetime
+        model = BayesianARIMA(p=1, d=0, q=0, draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        model.fit(y)
+        ci = model.predict_interval(horizon=3)
+        assert list(ci.index) == [0, 1, 2]  # índice entero por defecto, no fechas
+
+    def test_plot_trace_smoke(self, ar_series):
+        model = BayesianARIMA(p=1, d=0, q=0, draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        model.fit(ar_series)
+        axes = model.plot_trace()
+        assert axes is not None
+
+
+class TestHierarchicalModelMoreBranches:
+    """Ramas de fit()/group_estimates() no cubiertas por los tests de arriba."""
+
+    def test_multiindex_group_level(self):
+        rng = np.random.default_rng(2)
+        values, idx_tuples = [], []
+        for est, offset in [("A", 0.0), ("B", 1.0)]:
+            for i in range(15):
+                values.append(offset + rng.normal(0, 0.3))
+                idx_tuples.append((est, i))
+        idx = pd.MultiIndex.from_tuples(idx_tuples, names=["estacion", "obs"])
+        y = pd.Series(values, index=idx)
+        model = HierarchicalModel(draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        model.fit(y)
+        assert model.is_fitted
+        assert set(model._stations) == {"A", "B"}
+
+    def test_dataframe_missing_group_col_raises(self, panel_data):
+        model = HierarchicalModel(group_col="estacion", draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        df = panel_data.rename(columns={"estacion": "otra_columna"})
+        with pytest.raises(ValueError, match="columna de grupo"):
+            model.fit(df, value_col="y")
+
+    def test_dataframe_no_numeric_value_col_raises(self, panel_data):
+        model = HierarchicalModel(group_col="estacion", draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        df = panel_data.copy()
+        df["y"] = df["y"].astype(str)  # ya no es numérica: vc no se puede inferir
+        with pytest.raises(ValueError, match="value_col"):
+            model.fit(df)
+
+    def test_group_estimates_hdi_fallback(self, panel_data, monkeypatch):
+        model = HierarchicalModel(draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        model.fit(panel_data["y"], groups=panel_data["estacion"].values)
+
+        def _boom(*args, **kwargs):
+            raise RuntimeError("az.hdi roto a propósito")
+
+        monkeypatch.setattr(az, "hdi", _boom)
+        ge = model.group_estimates()
+        assert len(ge) == 3
+        # Comparar contra el cálculo exacto del fallback (no solo "no-NaN" ni
+        # "lower<=upper", que sobreviven igual si el fallback usa cuantiles
+        # invertidos o si el monkeypatch no llegó a interceptar az.hdi).
+        flat = model._trace.posterior["mu_group"].values.reshape(-1, len(model._stations))
+        np.testing.assert_allclose(ge["hdi_lower"].values, np.quantile(flat, 0.025, axis=0))
+        np.testing.assert_allclose(ge["hdi_upper"].values, np.quantile(flat, 0.975, axis=0))
+
+    def test_plot_forest_smoke(self, panel_data):
+        model = HierarchicalModel(draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        model.fit(panel_data["y"], groups=panel_data["estacion"].values)
+        ax = model.plot_forest()
+        assert ax is not None
 
 
 class TestBayesianRegistry:
