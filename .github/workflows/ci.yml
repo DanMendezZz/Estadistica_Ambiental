@@ -109,6 +109,19 @@ jobs:
           --cov=src/estadistica_ambiental
           --cov-report=xml:coverage-ml.xml
 
+      - name: Upload coverage to Codecov
+        # Varios tests de tests/test_predictive.py se saltan por-test (no el
+        # archivo entero) en JOB 2 vía pytest.importorskip("xgboost"/...) --
+        # sin este upload, las ramas de ml.py/registry.py/optimization/
+        # bayes_opt.py que solo corren con xgboost/lightgbm instalados no
+        # cuentan para la cobertura reportada (mismo gap que tenían
+        # test-bayes/test-spatial antes del PR #40).
+        uses: codecov/codecov-action@v7
+        with:
+          files: coverage-ml.xml
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   # ─────────────────────────────────────────────
   # JOB 3b: Tests con extras Deep Learning (torch)
   # ─────────────────────────────────────────────
@@ -128,6 +141,11 @@ jobs:
         run: pip install -e ".[dev,deep]"
 
       - name: Run tests con cobertura Deep Learning
+        # Sin upload a Codecov a propósito: predictive/deep.py está en el
+        # `omit` de [tool.coverage.run] en pyproject.toml, así que este
+        # reporte no mide nada que coverage.xml (JOB 2) no mida ya -- subirlo
+        # sería un upload sin información nueva. Si algún día se decide medir
+        # deep.py de verdad, sacarlo del omit es la decisión previa real.
         run: >
           python -m pytest tests/
           --tb=short -q
@@ -190,15 +208,17 @@ jobs:
       - name: Install spatial extras
         # continue-on-error expone el fallo en la UI sin cancelar el job.
         # Los tests espaciales usan pytest.importorskip y se saltean si alguna no instala.
+        # Instala el extra [spatial] real de pyproject.toml (incluye rasterio)
+        # en vez de una lista manual paralela -- la lista anterior había
+        # divergido (issue #41) y, además, un step separado para "aislar" el
+        # build de rasterio no aislaba nada: rioxarray y contextily lo traen
+        # como dependencia dura igual, así que ya entraba en el mismo batch
+        # sin querer. h5netcdf/h5py aparte -- viven en [netcdf] junto a
+        # netcdf4, que NO se instala porque ningún test lo usa (todos los
+        # NetCDF de prueba usan engine="h5netcdf" explícito) y tiene sus
+        # propios requisitos de build nativos sin probar en CI.
         continue-on-error: true
-        run: pip install geopandas pykrige pysal esda folium branca xarray h5netcdf h5py
-
-      - name: Install rasterio (paso separado -- depende de GDAL, puede fallar solo)
-        # Si rasterio fuera parte del pip install de arriba, un fallo de build
-        # tumba el batch completo (geopandas/xarray incluidos) y los tests
-        # espaciales se saltean TODOS aunque solo rasterio tuviera el problema.
-        continue-on-error: true
-        run: pip install rasterio
+        run: pip install -e ".[spatial]" h5netcdf h5py
 
       - name: Run tests (incluyendo espaciales)
         run: >
