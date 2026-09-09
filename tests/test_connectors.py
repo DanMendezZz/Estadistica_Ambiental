@@ -151,8 +151,12 @@ class TestLoadOpenaq:
         assert df.empty
 
     def test_requests_not_installed_returns_empty_df(self, monkeypatch, caplog):
-        _raise_importerror_for(monkeypatch, "requests")
-        with patch("requests.get") as mocked:  # red real imposible si la rama falla
+        # patch() primero: resuelve "requests.get" con el __import__ real. Si
+        # se activa el ImportError antes, patch() intenta importar "requests"
+        # para resolver el target y falla también (solo en Python <3.11, que
+        # no tiene el atajo por sys.modules de mock._get_target).
+        with patch("requests.get") as mocked:
+            _raise_importerror_for(monkeypatch, "requests")
             df = load_openaq(location_id=999, parameter="pm25")
         assert df.empty
         assert not mocked.called
@@ -207,8 +211,9 @@ class TestLoadRmcab:
 
     def test_requests_not_installed_returns_empty_df(self, monkeypatch, caplog):
         # Con token (si no, retorna antes de llegar al import de requests).
-        _raise_importerror_for(monkeypatch, "requests")
-        with patch("requests.get") as mocked:  # red real imposible si la rama falla
+        # patch() primero: ver nota en TestLoadOpenaq.test_requests_not_installed_returns_empty_df.
+        with patch("requests.get") as mocked:
+            _raise_importerror_for(monkeypatch, "requests")
             df = load_rmcab(station="Kennedy", variable="PM25", token="secret")
         assert df.empty
         assert not mocked.called
@@ -638,8 +643,9 @@ class TestLoadDatosGovCoDataset:
         assert kwargs["headers"].get("X-App-Token") == "tk-xyz"
 
     def test_requests_not_installed_returns_empty_df(self, monkeypatch, caplog):
-        _raise_importerror_for(monkeypatch, "requests")
-        with patch("requests.get") as mocked:  # red real imposible si la rama falla
+        # patch() primero: ver nota en TestLoadOpenaq.test_requests_not_installed_returns_empty_df.
+        with patch("requests.get") as mocked:
+            _raise_importerror_for(monkeypatch, "requests")
             df = load_datos_gov_co_dataset(dataset_id="ds", limit=10)
         assert df.empty
         assert not mocked.called
