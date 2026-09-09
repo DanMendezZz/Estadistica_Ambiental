@@ -3,8 +3,6 @@
 Estrategia: mocks de ``requests.get`` para los conectores HTTP (OpenAQ, RMCAB,
 SIATA, datos.gov.co) y archivos temporales para los que leen disco
 (IDEAM DHIME, SMByC). No se hacen llamadas de red reales.
-
-Cobertura objetivo: subir el módulo de 8.7 % a >70 %.
 """
 
 from __future__ import annotations
@@ -40,6 +38,20 @@ def _mock_response(json_payload: dict | list, status: int = 200) -> MagicMock:
     resp.json.return_value = json_payload
     resp.raise_for_status.return_value = None
     return resp
+
+
+def _raise_importerror_for(monkeypatch: pytest.MonkeyPatch, module_name: str) -> None:
+    """Fuerza que ``import <module_name>`` falle con ImportError dentro del test."""
+    import builtins
+
+    original_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == module_name:
+            raise ImportError(f"{module_name} no instalado")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
 
 
 # ---------------------------------------------------------------------------
@@ -138,6 +150,18 @@ class TestLoadOpenaq:
             df = load_openaq(location_id=999, parameter="pm25")
         assert df.empty
 
+    def test_requests_not_installed_returns_empty_df(self, monkeypatch, caplog):
+        # patch() primero: resuelve "requests.get" con el __import__ real. Si
+        # se activa el ImportError antes, patch() intenta importar "requests"
+        # para resolver el target y falla también (solo en Python <3.11, que
+        # no tiene el atajo por sys.modules de mock._get_target).
+        with patch("requests.get") as mocked:
+            _raise_importerror_for(monkeypatch, "requests")
+            df = load_openaq(location_id=999, parameter="pm25")
+        assert df.empty
+        assert not mocked.called
+        assert "Instalar 'requests'" in caplog.text
+
 
 # ---------------------------------------------------------------------------
 # load_rmcab
@@ -184,6 +208,16 @@ class TestLoadRmcab:
         with patch("requests.get", side_effect=ValueError("boom")):
             df = load_rmcab(station="Kennedy", variable="PM25", token="secret")
         assert df.empty
+
+    def test_requests_not_installed_returns_empty_df(self, monkeypatch, caplog):
+        # Con token (si no, retorna antes de llegar al import de requests).
+        # patch() primero: ver nota en TestLoadOpenaq.test_requests_not_installed_returns_empty_df.
+        with patch("requests.get") as mocked:
+            _raise_importerror_for(monkeypatch, "requests")
+            df = load_rmcab(station="Kennedy", variable="PM25", token="secret")
+        assert df.empty
+        assert not mocked.called
+        assert "Instalar 'requests'" in caplog.text
 
 
 # ---------------------------------------------------------------------------
@@ -291,32 +325,13 @@ class TestLoadSmbycAlertas:
             encoding="utf-8",
         )
 
-        # Forzar ImportError de geopandas
-        import builtins
-
-        original_import = builtins.__import__
-
-        def fake_import(name, *args, **kwargs):
-            if name == "geopandas":
-                raise ImportError("geopandas no instalado")
-            return original_import(name, *args, **kwargs)
-
-        monkeypatch.setattr(builtins, "__import__", fake_import)
+        _raise_importerror_for(monkeypatch, "geopandas")
         df = load_smbyc_alertas(str(csv))
         assert isinstance(df, pd.DataFrame)
         assert not df.empty
 
     def test_invalid_path_returns_empty(self, tmp_path, monkeypatch):
-        import builtins
-
-        original_import = builtins.__import__
-
-        def fake_import(name, *args, **kwargs):
-            if name == "geopandas":
-                raise ImportError("geopandas no instalado")
-            return original_import(name, *args, **kwargs)
-
-        monkeypatch.setattr(builtins, "__import__", fake_import)
+        _raise_importerror_for(monkeypatch, "geopandas")
         df = load_smbyc_alertas(str(tmp_path / "no_existe.csv"))
         assert df.empty
 
@@ -627,6 +642,58 @@ class TestLoadDatosGovCoDataset:
         assert "headers" in kwargs
         assert kwargs["headers"].get("X-App-Token") == "tk-xyz"
 
+    def test_requests_not_installed_returns_empty_df(self, monkeypatch, caplog):
+        # patch() primero: ver nota en TestLoadOpenaq.test_requests_not_installed_returns_empty_df.
+        with patch("requests.get") as mocked:
+            _raise_importerror_for(monkeypatch, "requests")
+            df = load_datos_gov_co_dataset(dataset_id="ds", limit=10)
+        assert df.empty
+        assert not mocked.called
+        assert "Instalar 'requests'" in caplog.text
+
+    def test_where_and_select_are_sent_as_soql_params(self):
+        with patch("requests.get", return_value=_mock_response([{"a": 1}])) as mocked:
+            load_datos_gov_co_dataset(
+                dataset_id="ds",
+                limit=10,
+                where="departamento = 'Antioquia'",
+                select="fecha,valor",
+            )
+        params = mocked.call_args.kwargs["params"]
+        assert params["$where"] == "departamento = 'Antioquia'"
+        assert params["$select"] == "fecha,valor"
+
+    def test_invalid_batch_stops_pagination(self, monkeypatch):
+        # SODA puede devolver un dict de error (no una lista) a mitad de la
+        # paginación; la función debe cortar ahí en vez de romperse o seguir
+        # pidiendo páginas. Con page_size=2 forzamos una segunda llamada real
+        # para que el corte se pruebe en plena paginación, no en la primera página.
+        import estadistica_ambiental.io.connectors as conn
+
+        monkeypatch.setattr(conn, "DATOS_GOV_CO_PAGE_SIZE", 2)
+        page1 = [{"x": 1}, {"x": 2}]
+        error_batch = {"error": True, "message": "query timeout"}
+        with patch(
+            "requests.get",
+            side_effect=[_mock_response(page1), _mock_response(error_batch)],
+        ) as mocked:
+            df = load_datos_gov_co_dataset(dataset_id="ds", limit=100)
+        assert mocked.call_count == 2
+        assert len(df) == 2  # se queda con lo acumulado antes del batch inválido
+
+    def test_truncates_rows_to_requested_limit(self, monkeypatch):
+        import estadistica_ambiental.io.connectors as conn
+
+        monkeypatch.setattr(conn, "DATOS_GOV_CO_PAGE_SIZE", 2)
+        page1 = [{"x": 1}, {"x": 2}]
+        page2 = [{"x": 3}, {"x": 4}]
+        with patch(
+            "requests.get",
+            side_effect=[_mock_response(page1), _mock_response(page2)],
+        ):
+            df = load_datos_gov_co_dataset(dataset_id="ds", limit=3)
+        assert len(df) == 3
+
 
 # ---------------------------------------------------------------------------
 # load_ideam_dhime_csv — variante robusta para CSV con metadatos
@@ -683,3 +750,95 @@ class TestLoadIdeamDhimeCsv:
                 path=str(tmp_path / "no_existe.csv"),
                 parametro="precipitacion",
             )
+
+    def test_latin1_fallback_on_unicode_decode_error(self, tmp_path):
+        csv = tmp_path / "estacion_latin1.csv"
+        # 'ñ' en latin-1 (0xF1 solo) no es utf-8 válido -> fuerza el fallback.
+        csv.write_bytes("Estación: Suba\nFecha,Valor\n2024-01-01,7.2\n".encode("latin-1"))
+        df = load_ideam_dhime_csv(path=str(csv), parametro="precipitacion")
+        assert len(df) == 1
+        assert df["valor"].iloc[0] == 7.2
+
+    def test_read_csv_failure_returns_empty_four_col_df(self, tmp_path):
+        csv = tmp_path / "estacion.csv"
+        csv.write_text("Fecha,Valor\n2024-01-01,1.0\n", encoding="utf-8")
+        with patch(
+            "estadistica_ambiental.io.connectors.pd.read_csv",
+            side_effect=ValueError("parse error"),
+        ):
+            df = load_ideam_dhime_csv(path=str(csv), parametro="precipitacion")
+        assert df.empty
+        assert list(df.columns) == ["fecha", "estacion", "parametro", "valor"]
+
+    def test_fuzzy_date_column_match(self, tmp_path):
+        # "FECHA_OBSERVACION" no calza exacto contra los candidatos default
+        # (Fecha/FECHA/fecha) -> debe caer al match difuso ("FECHA" in col).
+        csv = tmp_path / "estacion.csv"
+        csv.write_text(
+            "FECHA_OBSERVACION,VALOR\n2024-01-01,10.5\n2024-01-02,11.0\n",
+            encoding="utf-8",
+        )
+        df = load_ideam_dhime_csv(path=str(csv), parametro="temperatura")
+        assert len(df) == 2
+        assert pd.api.types.is_datetime64_any_dtype(df["fecha"])
+
+    def test_no_date_column_found_returns_empty(self, tmp_path, caplog):
+        csv = tmp_path / "estacion.csv"
+        csv.write_text("Codigo,Valor\n1,10\n2,20\n", encoding="utf-8")
+        df = load_ideam_dhime_csv(path=str(csv), parametro="caudal")
+        assert df.empty
+        assert list(df.columns) == ["fecha", "estacion", "parametro", "valor"]
+        assert "no se halló columna de fecha" in caplog.text
+
+    def test_estacion_column_detected_from_header(self, tmp_path):
+        csv = tmp_path / "generico.csv"
+        csv.write_text(
+            "Fecha,COD_EST,Valor\n2024-01-01,EST99,15.0\n",
+            encoding="utf-8",
+        )
+        df = load_ideam_dhime_csv(path=str(csv), parametro="caudal")
+        assert len(df) == 1
+        assert (df["estacion"] == "EST99").all()
+
+    def test_valor_column_matched_by_parametro_name(self, tmp_path):
+        # "Nivel" es numérica y viene antes en el orden de columnas: el
+        # fallback de "primera columna numérica" elegiría 99.9 si el match
+        # por nombre de parámetro no se ejecutara primero.
+        csv = tmp_path / "estacion.csv"
+        csv.write_text(
+            "Fecha,Nivel,Precipitacion_mm\n2024-01-01,99.9,5.5\n",
+            encoding="utf-8",
+        )
+        df = load_ideam_dhime_csv(path=str(csv), parametro="precipitacion")
+        assert df["valor"].iloc[0] == 5.5
+
+    def test_fallback_to_literal_valor_column_when_none_is_numeric(self, tmp_path, caplog):
+        # Ninguna columna (aparte de fecha) tiene valores numéricos, pero existe
+        # una columna literalmente llamada "VALOR" -> debe usarse por nombre en
+        # vez de reportar "no se halló columna de valor".
+        csv = tmp_path / "estacion.csv"
+        csv.write_text(
+            "Fecha,Observaciones,VALOR\n2024-01-01,ok,alto\n2024-01-02,ok,bajo\n",
+            encoding="utf-8",
+        )
+        df = load_ideam_dhime_csv(path=str(csv), parametro="caudal")
+        assert list(df.columns) == ["fecha", "estacion", "parametro", "valor"]
+        assert "no se halló columna de valor" not in caplog.text
+
+    def test_no_value_column_at_all_returns_empty(self, tmp_path, caplog):
+        csv = tmp_path / "estacion.csv"
+        csv.write_text("Fecha,Comentario\n2024-01-01,revisado\n", encoding="utf-8")
+        df = load_ideam_dhime_csv(path=str(csv), parametro="caudal")
+        assert df.empty
+        assert "no se halló columna de valor" in caplog.text
+
+    def test_custom_fecha_col_candidates(self, tmp_path):
+        csv = tmp_path / "estacion.csv"
+        csv.write_text("Timestamp,Valor\n2024-01-01,3.3\n", encoding="utf-8")
+        df = load_ideam_dhime_csv(
+            path=str(csv),
+            parametro="caudal",
+            fecha_col_candidates=["Timestamp"],
+        )
+        assert len(df) == 1
+        assert pd.api.types.is_datetime64_any_dtype(df["fecha"])
