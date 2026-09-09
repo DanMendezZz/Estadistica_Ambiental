@@ -177,6 +177,52 @@ NORMA_VERTIMIENTOS: dict[str, float] = {
 }
 
 # ---------------------------------------------------------------------------
+# Norma colombiana — Ruido Ambiental
+# Resolución 627 de 2006, MinAmbiente (antes MAVDT)
+# Verificado 2026-09-08 contra el texto oficial (PDF, extraído y cotejado
+# tabla por tabla) y el concepto jurídico de MinAmbiente del 2024-09-27
+# (rad. 13002024E2038109) que confirma su vigencia. Ver NORMA_FUENTES para
+# la advertencia sobre la Ley 2450/2025 ("Ley contra el Ruido").
+#
+# Se usa la Tabla 2 (Art. 17 — "Ruido Ambiental"), NO la Tabla 1 (Art. 9 —
+# "Emisión de Ruido"): esta librería analiza series de tiempo de mediciones
+# continuas en una zona, no la emisión aislada de una fuente puntual, que es
+# el caso de uso de la Tabla 1. Horarios (Art. 2): diurno 7:01-21:00,
+# nocturno 21:01-7:00.
+#
+# Unidad: dB(A) — nivel de presión sonora continuo equivalente ponderado A
+# (L_Aeq,T, Art. 4), NO un nivel instantáneo. Intervalo de referencia T
+# (Art. 15): 14 h para el horario diurno, 10 h para el nocturno.
+# ---------------------------------------------------------------------------
+
+NORMA_RUIDO: dict[str, float] = {
+    # Sector A: hospitales, bibliotecas, guarderías, sanatorios, hogares geriátricos
+    "sector_a_dia": 55.0,
+    "sector_a_noche": 45.0,
+    # Sector B: residencial, hotelería/hospedaje, universidades/colegios
+    "sector_b_dia": 65.0,
+    "sector_b_noche": 50.0,
+    # Sector C, industrial: parques industriales, zonas portuarias, zonas francas
+    "sector_c_industrial_dia": 75.0,
+    "sector_c_industrial_noche": 70.0,
+    # Sector C, comercial: centros comerciales, talleres, gimnasios, bares, discotecas, casinos
+    "sector_c_comercial_dia": 70.0,
+    "sector_c_comercial_noche": 55.0,
+    # Sector C, oficinas/uso institucional
+    "sector_c_oficinas_dia": 65.0,
+    "sector_c_oficinas_noche": 50.0,
+    # Sector C, parques mecánicos/espectáculos públicos al aire libre. Incluye
+    # además vías troncales/autopistas/arterias/principales (Parágrafo 1, Art. 17,
+    # remite a Ley 769/2002) — las vías SOLO se evalúan contra esta fila, nunca
+    # contra la Tabla 1 de emisión (Art. 9, Parágrafo 2).
+    "sector_c_espectaculos_vias_dia": 80.0,
+    "sector_c_espectaculos_vias_noche": 70.0,
+    # Sector D: residencial suburbana, rural agropecuaria, parques naturales/reservas
+    "sector_d_dia": 55.0,
+    "sector_d_noche": 45.0,
+}
+
+# ---------------------------------------------------------------------------
 # NORMA_FUENTES: procedencia legal de los umbrales normativos anteriores.
 # Verificado 2026-07-25 (ver docs/decisiones.md ADR-020). Cada entrada indica
 # codigo, articulo, url_oficial y fecha_verificacion; consumido por
@@ -248,6 +294,23 @@ NORMA_FUENTES: dict[str, dict[str, str | list[str]]] = {
         "fecha_verificacion": "2026-07-25",
         "estado": "derogado_sin_reemplazo_fijo: hoy se fija por PORH caso a caso",
         "cubre": ["NORMA_VERTIMIENTOS.od_min"],
+    },
+    "NORMA_RUIDO": {
+        "codigo": "Resolución 627 de 2006 (MinAmbiente, antes MAVDT)",
+        "articulo": "Art. 17 y Tabla 2 (Estándares Máximos Permisibles de Niveles de Ruido "
+        "Ambiental). No se usa la Tabla 1 (Art. 9, emisión de ruido de una fuente puntual) "
+        "porque esta librería analiza series de tiempo de mediciones continuas de ruido "
+        "ambiental en una zona, no la emisión aislada de una fuente.",
+        "url_oficial": "https://www.minambiente.gov.co/wp-content/uploads/2021/10/"
+        "Resolucion-0627-de-2006.pdf",
+        "fecha_verificacion": "2026-09-08",
+        "estado": "vigente: la Res. 627/2006 no ha sido derogada; confirmado por "
+        "concepto jurídico de MinAmbiente rad. 13002024E2038109 (2024-09-27), "
+        "anterior a la Ley 2450 de 2025 ('Ley contra el Ruido'), que ordena expedir "
+        "reglamentación derivada en 18 meses desde marzo de 2025 (vence hacia "
+        "septiembre de 2026) y podría modificar la Tabla 2. NO verificado si esa "
+        "reglamentación ya se expidió — reverificar en minambiente.gov.co antes de "
+        "diciembre de 2026, sin esperar al vencimiento anual de fecha_verificacion.",
     },
 }
 
