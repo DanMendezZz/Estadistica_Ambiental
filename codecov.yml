@@ -11,6 +11,10 @@ coverage:
   # Ignorar módulos con dependencias opcionales pesadas
   ignore:
     - "src/estadistica_ambiental/predictive/deep.py"
+    # bayesian.py sale de esta lista en el PR C de #11 (cuando los 3 lotes
+    # de tests ya suban su cobertura real); sacarlo en el PR A solo, que es
+    # el que menos cobertura aporta de los tres, deja ~0.4pp de margen contra
+    # el threshold de 5% de abajo.
     - "src/estadistica_ambiental/predictive/bayesian.py"
     - "src/estadistica_ambiental/spatial/autocorrelation.py"
     - "src/estadistica_ambiental/spatial/viz.py"
