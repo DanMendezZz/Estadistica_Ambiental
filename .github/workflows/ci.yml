@@ -187,14 +187,35 @@ jobs:
       - name: Install core + dev
         run: pip install -e ".[dev]"
 
-      - name: Install spatial extras (GDAL puede fallar en CI)
+      - name: Install spatial extras
         # continue-on-error expone el fallo en la UI sin cancelar el job.
-        # Los tests espaciales usan pytest.importorskip y se saltean si geopandas no instala.
+        # Los tests espaciales usan pytest.importorskip y se saltean si alguna no instala.
         continue-on-error: true
-        run: pip install geopandas pykrige pysal esda folium branca
+        run: pip install geopandas pykrige pysal esda folium branca xarray h5netcdf
+
+      - name: Install rasterio (paso separado -- depende de GDAL, puede fallar solo)
+        # Si rasterio fuera parte del pip install de arriba, un fallo de build
+        # tumba el batch completo (geopandas/xarray incluidos) y los tests
+        # espaciales se saltean TODOS aunque solo rasterio tuviera el problema.
+        continue-on-error: true
+        run: pip install rasterio
 
       - name: Run tests (incluyendo espaciales)
-        run: python -m pytest tests/ --tb=short -q
+        run: >
+          python -m pytest tests/
+          --tb=short -q
+          --cov=src/estadistica_ambiental
+          --cov-report=xml:coverage-spatial.xml
+
+      - name: Upload coverage to Codecov
+        # Único job con geopandas/rasterio/xarray/libpysal instalados -- sin
+        # esto, todo lo que esos tests cubren vía pytest.importorskip queda
+        # invisible para la cobertura reportada (JOB 2 no tiene estas deps).
+        uses: codecov/codecov-action@v7
+        with:
+          files: coverage-spatial.xml
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   # ─────────────────────────────────────────────
   # JOB 4: Auditoría de seguridad
