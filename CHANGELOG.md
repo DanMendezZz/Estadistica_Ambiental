@@ -13,6 +13,10 @@ Versiones: [Semver](https://semver.org/lang/es/).
 ## [Unreleased]
 
 ### Corregido
+- `spatial/autocorrelation.py` — `local_morans_i()` ignoraba su parámetro
+  `weight_type` y usaba siempre pesos Queen (issue #42). **Cambia el
+  resultado** para cualquier llamada con `weight_type="rook"` o `"kN"`,
+  que hasta ahora recibía pesos Queen en silencio.
 - `config.py` — 6 valores normativos hardcodeados no coincidían con la
   norma colombiana vigente (auditoría artículo por artículo, ver ADR-020):
   `NORMA_CO.pm10_annual`, `NORMA_CO.no2_annual`, `NORMA_CO.co_8h`,

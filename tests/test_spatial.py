@@ -373,6 +373,13 @@ class TestMoransI:
         ):
             morans_i(None, "value")
 
+    def test_invalid_weight_type_raises_clear_valueerror(self, gradient_gdf):
+        # _build_weights antes mandaba cualquier valor no-queen/rook a la
+        # rama KNN sin validar -- "Queen" (mayúscula) daba IndexError,
+        # "knn" daba ValueError de int() ilegible. Ahora es un mensaje claro.
+        with pytest.raises(ValueError, match="weight_type inválido"):
+            morans_i(gradient_gdf, "value", weight_type="Queen")
+
 
 class TestLocalMoransI:
     @pytest.fixture
@@ -406,6 +413,25 @@ class TestLocalMoransI:
     def test_lisa_sig_matches_p_threshold(self, two_cluster_gdf):
         result = local_morans_i(two_cluster_gdf, "value")
         assert (result["lisa_sig"] == (result["lisa_p"] < 0.05)).all()
+
+    def test_weight_type_is_respected(self):
+        # Issue #42: local_morans_i ignoraba su propio parametro weight_type
+        # (siempre Queen). En un tablero de ajedrez, queen vs rook dan
+        # cuadrantes LISA distintos -- verificado empiricamente antes de
+        # escribir el assert. Si el fix se revierte (vuelve a hardcodear
+        # Queen), este test falla.
+        gpd = pytest.importorskip("geopandas")
+        pytest.importorskip("libpysal")
+        pytest.importorskip("esda")
+        from shapely.geometry import box
+
+        geoms = [box(i, j, i + 1, j + 1) for i in range(4) for j in range(4)]
+        values = [float((i + j) % 2) for i in range(4) for j in range(4)]
+        gdf = gpd.GeoDataFrame({"value": values, "geometry": geoms}, crs="EPSG:4326")
+
+        queen_q = list(local_morans_i(gdf, "value", weight_type="queen")["lisa_q"])
+        rook_q = list(local_morans_i(gdf, "value", weight_type="rook")["lisa_q"])
+        assert queen_q != rook_q
 
     def test_import_error_when_libpysal_missing(self, monkeypatch):
         # Mismo motivo que en TestMoransI: ancla el mensaje propio de

@@ -26,7 +26,9 @@ def _build_weights(gdf, weight_type: str):
         return libpysal.weights.Queen.from_dataframe(gdf)
     if weight_type == "rook":
         return libpysal.weights.Rook.from_dataframe(gdf)
-    return libpysal.weights.KNN.from_dataframe(gdf, k=int(weight_type.split("k")[1]))
+    if weight_type.startswith("k") and weight_type[1:].isdigit():
+        return libpysal.weights.KNN.from_dataframe(gdf, k=int(weight_type[1:]))
+    raise ValueError(f"weight_type inválido: {weight_type!r} (usar 'queen', 'rook' o 'kN')")
 
 
 def morans_i(
@@ -42,8 +44,8 @@ def morans_i(
     H0: distribución espacialmente aleatoria.
     I > 0 → clustering; I < 0 → dispersión.
     """
-    # El `import libpysal` de acá (y el mismo patrón en geary_c/getis_ord_g)
-    # es load-bearing pese al noqa: sin él, un entorno sin libpysal pero con
+    # El `import libpysal` de acá (y el mismo patrón en geary_c/getis_ord_g/
+    # local_morans_i) es load-bearing pese al noqa: sin él, un entorno sin libpysal pero con
     # esda ya instalado lanzaría el ImportError genérico de esda en vez del
     # mensaje con instrucciones de instalación de abajo. No borrar.
     try:
@@ -154,19 +156,19 @@ def getis_ord_g(gdf, value_col: str, weight_type: str = "queen") -> "geopandas.G
 def local_morans_i(gdf, value_col: str, weight_type: str = "queen"):
     """LISA — Moran local para identificar clusters y outliers espaciales.
 
-    Requiere: esda.
+    Args:
+        weight_type: 'queen', 'rook' o 'kN' (ej. 'k5') — ver _build_weights().
+
+    Requiere: pip install pysal esda libpysal (incluido en [spatial]).
     Agrega columnas 'lisa_q' (cuadrante) y 'lisa_p' al GeoDataFrame.
     """
     try:
-        import libpysal
+        import libpysal  # noqa: F401
         from esda.moran import Moran_Local
     except ImportError:
         raise ImportError("pip install pysal esda libpysal")
 
-    # TODO(#42): ignora weight_type -- siempre usa Queen sin importar lo que
-    # se pase. Bug real preexistente, documentado y sin arreglar a propósito
-    # para no mezclar cambio de comportamiento con cobertura de tests.
-    w = libpysal.weights.Queen.from_dataframe(gdf)
+    w = _build_weights(gdf, weight_type)
     w.transform = "r"
     lisa = Moran_Local(gdf[value_col], w)
 
