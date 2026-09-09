@@ -35,6 +35,7 @@ A diferencia de las demás líneas transversales (calidad del aire, cambio clim�
 - **Sin conector automatizado hoy.** `io/connectors.py` no tiene una función `load_ruido_*` — a diferencia de calidad del aire (RMCAB/SIATA/OpenAQ), no se identificó todavía un portal público con series de ruido ambiental descargables.
 - **Fuente real disponible:** mediciones puntuales de sonómetro realizadas por CARs/Secretarías de Ambiente ante quejas o procesos de licenciamiento — normalmente no publicadas como serie de tiempo continua.
 - Si se identifica una fuente pública real, agregar el conector en `io/connectors.py` siguiendo el patrón de `load_rmcab`/`load_siata_aire` y actualizar esta ficha.
+- Por lo mismo, esta línea **no** está registrada todavía en `scripts/run_linea_tematica.py` (no aparece en `--list`) — no es un olvido, es consecuencia directa de no tener conector ni notebook con datos reales aún.
 
 ---
 

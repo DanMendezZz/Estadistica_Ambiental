@@ -515,3 +515,18 @@ class TestRuidoExceedanceReport:
         rep = ruido_exceedance_report(s, sector="sector_a")
         assert len(rep) == 1
         assert rep.iloc[0]["l_aeq_dba"] == 65.0
+
+    def test_duplicate_timestamps_do_not_corrupt_laeq(self):
+        idx = pd.to_datetime(["2024-01-05 10:00", "2024-01-05 10:00", "2024-01-05 11:00"])
+        s = pd.Series([60.0, 70.0, 65.0], index=idx)
+        rep = ruido_exceedance_report(s, sector="sector_a")
+        assert len(rep) == 1
+        assert rep.iloc[0]["n_mediciones"] == 3
+        expected = 10.0 * np.log10(np.mean(10.0 ** (np.array([60.0, 70.0, 65.0]) / 10.0)))
+        assert rep.iloc[0]["l_aeq_dba"] == round(expected, 1)
+
+    def test_n_mediciones_exposes_window_coverage(self):
+        idx = pd.to_datetime(["2024-01-05 10:00"])
+        s = pd.Series([65.0], index=idx)
+        rep = ruido_exceedance_report(s, sector="sector_a")
+        assert rep.iloc[0]["n_mediciones"] == 1

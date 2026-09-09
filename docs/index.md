@@ -31,11 +31,11 @@ normas colombianas integradas en código y un pipeline validado sobre datos real
 Cundinamarca) para que cualquier analista de una entidad ambiental pueda **reutilizar el ciclo
 estadístico** sin redescubrirlo cada vez.
 
-Cubre **16 líneas temáticas** organizadas en tres bloques:
+Cubre **17 líneas temáticas** organizadas en tres bloques:
 
 - **A — Gestión:** áreas protegidas, predios de conservación, gestión del riesgo, ordenamiento
   territorial, dirección directiva.
-- **B — Transversales:** cambio climático, sistemas de información ambiental, geoespacial.
+- **B — Transversales:** cambio climático, ruido ambiental, sistemas de información ambiental, geoespacial.
 - **C — Técnicas:** calidad del aire, recurso hídrico, oferta hídrica, humedales, páramos, POMCA,
   PUEAA, rondas hídricas.
 

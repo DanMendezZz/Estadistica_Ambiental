@@ -114,7 +114,7 @@ _Nombre y rol de la persona que puede apoyar técnicamente desde el área._
 > Esta sección la completa la IA con base en todo lo anterior. Es una propuesta preliminar que el equipo de análisis validará y ajustará.
 
 ### Línea temática principal
-_Indicar a cuál de las 16 líneas temáticas del repositorio corresponde este caso (calidad del aire, oferta hídrica, páramos, etc.), o si es transversal._
+_Indicar a cuál de las 17 líneas temáticas del repositorio corresponde este caso (calidad del aire, oferta hídrica, páramos, etc.), o si es transversal._
 
 ### Análisis sugeridos (prioridad alta → baja)
 | Análisis | Tipo | Datos necesarios | Plazo sugerido |

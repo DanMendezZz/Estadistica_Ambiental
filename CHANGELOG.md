@@ -20,13 +20,23 @@ Versiones: [Semver](https://semver.org/lang/es/).
   día/horario/sector (promedio energético, no aritmético) y compara contra
   el estándar del sector, con `natural_noise=True` como escape explícito del
   analista para la excepción de fuente natural (Art. 17, Parágrafo Segundo)
-  -- nunca una detección algorítmica; `io/validators.py` gana rangos físicos
-  para `ruido`/`nivel_ruido`/`laeq` (0-140 dB(A)); notebook plantilla
+  -- nunca una detección algorítmica; el reporte expone `n_mediciones` por
+  fila para que sea auditable cuándo una ventana horaria (14h diurna/10h
+  nocturna, Art. 15) está cubierta por una sola lectura en vez de datos
+  continuos; `io/validators.py` gana rangos físicos para
+  `ruido`/`nivel_ruido`/`laeq` (0-140 dB(A)); notebook plantilla
   (`notebooks/lineas_tematicas/bloque_b_transversales/ruido_ambiental.ipynb`)
   y ficha técnica (`docs/fuentes/ruido_ambiental.md`) documentan el alcance
   real de esta línea (sin conector de datos ni benchmark propio todavía).
 
 ### Corregido
+- `inference/intervals.py` — `ruido_exceedance_report()` usaba un `.join()`
+  por índice para juntar cada medición con su ventana horaria; con
+  timestamps repetidos en el índice eso produce un producto cartesiano que
+  duplica valores antes de calcular L_Aeq, inflando artificialmente el
+  resultado sin avisar (issue #33, encontrado en revisión antes de mergear
+  -- nunca llegó a un release). Reemplazado por asignación posicional, que
+  no depende de que el índice sea único.
 - `spatial/autocorrelation.py` — `local_morans_i()` ignoraba su parámetro
   `weight_type` y usaba siempre pesos Queen (issue #42). **Cambia el
   resultado** para cualquier llamada con `weight_type="rook"` o `"kN"`,

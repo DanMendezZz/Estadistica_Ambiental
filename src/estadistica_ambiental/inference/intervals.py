@@ -294,7 +294,10 @@ def ruido_exceedance_report(
 
     Returns:
         DataFrame con una fila por (día de ruido, horario): dia_ruido,
-        horario, sector, l_aeq_dba, umbral_dba, excede, margen_db, nota.
+        horario, sector, l_aeq_dba, umbral_dba, excede, margen_db,
+        n_mediciones (cantidad de lecturas agregadas en esa ventana --
+        una ventana con pocas mediciones es una aproximación pobre del
+        L_Aeq,T real, ver Art. 4), nota.
     """
     if not isinstance(series.index, pd.DatetimeIndex):
         raise ValueError(
@@ -315,12 +318,12 @@ def ruido_exceedance_report(
                 "umbral_dba",
                 "excede",
                 "margen_db",
+                "n_mediciones",
                 "nota",
             ]
         )
 
-    ventanas = _dia_ruido_y_horario(s.index)
-    grouped = pd.DataFrame({"valor": s.values}).set_axis(s.index).join(ventanas)
+    grouped = _dia_ruido_y_horario(s.index).assign(valor=s.to_numpy())
 
     rows = []
     for (dia, horario), grupo in grouped.groupby(["dia_ruido", "horario"]):
@@ -348,6 +351,7 @@ def ruido_exceedance_report(
                 "umbral_dba": umbral,
                 "excede": excede,
                 "margen_db": round(l_aeq - umbral, 1),
+                "n_mediciones": len(grupo),
                 "nota": nota,
             }
         )
