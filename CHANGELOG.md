@@ -37,6 +37,20 @@ Versiones: [Semver](https://semver.org/lang/es/).
 - `pyproject.toml` — extra `[spatial]` no declaraba `branca`, importado
   directo por `spatial/viz.py` (`branca.colormap`) y no solo transitivo de
   `folium`. Encontrado sincronizando la lista de CI con este extra.
+- `io/connectors.py` — `load_openaq()` aceptaba `location_name`/`country`
+  sin usarlos realmente (`countries_id` quedaba hardcodeado a Colombia sin
+  importar lo que se pasara). Ahora levanta `ValueError` explícito cuando
+  se pasa `location_name` sin `location_id` (la API v3 de OpenAQ no tiene
+  búsqueda de estaciones por nombre) o `country != 'CO'` sin `location_id`
+  (la consulta sin `location_id` está cableada a Colombia) -- en vez de
+  ignorarlos en silencio (issue #35). **Cambia el resultado**: esas
+  llamadas, que antes devolvían datos de Colombia sin filtrar, ahora
+  levantan error; pasar `location_id` sigue funcionando con cualquier
+  `country`/`location_name`.
+- `io/connectors.py` — `load_siata_aire()` mapeaba `lat`/`lon` desde el CSV
+  pero los descartaba antes del `return` final, contradiciendo su propio
+  docstring. Ahora las incluye (issue #35). **Cambia el resultado**: el
+  DataFrame devuelto tiene 2 columnas más.
 - `config.py` — 6 valores normativos hardcodeados no coincidían con la
   norma colombiana vigente (auditoría artículo por artículo, ver ADR-020):
   `NORMA_CO.pm10_annual`, `NORMA_CO.no2_annual`, `NORMA_CO.co_8h`,

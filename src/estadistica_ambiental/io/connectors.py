@@ -45,8 +45,18 @@ def load_openaq(
 
     Args:
         location_id: ID numérico de la estación en OpenAQ (preferido).
-        location_name: Nombre de la estación (búsqueda aproximada si no hay ID).
-        country: Código ISO de país (default 'CO').
+        location_name: Sin soporte del lado servidor -- la API v3 de OpenAQ
+            no ofrece un parámetro de búsqueda de estaciones por nombre
+            (solo coordenadas/radio, país o ID). Pasar este parámetro sin
+            ``location_id`` levanta ``ValueError`` en vez de ignorarlo en
+            silencio; no se implementa un filtrado client-side (listar
+            todas las estaciones y buscar substring) por falta de un uso
+            real hoy. Buscar el ID en https://explore.openaq.org/.
+        country: Código ISO de país. Solo aplica (y solo se valida) cuando
+            no se pasa ``location_id`` -- la consulta sin ID está cableada
+            a Colombia (``countries_id=170``); con ``location_id`` este
+            parámetro no lo usa el cuerpo de la función, así que no se
+            valida.
         parameter: Variable a descargar ('pm25', 'pm10', 'o3', 'no2', 'so2', 'co').
         date_from: Fecha inicio 'YYYY-MM-DD' (default: últimos 30 días).
         date_to: Fecha fin 'YYYY-MM-DD' (default: hoy).
@@ -60,6 +70,20 @@ def load_openaq(
         - 64510  → Estación El Poblado, SIATA Medellín
         Buscar IDs en: https://explore.openaq.org/
     """
+    if location_name is not None and location_id is None:
+        raise ValueError(
+            "load_openaq: 'location_name' no está soportado del lado servidor "
+            "(la API v3 de OpenAQ no tiene parámetro de búsqueda por nombre). "
+            "Usar 'location_id' -- buscar el ID en https://explore.openaq.org/"
+        )
+    if country != "CO" and location_id is None:
+        raise ValueError(
+            f"load_openaq: country={country!r} no soportado -- la consulta "
+            "sin 'location_id' está cableada a Colombia. Usar 'location_id' "
+            "para estaciones de otros países (buscar el ID en "
+            "https://explore.openaq.org/)."
+        )
+
     try:
         import requests
     except ImportError:
@@ -270,7 +294,9 @@ def load_siata_aire(
                 "Descarga manual en: https://www.datos.gov.co/",
                 e,
             )
-            return pd.DataFrame(columns=["fecha", "estacion", "variable", "valor", "unidad"])
+            return pd.DataFrame(
+                columns=["fecha", "estacion", "variable", "valor", "unidad", "lat", "lon"]
+            )
 
     # Normalización de columnas — el formato puede variar entre versiones del portal
     col_map = {}
@@ -298,7 +324,7 @@ def load_siata_aire(
     if "fecha" in df.columns:
         df["fecha"] = pd.to_datetime(df["fecha"], errors="coerce")
 
-    expected = ["fecha", "estacion", "variable", "valor", "unidad"]
+    expected = ["fecha", "estacion", "variable", "valor", "unidad", "lat", "lon"]
     for col in expected:
         if col not in df.columns:
             df[col] = None

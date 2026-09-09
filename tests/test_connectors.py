@@ -150,6 +150,41 @@ class TestLoadOpenaq:
             df = load_openaq(location_id=999, parameter="pm25")
         assert df.empty
 
+    def test_location_name_without_location_id_raises(self):
+        # Issue #35: antes se ignoraba en silencio (countries_id seguía
+        # hardcodeado a Colombia); la API v3 de OpenAQ no tiene búsqueda por
+        # nombre, así que ahora es un error explícito, no un no-op silencioso.
+        # Mockeamos requests.get para que, si el guard alguna vez deja de
+        # disparar, el test falle por la petición real en vez de pegarle a
+        # la red de verdad.
+        with patch("requests.get", side_effect=AssertionError("no debe llamar a la red")):
+            with pytest.raises(ValueError, match="location_name"):
+                load_openaq(location_name="Kennedy", parameter="pm25")
+
+    def test_location_name_with_location_id_is_allowed(self):
+        # location_name es ignorable (no ambiguo) cuando location_id ya
+        # identifica la estación sin necesidad de resolver el nombre.
+        payload = self._sample_payload(n=1)
+        with patch("requests.get", return_value=_mock_response(payload)):
+            df = load_openaq(location_id=225433, location_name="Kennedy", parameter="pm25")
+        assert not df.empty
+
+    def test_non_colombia_country_raises(self):
+        # Issue #35: antes se ignoraba en silencio y siempre consultaba
+        # Colombia (countries_id=170) sin importar el país pedido.
+        with patch("requests.get", side_effect=AssertionError("no debe llamar a la red")):
+            with pytest.raises(ValueError, match="country"):
+                load_openaq(country="PE", parameter="pm25")
+
+    def test_non_colombia_country_with_location_id_is_allowed(self):
+        # Regresion evitada: country no se usa en absoluto cuando hay
+        # location_id (el branch `if location_id:` nunca lo mira), así que
+        # no debe bloquear una consulta por ID sea cual sea el country.
+        payload = self._sample_payload(n=1)
+        with patch("requests.get", return_value=_mock_response(payload)):
+            df = load_openaq(location_id=225433, country="PE", parameter="pm25")
+        assert not df.empty
+
     def test_requests_not_installed_returns_empty_df(self, monkeypatch, caplog):
         # patch() primero: resuelve "requests.get" con el __import__ real. Si
         # se activa el ImportError antes, patch() intenta importar "requests"
@@ -240,6 +275,10 @@ class TestLoadSiataAire:
         assert "fecha" in df.columns
         assert "estacion" in df.columns
         assert pd.api.types.is_datetime64_any_dtype(df["fecha"])
+        # Issue #35: lat/lon se mapeaban pero se descartaban antes del return
+        # final -- el docstring promete estas columnas, verificarlas de verdad.
+        assert df["lat"].tolist() == [6.25, 6.25]
+        assert df["lon"].tolist() == [-75.56, -75.56]
 
     def test_invalid_file_returns_empty(self, tmp_path):
         df = load_siata_aire(path=str(tmp_path / "no_existe.csv"))
@@ -249,7 +288,9 @@ class TestLoadSiataAire:
         with patch("requests.get", side_effect=RuntimeError("offline")):
             df = load_siata_aire(path=None, variable="PM2.5")
         assert df.empty
-        assert {"fecha", "estacion", "variable", "valor", "unidad"}.issubset(df.columns)
+        assert {"fecha", "estacion", "variable", "valor", "unidad", "lat", "lon"}.issubset(
+            df.columns
+        )
 
     def test_remote_success(self):
         csv_text = "fecha,estacion,variable,valor,unidad\n2024-01-01,Itagui,PM2.5,30.0,µg/m³\n"
