@@ -73,7 +73,7 @@
 | CNN-LSTM | `predictive/deep.py` | Pendiente |
 | N-BEATS | `predictive/deep.py` | Pendiente |
 
-Requiere: `pip install estadistica-ambiental[deep]` (PyTorch + Lightning).
+Requiere: `pip install estadistica-ambiental[deep]` (PyTorch).
 
 ---
 

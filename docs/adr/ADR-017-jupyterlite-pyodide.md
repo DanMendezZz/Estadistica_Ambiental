@@ -59,7 +59,7 @@ Documentadas explícitamente en `docs/notebooks.md` para no engañar al lector:
 | `xgboost`, `lightgbm` | ❌ (binarios C++) |
 | `prophet` | ❌ (requiere Stan) |
 | `pymc`, `arviz` | ❌ (no compilan en WASM) |
-| `torch`, `lightning` | ❌ |
+| `torch` | ❌ |
 | `optuna` | ❌ (sqlalchemy issues en Pyodide < 0.26) |
 
 Los notebooks que dependen de estas librerías se distribuyen como `.ipynb`

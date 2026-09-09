@@ -186,7 +186,7 @@ genera automáticamente a partir de los docstrings con [mkdocstrings](https://mk
 
 ### predictive.deep
 
-> Requiere `pip install estadistica-ambiental[deep]` (PyTorch + Lightning).
+> Requiere `pip install estadistica-ambiental[deep]` (PyTorch).
 
 ::: estadistica_ambiental.predictive.deep
     options:

@@ -1,6 +1,6 @@
 """Modelos de Deep Learning: LSTM, BiLSTM y GRU para series temporales ambientales.
 
-Requiere: pip install estadistica-ambiental[deep]  (torch + lightning)
+Requiere: pip install estadistica-ambiental[deep]  (torch)
 Si PyTorch no está disponible, el import falla gracefully con ImportError.
 
 Todas las clases implementan el contrato :class:`BaseModel` y, además, exponen

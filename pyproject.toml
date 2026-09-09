@@ -56,7 +56,6 @@ profile = [
 ]
 deep = [
     "torch>=2.1",
-    "lightning>=2.1",
 ]
 bayes = [
     "pymc>=5.9,<6",
