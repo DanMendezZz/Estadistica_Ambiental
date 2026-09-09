@@ -74,6 +74,7 @@ spatial = [
     "pysal>=23.7",
     "esda>=2.5",
     "folium>=0.15",
+    "branca>=0.7",  # spatial/viz.py lo importa directo (branca.colormap), no solo transitivo de folium
     "contextily>=1.5",
     "pyproj>=3.6",
     "shapely>=2.0",

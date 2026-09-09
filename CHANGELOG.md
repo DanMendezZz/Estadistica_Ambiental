@@ -17,6 +17,26 @@ Versiones: [Semver](https://semver.org/lang/es/).
   `weight_type` y usaba siempre pesos Queen (issue #42). **Cambia el
   resultado** para cualquier llamada con `weight_type="rook"` o `"kN"`,
   que hasta ahora recibía pesos Queen en silencio.
+- `ci.yml` (job `test-spatial`) — la lista manual de dependencias había
+  divergido del extra `[spatial]` real de `pyproject.toml` (faltaban
+  `rioxarray`, `contextily`, `pyproj`); ahora instala el extra publicado
+  directamente (`pip install -e ".[spatial]"`) en vez de mantener una
+  lista paralela (issue #41). De paso se eliminó el step separado de
+  `rasterio`: no aislaba nada -- `rioxarray`/`contextily` (y `pysal` vía
+  `tobler`) ya lo traen como dependencia dura, así que entraba igual en
+  el mismo batch de instalación sin que el step separado lo evitara.
+- `ci.yml` (job `test-ml`) — no subía su reporte de cobertura a Codecov
+  pese a generarlo (`--cov-report=xml`), igual que pasaba con
+  `test-bayes`/`test-spatial` antes del PR #40 -- las ramas de
+  `ml.py`/`registry.py`/`optimization/bayes_opt.py` que solo corren con
+  xgboost/lightgbm instalados eran invisibles para el % reportado.
+  Agregado el mismo step de upload que ya tienen los otros 3 jobs (issue
+  #41). `test-deep` no lo necesita: `predictive/deep.py` está en el
+  `omit` de `[tool.coverage.run]`, así que su reporte no mide nada
+  distinto del de JOB 2.
+- `pyproject.toml` — extra `[spatial]` no declaraba `branca`, importado
+  directo por `spatial/viz.py` (`branca.colormap`) y no solo transitivo de
+  `folium`. Encontrado sincronizando la lista de CI con este extra.
 - `config.py` — 6 valores normativos hardcodeados no coincidían con la
   norma colombiana vigente (auditoría artículo por artículo, ver ADR-020):
   `NORMA_CO.pm10_annual`, `NORMA_CO.no2_annual`, `NORMA_CO.co_8h`,
