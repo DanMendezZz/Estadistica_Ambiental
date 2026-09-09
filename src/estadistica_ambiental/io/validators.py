@@ -101,6 +101,10 @@ PHYSICAL_RANGES: Dict[str, Tuple[float, float]] = {
     "irh": (0.0, 1.0),  # adimensional (0-1)
     "ivh": (0.0, 500.0),  # similar a IUA
     "oni": (-4.0, 4.0),  # °C — ONI histórico extremo ±3.0
+    # ---- Ruido ambiental --------------------------------------------------
+    "ruido": (0.0, 140.0),  # dB(A) — 0 = umbral de audición, 140 = umbral de dolor
+    "nivel_ruido": (0.0, 140.0),
+    "laeq": (0.0, 140.0),
     # ---- Coordenadas Colombia ------------------------------------------
     "latitud": (-4.5, 13.0),  # grados decimales
     "lat": (-4.5, 13.0),

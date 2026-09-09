@@ -120,6 +120,13 @@ class TestCheckRanges:
         result = _check_ranges(df, {"pm25": (0.0, 40.0)})
         assert result["pm25"]["n"] == 2  # 50 y 100 fuera de rango
 
+    def test_detects_ruido_violation(self):
+        # 0-140 dB(A): 0 = umbral de audición, 140 = umbral de dolor.
+        df = pd.DataFrame({"ruido": [55.0, 65.0, 200.0]})  # 200 dB(A) físicamente imposible
+        result = _check_ranges(df, PHYSICAL_RANGES)
+        assert "ruido" in result
+        assert result["ruido"]["n"] == 1
+
 
 # ---------------------------------------------------------------------------
 # _check_temporal
