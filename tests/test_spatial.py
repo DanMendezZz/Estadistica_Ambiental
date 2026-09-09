@@ -14,7 +14,7 @@ from estadistica_ambiental.preprocessing.imputation import impute
 from estadistica_ambiental.preprocessing.outliers import flag_outliers
 from estadistica_ambiental.preprocessing.resampling import fill_missing_timestamps, resample
 from estadistica_ambiental.reporting.stats_report import stats_report
-from estadistica_ambiental.spatial.analysis import intersection_area
+from estadistica_ambiental.spatial.analysis import intersection_area, zonal_statistics
 from estadistica_ambiental.spatial.autocorrelation import geary_c, getis_ord_g
 from estadistica_ambiental.spatial.interpolation import (
     _clip_variance,
@@ -22,7 +22,12 @@ from estadistica_ambiental.spatial.interpolation import (
     ordinary_kriging,
     universal_kriging,
 )
-from estadistica_ambiental.spatial.projections import bounding_box_colombia, points_to_geodataframe
+from estadistica_ambiental.spatial.projections import (
+    bounding_box_colombia,
+    clip_to_colombia,
+    points_to_geodataframe,
+    reproject,
+)
 
 # ---------------------------------------------------------------------------
 # spatial/analysis — intersection_area y zonal_statistics
@@ -79,6 +84,85 @@ class TestIntersectionArea:
         result = intersection_area(gdf1, gdf2_reproj, "id_ini", "id_ap")
         gpd = pytest.importorskip("geopandas")
         assert isinstance(result, gpd.GeoDataFrame)
+
+
+class TestZonalStatistics:
+    @pytest.fixture
+    def raster_4x4(self, tmp_path):
+        rasterio = pytest.importorskip("rasterio")
+        from rasterio.transform import from_origin
+
+        path = tmp_path / "raster.tif"
+        # origen (0,4), pixel 1x1 -> fila 0 es y=[3,4], fila 3 es y=[0,1];
+        # columna 0 es x=[0,1], columna 3 es x=[3,4].
+        data = np.array(
+            [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]], dtype="float32"
+        )
+        transform = from_origin(0, 4, 1, 1)
+        with rasterio.open(
+            path,
+            "w",
+            driver="GTiff",
+            height=4,
+            width=4,
+            count=1,
+            dtype="float32",
+            crs="EPSG:4326",
+            transform=transform,
+            nodata=-9999,
+        ) as dst:
+            dst.write(data, 1)
+        return path
+
+    def test_computes_stats_for_zone_covering_left_half(self, raster_4x4):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import box
+
+        # Columnas 0-1 (x en [0,2]), todas las filas -> valores 1,2,5,6,9,10,13,14
+        # (verificado a mano contra el layout de `raster_4x4` antes de escribir el assert).
+        zone = gpd.GeoDataFrame({"zid": ["izquierda"]}, geometry=[box(0, 0, 2, 4)], crs="EPSG:4326")
+
+        result = zonal_statistics(
+            raster_4x4, zone, "zid", stats=["mean", "sum", "count", "min", "max"]
+        )
+
+        row = result.iloc[0]
+        assert row["sum"] == 60.0
+        assert row["count"] == 8.0
+        assert row["mean"] == 7.5
+        assert row["min"] == 1.0
+        assert row["max"] == 14.0
+
+    def test_zone_without_overlap_returns_nan(self, raster_4x4):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import box
+
+        zone = gpd.GeoDataFrame(
+            {"zid": ["fuera"]}, geometry=[box(100, 100, 101, 101)], crs="EPSG:4326"
+        )
+        result = zonal_statistics(raster_4x4, zone, "zid", stats=["mean"])
+        assert pd.isna(result.iloc[0]["mean"])
+
+    def test_unsupported_stat_raises_valueerror(self, raster_4x4, tmp_path):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import box
+
+        zone = gpd.GeoDataFrame({"zid": ["x"]}, geometry=[box(0, 0, 1, 1)], crs="EPSG:4326")
+        with pytest.raises(ValueError, match="no soportadas"):
+            zonal_statistics(raster_4x4, zone, "zid", stats=["percentil_90"])
+
+    def test_reprojects_zones_to_raster_crs(self, raster_4x4):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import box
+
+        # Zona en Web Mercator (3857) sobre un raster en WGS84 (4326): debe
+        # reproyectar antes de recortar, no fallar ni devolver todo NaN.
+        zone_4326 = gpd.GeoDataFrame(
+            {"zid": ["izquierda"]}, geometry=[box(0, 0, 2, 4)], crs="EPSG:4326"
+        )
+        zone_3857 = zone_4326.to_crs(epsg=3857)
+        result = zonal_statistics(raster_4x4, zone_3857, "zid", stats=["count"])
+        assert result.iloc[0]["count"] == 8.0
 
 
 # ---------------------------------------------------------------------------
@@ -284,6 +368,16 @@ class TestIDW:
         assert result.min() >= stations["pm25"].min() - 1
         assert result.max() <= stations["pm25"].max() + 1
 
+    def test_exact_hit_returns_station_value_without_division(self, stations):
+        # Un punto de grilla exactamente sobre una estación: dist==0 evitaría
+        # una división por cero si se calculara 1/dist**power; debe devolver
+        # el valor de la estación tal cual, no NaN/inf.
+        grid_lat = np.array([[4.0]])
+        grid_lon = np.array([[-74.0]])  # coincide exacto con la 1ra estación
+        result = idw(stations, "lat", "lon", "pm25", grid_lat, grid_lon)
+        assert result[0, 0] == stations["pm25"].iloc[0]
+        assert np.isfinite(result).all()
+
 
 # ---------------------------------------------------------------------------
 # spatial/projections
@@ -306,6 +400,57 @@ class TestProjections:
             assert len(gdf) == 1
         except ImportError:
             pytest.skip("geopandas no instalado")
+
+    def test_points_to_geodataframe_lon_lat_order(self):
+        # Point(lon, lat), no Point(lat, lon) -- swap clásico. Bogotá real:
+        # lon negativo grande (~-74), lat positivo chico (~4.6); si el orden
+        # estuviera invertido, x/y quedarían intercambiados.
+        pytest.importorskip("geopandas")
+        df = pd.DataFrame({"lat": [4.6], "lon": [-74.1]})
+        gdf = points_to_geodataframe(df)
+        point = gdf.geometry.iloc[0]
+        assert point.x == -74.1
+        assert point.y == 4.6
+
+    def test_reproject_sets_crs_when_missing(self):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import Point
+
+        gdf = gpd.GeoDataFrame(geometry=[Point(-74.1, 4.6)])  # sin CRS
+        assert gdf.crs is None
+        result = reproject(gdf, from_epsg=4326, to_epsg=3857)
+        assert result.crs.to_epsg() == 3857
+
+    def test_reproject_existing_crs(self):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import Point
+
+        gdf = gpd.GeoDataFrame(geometry=[Point(-74.1, 4.6)], crs="EPSG:4326")
+        result = reproject(gdf, from_epsg=4326, to_epsg=3857)
+        assert result.crs.to_epsg() == 3857
+
+    def test_clip_to_colombia_drops_points_outside(self):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import Point
+
+        gdf = gpd.GeoDataFrame(
+            {"nombre": ["bogota", "origen_atlantico"]},
+            geometry=[Point(-74.1, 4.6), Point(0.0, 0.0)],
+            crs="EPSG:4326",
+        )
+        result = clip_to_colombia(gdf)
+        assert list(result["nombre"]) == ["bogota"]
+
+    def test_clip_to_colombia_reprojects_before_clipping(self):
+        gpd = pytest.importorskip("geopandas")
+        from shapely.geometry import Point
+
+        gdf = gpd.GeoDataFrame(
+            {"nombre": ["bogota"]}, geometry=[Point(-74.1, 4.6)], crs="EPSG:4326"
+        ).to_crs(epsg=3857)
+        result = clip_to_colombia(gdf)
+        assert len(result) == 1
+        assert result.crs.to_epsg() == 4326
 
 
 # ---------------------------------------------------------------------------

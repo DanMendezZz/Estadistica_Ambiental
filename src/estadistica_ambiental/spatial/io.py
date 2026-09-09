@@ -15,9 +15,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_VECTOR_EXTS = {".shp", ".gpkg", ".geojson", ".json"}
-_RASTER_EXTS = {".tif", ".tiff", ".nc", ".nc4"}
-
 
 def load_vector(
     path: Union[str, Path],
