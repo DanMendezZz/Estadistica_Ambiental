@@ -14,6 +14,21 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def _build_weights(gdf, weight_type: str):
+    """Construye la matriz de pesos espaciales (queen/rook/knn) para `gdf`.
+
+    Asume que `libpysal` ya fue importado exitosamente por quien llama
+    (dentro de su propio try/except ImportError con mensaje específico).
+    """
+    import libpysal
+
+    if weight_type == "queen":
+        return libpysal.weights.Queen.from_dataframe(gdf)
+    if weight_type == "rook":
+        return libpysal.weights.Rook.from_dataframe(gdf)
+    return libpysal.weights.KNN.from_dataframe(gdf, k=int(weight_type.split("k")[1]))
+
+
 def morans_i(
     gdf,
     value_col: str,
@@ -27,8 +42,12 @@ def morans_i(
     H0: distribución espacialmente aleatoria.
     I > 0 → clustering; I < 0 → dispersión.
     """
+    # El `import libpysal` de acá (y el mismo patrón en geary_c/getis_ord_g)
+    # es load-bearing pese al noqa: sin él, un entorno sin libpysal pero con
+    # esda ya instalado lanzaría el ImportError genérico de esda en vez del
+    # mensaje con instrucciones de instalación de abajo. No borrar.
     try:
-        import libpysal
+        import libpysal  # noqa: F401
         from esda.moran import Moran
     except ImportError:
         raise ImportError("pip install pysal esda libpysal  (o [spatial])")
@@ -39,13 +58,7 @@ def morans_i(
             len(gdf),
         )
 
-    if weight_type == "queen":
-        w = libpysal.weights.Queen.from_dataframe(gdf)
-    elif weight_type == "rook":
-        w = libpysal.weights.Rook.from_dataframe(gdf)
-    else:
-        w = libpysal.weights.KNN.from_dataframe(gdf, k=int(weight_type.split("k")[1]))
-
+    w = _build_weights(gdf, weight_type)
     w.transform = "r"
     moran = Moran(gdf[value_col], w)
 
@@ -82,18 +95,12 @@ def geary_c(
     Requiere: pip install pysal esda libpysal (incluido en [spatial]).
     """
     try:
-        import libpysal
+        import libpysal  # noqa: F401
         from esda.geary import Geary
     except ImportError:
         raise ImportError("pip install pysal esda libpysal  (o [spatial])")
 
-    if weight_type == "queen":
-        w = libpysal.weights.Queen.from_dataframe(gdf)
-    elif weight_type == "rook":
-        w = libpysal.weights.Rook.from_dataframe(gdf)
-    else:
-        w = libpysal.weights.KNN.from_dataframe(gdf, k=int(weight_type.split("k")[1]))
-
+    w = _build_weights(gdf, weight_type)
     w.transform = "r"
     geary = Geary(gdf[value_col], w)
 
@@ -126,18 +133,12 @@ def getis_ord_g(gdf, value_col: str, weight_type: str = "queen") -> "geopandas.G
     Requiere: esda, libpysal (incluido en [spatial]).
     """
     try:
-        import libpysal
+        import libpysal  # noqa: F401
         from esda.getisord import G_Local
     except ImportError:
         raise ImportError("pip install pysal esda libpysal  (o [spatial])")
 
-    if weight_type == "queen":
-        w = libpysal.weights.Queen.from_dataframe(gdf)
-    elif weight_type == "rook":
-        w = libpysal.weights.Rook.from_dataframe(gdf)
-    else:
-        w = libpysal.weights.KNN.from_dataframe(gdf, k=int(weight_type.split("k")[1]))
-
+    w = _build_weights(gdf, weight_type)
     w.transform = "b"  # G* requiere pesos binarios
     g_local = G_Local(gdf[value_col], w, star=True)
 
@@ -162,6 +163,9 @@ def local_morans_i(gdf, value_col: str, weight_type: str = "queen"):
     except ImportError:
         raise ImportError("pip install pysal esda libpysal")
 
+    # TODO(#42): ignora weight_type -- siempre usa Queen sin importar lo que
+    # se pase. Bug real preexistente, documentado y sin arreglar a propósito
+    # para no mezclar cambio de comportamiento con cobertura de tests.
     w = libpysal.weights.Queen.from_dataframe(gdf)
     w.transform = "r"
     lisa = Moran_Local(gdf[value_col], w)

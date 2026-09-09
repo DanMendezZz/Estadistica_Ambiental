@@ -15,7 +15,12 @@ from estadistica_ambiental.preprocessing.outliers import flag_outliers
 from estadistica_ambiental.preprocessing.resampling import fill_missing_timestamps, resample
 from estadistica_ambiental.reporting.stats_report import stats_report
 from estadistica_ambiental.spatial.analysis import intersection_area, zonal_statistics
-from estadistica_ambiental.spatial.autocorrelation import geary_c, getis_ord_g
+from estadistica_ambiental.spatial.autocorrelation import (
+    geary_c,
+    getis_ord_g,
+    local_morans_i,
+    morans_i,
+)
 from estadistica_ambiental.spatial.interpolation import (
     _clip_variance,
     idw,
@@ -197,6 +202,31 @@ class TestGearyC:
         result = geary_c(spatial_gdf, "value")
         assert result["C"] >= 0
 
+    def test_not_significant_interpretation(self, spatial_gdf):
+        # significance=-1 garantiza p_sim >= significance siempre (p_sim
+        # nunca es negativo), forzando la rama "aleatoria" sin depender del
+        # resultado estocástico de las permutaciones.
+        result = geary_c(spatial_gdf, "value", significance=-1)
+        assert result["significant"] is False
+        assert "aleatoria" in result["interpretation"]
+
+    def test_dispersion_interpretation_on_checkerboard_rook(self):
+        # Tablero de ajedrez con pesos rook: C > 1 (dispersión) verificado
+        # empíricamente (C=1.875). significance=1.1 evita caer en la rama
+        # "aleatoria" (p_sim <= 1 siempre < 1.1).
+        gpd = pytest.importorskip("geopandas")
+        pytest.importorskip("libpysal")
+        pytest.importorskip("esda")
+        from shapely.geometry import box
+
+        geoms = [box(i, j, i + 1, j + 1) for i in range(4) for j in range(4)]
+        values = [float((i + j) % 2) for i in range(4) for j in range(4)]
+        gdf = gpd.GeoDataFrame({"value": values, "geometry": geoms}, crs="EPSG:4326")
+
+        result = geary_c(gdf, "value", weight_type="rook", significance=1.1)
+        assert result["C"] > 1
+        assert "dispersión" in result["interpretation"]
+
 
 class TestGetisOrdG:
     @pytest.fixture
@@ -223,6 +253,169 @@ class TestGetisOrdG:
     def test_preserves_length(self, spatial_gdf):
         result = getis_ord_g(spatial_gdf, "value")
         assert len(result) == len(spatial_gdf)
+
+    def test_hot_cluster_classified_as_hot_not_cold(self):
+        # Grilla 8x8 con un cluster 3x3 muy por encima del resto -- valores
+        # verificados empíricamente antes de escribir el assert: la esquina
+        # (7,7) da g_z=2.47, p_sim<=0.003, clasificada "hot". Con n=16 (otros
+        # fixtures del módulo) el contraste no alcanza el umbral |z|>1.96;
+        # de ahí la grilla más grande solo para este test.
+        gpd = pytest.importorskip("geopandas")
+        pytest.importorskip("libpysal")
+        pytest.importorskip("esda")
+        from shapely.geometry import box
+
+        n = 8
+        geoms = [box(i, j, i + 1, j + 1) for i in range(n) for j in range(n)]
+        values = [
+            1000.0 if (i >= n - 3 and j >= n - 3) else 1.0 for i in range(n) for j in range(n)
+        ]
+        gdf = gpd.GeoDataFrame({"value": values, "geometry": geoms}, crs="EPSG:4326")
+
+        result = getis_ord_g(gdf, "value")
+        corner_idx = (n - 1) * n + (n - 1)
+        assert result.iloc[corner_idx]["hotspot"] == "hot"
+
+
+class TestMoransI:
+    @pytest.fixture
+    def gradient_gdf(self):
+        """Gradiente monótono 4x4 -> autocorrelación positiva fuerte con
+        cualquier esquema de pesos (queen/knn)."""
+        gpd = pytest.importorskip("geopandas")
+        pytest.importorskip("libpysal")
+        pytest.importorskip("esda")
+        from shapely.geometry import box
+
+        geoms = [box(i, j, i + 1, j + 1) for i in range(4) for j in range(4)]
+        values = [float(i * 4 + j) for i in range(4) for j in range(4)]
+        return gpd.GeoDataFrame({"value": values, "geometry": geoms}, crs="EPSG:4326")
+
+    @pytest.fixture
+    def checkerboard_gdf(self):
+        """Tablero de ajedrez 4x4 -> con pesos rook (solo ortogonales), cada
+        celda tiene únicamente vecinos del valor opuesto: dispersión perfecta."""
+        gpd = pytest.importorskip("geopandas")
+        pytest.importorskip("libpysal")
+        pytest.importorskip("esda")
+        from shapely.geometry import box
+
+        geoms = [box(i, j, i + 1, j + 1) for i in range(4) for j in range(4)]
+        values = [float((i + j) % 2) for i in range(4) for j in range(4)]
+        return gpd.GeoDataFrame({"value": values, "geometry": geoms}, crs="EPSG:4326")
+
+    def test_returns_expected_keys(self, gradient_gdf):
+        result = morans_i(gradient_gdf, "value")
+        assert set(result) == {
+            "I",
+            "EI",
+            "p_norm",
+            "p_sim",
+            "z_norm",
+            "significant",
+            "interpretation",
+        }
+
+    def test_positive_clustering_on_gradient(self, gradient_gdf):
+        # n=16 -> EI = -1/(n-1) es exacto sin importar los pesos (verificado
+        # empíricamente contra el mismo valor con weight_type="k3").
+        result = morans_i(gradient_gdf, "value")
+        assert result["I"] > 0.5
+        assert result["EI"] == pytest.approx(-1 / 15, abs=1e-4)
+        assert result["significant"] is True
+        assert "positivo" in result["interpretation"]
+
+    @pytest.mark.parametrize(
+        "weight_type,expected_i",
+        [("queen", -0.1833), ("rook", -1.0), ("k3", -0.8333), ("k5", -0.2)],
+    )
+    def test_weight_type_selects_the_right_scheme(self, checkerboard_gdf, weight_type, expected_i):
+        # A diferencia del gradiente (donde los 4 esquemas dan I > 0.5 y el
+        # mismo EI, sin distinguir entre ellos), el tablero de ajedrez separa
+        # los 4 valores de I -- esto sí fija cada rama de _build_weights en
+        # vez de solo cubrir la línea (valores verificados empíricamente).
+        result = morans_i(checkerboard_gdf, "value", weight_type=weight_type)
+        assert result["I"] == pytest.approx(expected_i, abs=1e-3)
+
+    def test_dispersion_interpretation_on_checkerboard_rook(self, checkerboard_gdf):
+        result = morans_i(checkerboard_gdf, "value", weight_type="rook")
+        assert "dispersión" in result["interpretation"]
+
+    def test_significant_flag_matches_p_sim_threshold(self, gradient_gdf):
+        # Umbral que garantiza True (p_sim <= 1 siempre) y uno que garantiza
+        # False (p_sim >= 0 siempre) -- no depende del resultado estocástico
+        # de las permutaciones de esda.
+        assert morans_i(gradient_gdf, "value", significance=1.1)["significant"] is True
+        assert morans_i(gradient_gdf, "value", significance=-1.0)["significant"] is False
+
+    def test_large_gdf_logs_warning(self, gradient_gdf, caplog, monkeypatch):
+        import estadistica_ambiental.spatial.autocorrelation as autocorr
+
+        # `len` no es un atributo real del módulo (viene de builtins) --
+        # raising=False evita el AttributeError de monkeypatch al no
+        # encontrarlo antes de crearlo.
+        monkeypatch.setattr(autocorr, "len", lambda x: 5001, raising=False)
+        with caplog.at_level(logging.WARNING):
+            morans_i(gradient_gdf, "value")
+        assert "puede ser lento" in caplog.text
+
+    def test_import_error_when_libpysal_missing(self, monkeypatch):
+        # Ancla el mensaje propio de morans_i, no solo "algún ImportError en
+        # la cadena de imports" -- con sys.modules["libpysal"]=None, esda
+        # también lanza su propio ImportError que matchea "pysal|libpysal";
+        # sin este regex más estricto el test pasa aunque se borre el
+        # try/except entero de morans_i.
+        import sys
+
+        monkeypatch.setitem(sys.modules, "libpysal", None)
+        with pytest.raises(
+            ImportError, match=r"pip install pysal esda libpysal  \(o \[spatial\]\)"
+        ):
+            morans_i(None, "value")
+
+
+class TestLocalMoransI:
+    @pytest.fixture
+    def two_cluster_gdf(self):
+        """Mitad izquierda (i<2) en 0.0, mitad derecha (i>=2) en 10.0 --
+        cada celda de cada mitad solo tiene vecinos de su propio valor
+        (verificado empíricamente: lisa_q es 3 (LL) o 1 (HH) en todas las
+        filas, nunca 2/4, sin excepción)."""
+        gpd = pytest.importorskip("geopandas")
+        pytest.importorskip("libpysal")
+        pytest.importorskip("esda")
+        from shapely.geometry import box
+
+        geoms = [box(i, j, i + 1, j + 1) for i in range(4) for j in range(4)]
+        values = [10.0 if i >= 2 else 0.0 for i in range(4) for j in range(4)]
+        return gpd.GeoDataFrame({"value": values, "geometry": geoms}, crs="EPSG:4326")
+
+    def test_adds_expected_columns(self, two_cluster_gdf):
+        result = local_morans_i(two_cluster_gdf, "value")
+        assert {"lisa_q", "lisa_p", "lisa_sig"} <= set(result.columns)
+
+    def test_preserves_length(self, two_cluster_gdf):
+        result = local_morans_i(two_cluster_gdf, "value")
+        assert len(result) == len(two_cluster_gdf)
+
+    def test_low_cluster_is_ll_high_cluster_is_hh(self, two_cluster_gdf):
+        result = local_morans_i(two_cluster_gdf, "value")
+        assert (result.loc[result["value"] == 0.0, "lisa_q"] == 3).all()
+        assert (result.loc[result["value"] == 10.0, "lisa_q"] == 1).all()
+
+    def test_lisa_sig_matches_p_threshold(self, two_cluster_gdf):
+        result = local_morans_i(two_cluster_gdf, "value")
+        assert (result["lisa_sig"] == (result["lisa_p"] < 0.05)).all()
+
+    def test_import_error_when_libpysal_missing(self, monkeypatch):
+        # Mismo motivo que en TestMoransI: ancla el mensaje propio de
+        # local_morans_i ("pip install pysal esda libpysal", sin el sufijo
+        # "(o [spatial])" que sí tienen las otras 3 funciones del módulo).
+        import sys
+
+        monkeypatch.setitem(sys.modules, "libpysal", None)
+        with pytest.raises(ImportError, match=r"^pip install pysal esda libpysal$"):
+            local_morans_i(None, "value")
 
 
 # ---------------------------------------------------------------------------
