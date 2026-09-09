@@ -387,6 +387,21 @@ class TestBayesianARIMAMoreBranches:
         axes = model.plot_trace()
         assert axes is not None
 
+    def test_n_samples_greater_than_posterior_oversamples_with_replacement(self, ar_series):
+        # Issue #38: antes, n_draw = min(n_samples, n_total) capaba el
+        # resultado a n_total filas en silencio (con replace=False) cuando se
+        # pedían más muestras que draws tiene el posterior, contradiciendo el
+        # docstring de predict() (forma (n_samples, horizon) garantizada).
+        # Con SAMPLES*CHAINS = 200 draws en el posterior, pedir 300 debe dar
+        # 300 filas -- solo posible re-muestreando con reemplazo.
+        model = BayesianARIMA(p=1, d=0, q=0, draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        model.fit(ar_series)
+        n_total = model._trace.posterior.sizes["chain"] * model._trace.posterior.sizes["draw"]
+        assert n_total == SAMPLES * CHAINS
+        sims = model.predict(horizon=3, n_samples=n_total + 100)
+        assert sims.shape == (n_total + 100, 3)
+        assert np.isfinite(sims).all()
+
 
 class TestHierarchicalModelMoreBranches:
     """Ramas de fit()/group_estimates() no cubiertas por los tests de arriba."""
@@ -440,6 +455,17 @@ class TestHierarchicalModelMoreBranches:
         model.fit(panel_data["y"], groups=panel_data["estacion"].values)
         ax = model.plot_forest()
         assert ax is not None
+
+    def test_n_samples_greater_than_posterior_oversamples_with_replacement(self, panel_data):
+        # Mismo bug/fix que en BayesianARIMA (issue #38), pero en el
+        # `predict()` de HierarchicalModel: forma documentada
+        # (n_samples, horizon, n_groups).
+        model = HierarchicalModel(draws=SAMPLES, tune=TUNE, chains=CHAINS)
+        model.fit(panel_data["y"], groups=panel_data["estacion"].values)
+        n_total = model._trace.posterior.sizes["chain"] * model._trace.posterior.sizes["draw"]
+        sims = model.predict(horizon=2, n_samples=n_total + 50)
+        assert sims.shape == (n_total + 50, 2, 3)
+        assert np.isfinite(sims).all()
 
 
 class TestBayesianRegistry:

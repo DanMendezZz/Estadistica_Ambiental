@@ -51,6 +51,22 @@ Versiones: [Semver](https://semver.org/lang/es/).
   pero los descartaba antes del `return` final, contradiciendo su propio
   docstring. Ahora las incluye (issue #35). **Cambia el resultado**: el
   DataFrame devuelto tiene 2 columnas más.
+- `predictive/bayesian.py` — `BayesianARIMA.predict()`/`_simulate_paths()`
+  y `HierarchicalModel.predict()` capaban `n_samples` al tamaño del
+  posterior (`n_draw = min(n_samples, n_total)`), devolviendo silenciosamente
+  menos filas que las pedidas en vez de re-muestrear con reemplazo (issue
+  #38). **Cambia el resultado**: pedir `n_samples` mayor al posterior
+  disponible ahora sí devuelve exactamente esa forma, vía bootstrap con
+  reemplazo, en vez de una forma más chica sin avisar. Alcanza también al
+  camino por defecto: `predict()` (media), `predict_interval()` y
+  `posterior_predictive_interval()` usan 500 muestras internas, así que un
+  modelo ajustado con `chains * draws < 500` devuelve valores distintos
+  aunque no se pase `n_samples` explícito.
+- `predictive/bayesian.py` — guard redundante `theta is not None and
+  eps_lags is not None` en `BayesianARIMA.fit()` simplificado a `theta is
+  not None` (`eps_lags` solo se calcula en el mismo bloque que crea
+  `theta`, el segundo operando nunca aportaba nada). Sin cambio de
+  comportamiento.
 - `config.py` — 6 valores normativos hardcodeados no coincidían con la
   norma colombiana vigente (auditoría artículo por artículo, ver ADR-020):
   `NORMA_CO.pm10_annual`, `NORMA_CO.no2_annual`, `NORMA_CO.co_8h`,

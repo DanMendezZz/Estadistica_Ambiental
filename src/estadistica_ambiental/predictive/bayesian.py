@@ -238,7 +238,9 @@ class BayesianARIMA(BaseModel):
             mu = intercept
             if phi is not None:
                 mu = mu + pm.math.dot(Xlag, phi)
-            if theta is not None and eps_lags is not None:
+            # eps_lags solo se calcula (y theta solo se crea) dentro del
+            # mismo `if q_eff > 0:` -- si theta existe, eps_lags también.
+            if theta is not None:
                 mu = mu + pm.math.dot(eps_lags, theta)
 
             pm.Normal("y_obs", mu=mu, sigma=sigma, observed=Y)
@@ -281,7 +283,11 @@ class BayesianARIMA(BaseModel):
             thetas = np.zeros((n_total, 0))
         sigmas = post["sigma"].values.reshape(-1)
 
-        n_draw = min(int(n_samples), n_total)
+        # n_draw = n_samples (no min(n_samples, n_total)): si se piden más
+        # muestras que las disponibles en el posterior, se re-muestrea con
+        # reemplazo (replace=True) para honrar la forma (n_samples, horizon)
+        # documentada, en vez de devolver silenciosamente menos filas.
+        n_draw = int(n_samples)
         idx = rng.choice(n_total, size=n_draw, replace=(n_draw > n_total))
 
         p_eff = max(self.p, 1) if self.p > 0 else 0
@@ -346,6 +352,14 @@ class BayesianARIMA(BaseModel):
         Si ``return_samples=True`` o si se pasa ``n_samples`` explícito,
         devuelve un ``np.ndarray`` de forma ``(n_samples, horizon)`` con las
         trayectorias muestreadas (compatible con la API histórica).
+
+        Si ``n_samples`` (o el default interno de 500 cuando no se pasa)
+        supera los draws del posterior (``chains * draws``), las trayectorias
+        se completan por bootstrap con reemplazo de ese posterior: la forma
+        pedida siempre se respeta, pero la incertidumbre de parámetros sigue
+        acotada por el posterior real -- solo se agregan nuevas realizaciones
+        de la innovación. Con `n_samples` muy grande, el costo crece
+        linealmente (el simulador es un loop en Python puro).
         """
         if return_samples or n_samples is not None:
             n = int(n_samples) if n_samples is not None else 500
@@ -559,6 +573,11 @@ class HierarchicalModel(BaseModel):
 
         El modelo no es temporal: cada paso muestrea independientemente del
         posterior conjunto sobre ``(mu_group, sigma)``.
+
+        Si ``n_samples`` (500 por defecto) supera los draws del posterior
+        (``chains * draws``), se completa por bootstrap con reemplazo -- la
+        forma pedida siempre se respeta, pero la incertidumbre de parámetros
+        sigue acotada por el posterior real.
         """
         if not self._fitted or self._trace is None:
             raise RuntimeError("Llama fit() primero.")
@@ -569,7 +588,10 @@ class HierarchicalModel(BaseModel):
         sigma_flat = post["sigma"].values.reshape(-1)
 
         n_total = mu_group_flat.shape[0]
-        n_draw = min(int(n_samples), n_total)
+        # Ver comentario equivalente en BayesianARIMA._simulate_paths: n_draw
+        # = n_samples (no min(...)) para honrar (n_samples, horizon, n_groups)
+        # incluso pidiendo más muestras que draws tiene el posterior.
+        n_draw = int(n_samples)
         idx = rng.choice(n_total, size=n_draw, replace=(n_draw > n_total))
         n_groups = mu_group_flat.shape[1]
         horizon = int(horizon)
