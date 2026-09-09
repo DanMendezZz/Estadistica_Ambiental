@@ -191,7 +191,7 @@ jobs:
         # continue-on-error expone el fallo en la UI sin cancelar el job.
         # Los tests espaciales usan pytest.importorskip y se saltean si alguna no instala.
         continue-on-error: true
-        run: pip install geopandas pykrige pysal esda folium branca xarray h5netcdf
+        run: pip install geopandas pykrige pysal esda folium branca xarray h5netcdf h5py
 
       - name: Install rasterio (paso separado -- depende de GDAL, puede fallar solo)
         # Si rasterio fuera parte del pip install de arriba, un fallo de build
