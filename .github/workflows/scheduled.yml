@@ -138,7 +138,61 @@ jobs:
             })
 
   # ─────────────────────────────────────────────
-  # JOB 4: Drift con versiones pre-release
+  # JOB 4: Watcher semanal de fuentes ambientales nuevas (issue #15)
+  # Nunca commitea: si encuentra datasets dados de alta recientemente en
+  # datos.gov.co, abre un Issue para que un humano decida si actuar.
+  # ─────────────────────────────────────────────
+  fuentes-watcher:
+    name: Watcher semanal de fuentes ambientales
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Buscar novedades en datos.gov.co
+        id: watch
+        run: python scripts/watch_fuentes_nuevas.py > watch_result.md
+
+      - name: Create issue si hay novedades (evita duplicados)
+        if: always() && steps.watch.outcome == 'failure'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs')
+            const abiertos = (await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'watcher,enhancement',
+            })).data.filter(i => !i.pull_request)
+            if (abiertos.length > 0) {
+              console.log('Ya hay un issue abierto del watcher, no se crea otro.')
+              return
+            }
+            const body = fs.readFileSync('watch_result.md', 'utf8')
+            if (!body.trim()) {
+              core.setFailed('El watcher falló sin producir salida (script roto, no novedades) — revisar el log del step, no se abre Issue.')
+              return
+            }
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔎 Posibles fuentes nuevas — ${new Date().toISOString().split('T')[0]}`,
+              body,
+              labels: ['watcher', 'enhancement']
+            })
+
+  # ─────────────────────────────────────────────
+  # JOB 5: Drift con versiones pre-release
   # Informativo — detecta breaking changes antes de que lleguen a estable
   # ─────────────────────────────────────────────
   dependency-drift-pre:

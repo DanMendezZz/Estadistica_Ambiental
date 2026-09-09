@@ -916,7 +916,9 @@ def list_datasets_co(
         limit: Número máximo de resultados.
 
     Returns:
-        DataFrame con name, description, url, organization.
+        DataFrame con name, description, url, organization, updated (epoch,
+        último refresco de datos) y created (epoch, fecha de alta del dataset
+        en el portal — la señal correcta para detectar fuentes *nuevas*).
     """
     try:
         import requests
@@ -933,10 +935,14 @@ def list_datasets_co(
             rows.append(
                 {
                     "name": item.get("name", ""),
-                    "description": item.get("description", "")[:150],
+                    # item.get(key, "") no cubre "description": null explícito
+                    # (la key existe) — un solo dataset así tumbaría la query
+                    # entera con TypeError al hacer [:150] sobre None.
+                    "description": (item.get("description") or "")[:150],
                     "url": f"https://www.datos.gov.co/d/{item.get('id', '')}",
                     "organization": item.get("attribution", ""),
                     "updated": item.get("rowsUpdatedAt", ""),
+                    "created": item.get("createdAt", ""),
                 }
             )
         return pd.DataFrame(rows)
