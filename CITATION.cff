@@ -10,7 +10,7 @@ license: MIT
 repository-code: https://github.com/DanMendezZz/Estadistica_Ambiental
 abstract: >
   Plantilla Python para el ciclo estadístico completo aplicado a datos ambientales
-  colombianos. 16 líneas temáticas, normas Res. 2254/2017, 2115/2007, 631/2015.
+  colombianos. 17 líneas temáticas, normas Res. 2254/2017, 2115/2007, 631/2015, 627/2006.
 references:
   - type: software
     title: boa-sarima-forecaster

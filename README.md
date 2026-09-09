@@ -43,12 +43,12 @@ pip install estadistica-ambiental
 <a href="#instalación">Instalación</a> ·
 <a href="#quick-start">Quick Start</a> ·
 <a href="#catálogo-de-modelos">Modelos</a> ·
-<a href="#16-líneas-temáticas">16 Líneas temáticas</a> ·
+<a href="#17-líneas-temáticas">17 Líneas temáticas</a> ·
 <a href="#normativa-colombiana-integrada">Normativa</a> ·
 <a href="#trabajo-futuro">Roadmap</a>
 </p>
 
-> **Nota:** el repositorio cubre 16 líneas temáticas (páramos, humedales, calidad del aire, oferta hídrica,
+> **Nota:** el repositorio cubre 17 líneas temáticas (páramos, humedales, calidad del aire, oferta hídrica,
 > áreas protegidas y más). Cada línea tiene su propia ficha de dominio, notebook plantilla y normas
 > colombianas integradas en el código.
 
@@ -72,7 +72,7 @@ pip install estadistica-ambiental
 11. [Datos reales (uso opcional, sin duplicar)](#datos-reales-uso-opcional-sin-duplicar)
 12. [Quick Start](#quick-start)
 13. [Catálogo de modelos](#catálogo-de-modelos)
-14. [16 Líneas temáticas](#16-líneas-temáticas)
+14. [17 Líneas temáticas](#17-líneas-temáticas)
 15. [Normativa colombiana integrada](#normativa-colombiana-integrada)
 16. [Reportes automáticos](#reportes-automáticos)
 17. [Flujo por línea temática](#flujo-por-línea-temática)
@@ -101,7 +101,7 @@ Este repo es **base de conocimiento + librería reutilizable**, no un producto f
 
 | Sos... | Empezá por |
 | --- | --- |
-| **Analista en CAR / IDEAM / MADS / alcaldía** | [Quick Start](#quick-start) → [16 Líneas temáticas](#16-líneas-temáticas) → notebooks en `notebooks/lineas_tematicas/` |
+| **Analista en CAR / IDEAM / MADS / alcaldía** | [Quick Start](#quick-start) → [17 Líneas temáticas](#17-líneas-temáticas) → notebooks en `notebooks/lineas_tematicas/` |
 | **Estudiante de estadística ambiental** | [JupyterLite live](https://danmendezzz.github.io/Estadistica_Ambiental/lite/) (sin instalar nada) → [Resultados y validación](#resultados-y-validación) → [`docs/decisiones.md`](docs/decisiones.md) |
 | **Docente o investigador** | [`docs/decisiones.md`](docs/decisiones.md) (20 ADRs) → [`docs/fuentes/`](docs/fuentes/) (fichas de dominio) → [Catálogo de modelos](#catálogo-de-modelos) |
 | **Desarrollador de un satélite** | [Consumir desde otro proyecto](#consumir-desde-otro-proyecto-este-repo-es-base-de-conocimiento) → patrón documentado en [ADR-018](docs/adr/ADR-018-base-satelite-governance.md) |
@@ -715,7 +715,7 @@ rank_models(results)[["rmse", "hit_rate_ica", "rank"]]
 ### Ejecutar el ciclo completo desde la línea de comandos
 
 ```bash
-python scripts/run_linea_tematica.py --list                          # ver las 16 líneas
+python scripts/run_linea_tematica.py --list                          # ver las líneas
 python scripts/run_linea_tematica.py --linea oferta_hidrica          # datos sintéticos
 python scripts/run_linea_tematica.py --linea paramos --modelos sarima,xgboost
 python scripts/fase8_calidad_aire.py                                 # datos reales SISAIRE
@@ -762,10 +762,10 @@ Todos los modelos comparten la misma interfaz y son comparables con `walk_forwar
 
 ---
 
-## 16 Líneas temáticas
+## 17 Líneas temáticas
 
 <details>
-<summary><b>📋 Ver las 16 líneas por bloque</b> (click para expandir)</summary>
+<summary><b>📋 Ver las 17 líneas por bloque</b> (click para expandir)</summary>
 
 ### Bloque A — Gestión ambiental (13 líneas)
 
@@ -785,12 +785,13 @@ Todos los modelos comparten la misma interfaz y son comparables con `walk_forwar
 | Ordenamiento territorial | superficie (km²) | POT · POMCA | – |
 | Dirección directiva | indicadores PAI/MIPG | MIPG | – |
 
-### Bloque B — Transversales temáticas (2 líneas)
+### Bloque B — Transversales temáticas (3 líneas)
 
 | Línea | Variable principal | Norma clave |
 |---|---|---|
 | Calidad del aire | PM2.5 · PM10 · O3 · NO2 (µg/m³) | Res. 2254/2017 |
 | Cambio climático | temperatura · ONI · escenarios RCP | IPCC · IDEAM |
+| Ruido ambiental | L_Aeq,T (dB(A)) | Res. 627/2006 |
 
 ### Bloque C — Capa técnica transversal (1 línea)
 
@@ -810,6 +811,7 @@ from estadistica_ambiental.config import (
     NORMA_OMS,          # Guías OMS 2021
     NORMA_AGUA_POTABLE, # Res. 2115/2007
     NORMA_VERTIMIENTOS, # Res. 631/2015
+    NORMA_RUIDO,        # Res. 627/2006 — ruido ambiental
     IUA_THRESHOLDS,     # IDEAM / ENA
     ENSO_LAG_MESES,     # lag por línea temática
 )
@@ -821,6 +823,7 @@ from estadistica_ambiental.config import (
 | `NORMA_OMS` | Guías OMS 2021 | PM2.5 · PM10 · O3 · NO2 |
 | `NORMA_AGUA_POTABLE` | Res. 2115/2007 (OD/DBO5: referencia técnica sin norma vigente, ver ADR-020) | pH · OD · coliformes · DBO5 · conductividad |
 | `NORMA_VERTIMIENTOS` | Res. 631/2015 | DBO5 · DQO · SST · pH · temperatura |
+| `NORMA_RUIDO` | Res. 627/2006 | L_Aeq,T por sector y horario (dB(A)) |
 | `IUA_THRESHOLDS` | IDEAM / ENA | Índice de Uso del Agua |
 | `IRH_THRESHOLDS` | IDEAM / ENA | Índice de Retención Hídrica |
 | `ICA_CATEGORIES` | IDEAM | Índice de Calidad del Agua |
@@ -892,7 +895,10 @@ priorizadas por valor pedagógico, no por features de producto. Detalle completo
 
 - Auditoría cruzada `Fuentes.md` ↔ notebooks (gap analysis).
 - Fichas operativas para los conectores ya implementados (limitaciones API, latencia, cobertura).
-- Línea adicional candidata: **ruido ambiental** (Res. 627/2006), decisión pendiente.
+- **Ruido ambiental** (Res. 627/2006): implementado el cumplimiento normativo
+  (`ruido_exceedance_report()`) y la ficha técnica; falta un conector de
+  datos real y un notebook con mediciones reales una vez se identifique una
+  fuente pública (ver `docs/fuentes/ruido_ambiental.md`).
 
 ### C. Calidad técnica (baja prioridad)
 

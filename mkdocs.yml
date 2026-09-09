@@ -136,6 +136,7 @@ nav:
       - PUEAA: fuentes/pueea.md
       - Recurso hídrico: fuentes/recurso_hidrico.md
       - Rondas hídricas: fuentes/rondas_hidricas.md
+      - Ruido ambiental: fuentes/ruido_ambiental.md
       - Sistemas de información ambiental: fuentes/sistemas_informacion_ambiental.md
   - ADRs:
       - Decisiones de diseño: decisiones.md

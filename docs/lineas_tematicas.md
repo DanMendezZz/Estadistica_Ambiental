@@ -4,7 +4,7 @@ Documentación extendida del repositorio `estadistica-ambiental`.
 
 ---
 
-## Las 16 líneas temáticas
+## Las 17 líneas temáticas
 
 Organizadas en 3 bloques según su rol en la gestión ambiental.
 
@@ -26,12 +26,13 @@ Organizadas en 3 bloques según su rol en la gestión ambiental.
 | 12 | Sistemas de Información | Deforestación (ha) / GEI | Ley 99/1993 |
 | 13 | Predios para Conservación | NDVI / área PSA (ha) | Dec. 1007/2018 |
 
-### Bloque B — Transversales temáticas (2 líneas)
+### Bloque B — Transversales temáticas (3 líneas)
 
 | # | Línea | Rol | Alimenta a |
 |---|---|---|---|
 | 14 | Cambio Climático | Marco de covariables y escenarios CC | Oferta hídrica, páramos, gestión de riesgo |
 | 15 | Calidad del Aire | Serie temporal con SARIMAX + meteorología | Gestión de riesgo, sistemas de información |
+| 17 | Ruido Ambiental | Cumplimiento normativo L_Aeq,T vs. Tabla 2 (Res. 627/2006) | Gestión de riesgo, ordenamiento territorial |
 
 ### Bloque C — Capa técnica transversal (1 línea)
 
@@ -53,6 +54,7 @@ from estadistica_ambiental.config import (
     NORMA_OMS,          # Guías OMS 2021
     NORMA_AGUA_POTABLE, # Res. 2115/2007
     NORMA_VERTIMIENTOS, # Res. 631/2015
+    NORMA_RUIDO,        # Res. 627/2006 — ruido ambiental
     IUA_THRESHOLDS,     # IDEAM — Índice de Uso del Agua
     IRH_THRESHOLDS,     # IDEAM — Índice de Retención Hídrica
     ICA_CATEGORIES,     # IDEAM — Índice de Calidad del Agua

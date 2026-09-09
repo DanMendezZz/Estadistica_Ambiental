@@ -1,7 +1,7 @@
 """Conectores a fuentes de datos ambientales colombianas públicas.
 
 Provee acceso estandarizado a APIs y portales de datos abiertos usados en las
-16 líneas temáticas. Cada función devuelve un DataFrame con columnas normalizadas
+17 líneas temáticas. Cada función devuelve un DataFrame con columnas normalizadas
 compatibles con el pipeline del repositorio.
 
 Fuentes incluidas:

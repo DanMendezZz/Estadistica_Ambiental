@@ -8,7 +8,7 @@ import pytest
 
 from estadistica_ambiental.config import ENSO_LAG_MESES, ENSO_THRESHOLDS
 from estadistica_ambiental.features.climate import _classify_enso_intensity, enso_lagged
-from estadistica_ambiental.inference.intervals import exceedance_report
+from estadistica_ambiental.inference.intervals import exceedance_report, ruido_exceedance_report
 
 # ===========================================================================
 # exceedance_report
@@ -420,3 +420,113 @@ class TestComplianceReportCoverage:
 
         result = cr_module._section_ficha_dominio("test_linea")
         assert result == ""
+
+
+# ===========================================================================
+# ruido_exceedance_report
+# ===========================================================================
+
+
+class TestRuidoExceedanceReport:
+    def test_laeq_is_energetic_not_arithmetic_average(self):
+        # 60 y 70 dB -> L_Aeq = 10*log10((10^6+10^7)/2) = 67.4, NO el promedio
+        # aritmético (65.0) -- verificado a mano antes de escribir el assert.
+        idx = pd.to_datetime(["2024-01-05 10:00", "2024-01-05 11:00"])
+        s = pd.Series([60.0, 70.0], index=idx)
+        rep = ruido_exceedance_report(s, sector="sector_a")
+        assert len(rep) == 1
+        assert rep.iloc[0]["l_aeq_dba"] == pytest.approx(67.4, abs=0.05)
+
+    def test_diurno_starts_exactly_at_7_01_inclusive(self):
+        # Frontera exacta (Art. 2): 07:00 todavía es madrugada/noche del día
+        # anterior; 07:01 ya es diurno. Antes de fijar el assert había un bug
+        # real de límite acá (07:01 exacto quedaba clasificado como noche).
+        idx = pd.to_datetime(["2024-01-05 07:00", "2024-01-05 07:01"])
+        s = pd.Series([55.0, 65.0], index=idx)
+        rep = ruido_exceedance_report(s, sector="sector_a")
+        assert len(rep) == 2  # cada valor en su propia fila (dia_ruido/horario distintos)
+        madrugada = rep[rep["horario"] == "nocturno"].iloc[0]
+        diurno = rep[rep["horario"] == "diurno"].iloc[0]
+        assert madrugada["dia_ruido"] == pd.Timestamp("2024-01-04")
+        assert madrugada["l_aeq_dba"] == 55.0
+        assert diurno["dia_ruido"] == pd.Timestamp("2024-01-05")
+        assert diurno["l_aeq_dba"] == 65.0
+
+    def test_diurno_ends_exactly_at_21_00_inclusive(self):
+        # 21:00 todavía es diurno; 21:01 ya es nocturno.
+        idx = pd.to_datetime(["2024-01-05 21:00", "2024-01-05 21:01"])
+        s = pd.Series([65.0, 50.0], index=idx)
+        rep = ruido_exceedance_report(s, sector="sector_a")
+        diurno = rep[rep["horario"] == "diurno"].iloc[0]
+        nocturno = rep[rep["horario"] == "nocturno"].iloc[0]
+        assert diurno["l_aeq_dba"] == 65.0
+        assert nocturno["l_aeq_dba"] == 50.0
+        assert nocturno["dia_ruido"] == pd.Timestamp("2024-01-05")
+
+    def test_nocturno_crosses_midnight_under_starting_day(self):
+        # La noche del 5 (21:01) hasta las 7:00 del 6 se agrupa bajo dia_ruido
+        # = 2024-01-05 (la tarde en que empieza), no bajo el 6.
+        idx = pd.to_datetime(["2024-01-05 22:00", "2024-01-06 02:00", "2024-01-06 06:59"])
+        s = pd.Series([50.0, 50.0, 50.0], index=idx)
+        rep = ruido_exceedance_report(s, sector="sector_a")
+        assert len(rep) == 1
+        assert rep.iloc[0]["dia_ruido"] == pd.Timestamp("2024-01-05")
+        assert rep.iloc[0]["horario"] == "nocturno"
+        assert rep.iloc[0]["l_aeq_dba"] == 50.0
+
+    def test_exceedance_flag_matches_sector_threshold(self):
+        # sector_a_dia = 55.0 (config.NORMA_RUIDO) -- 65 dB excede, 40 dB no.
+        idx = pd.to_datetime(["2024-01-05 10:00"])
+        excede = ruido_exceedance_report(pd.Series([65.0], index=idx), sector="sector_a")
+        cumple = ruido_exceedance_report(pd.Series([40.0], index=idx), sector="sector_a")
+        assert bool(excede.iloc[0]["excede"]) is True
+        assert bool(cumple.iloc[0]["excede"]) is False
+        assert excede.iloc[0]["umbral_dba"] == 55.0
+
+    def test_natural_noise_exception_never_flags_exceedance(self):
+        # Art. 17 Parágrafo Segundo: con natural_noise=True no se evalúa
+        # contra el estándar, sin importar cuánto lo supere el valor crudo.
+        idx = pd.to_datetime(["2024-01-05 10:00"])
+        s = pd.Series([120.0], index=idx)  # muy por encima de cualquier umbral
+        rep = ruido_exceedance_report(s, sector="sector_d", natural_noise=True)
+        assert bool(rep.iloc[0]["excede"]) is False
+        assert "Art. 17" in rep.iloc[0]["nota"]
+
+    def test_invalid_sector_raises_with_valid_options_listed(self):
+        idx = pd.to_datetime(["2024-01-05 10:00"])
+        s = pd.Series([50.0], index=idx)
+        with pytest.raises(ValueError, match="sector_a"):
+            ruido_exceedance_report(s, sector="sector_inexistente")
+
+    def test_non_datetime_index_raises(self):
+        s = pd.Series([50.0, 60.0])  # RangeIndex, no fecha/hora
+        with pytest.raises(ValueError, match="DatetimeIndex"):
+            ruido_exceedance_report(s, sector="sector_a")
+
+    def test_empty_series_returns_empty_dataframe_with_columns(self):
+        idx = pd.DatetimeIndex([])
+        rep = ruido_exceedance_report(pd.Series([], index=idx, dtype=float), sector="sector_a")
+        assert rep.empty
+        assert "l_aeq_dba" in rep.columns
+
+    def test_drops_nan_before_computing(self):
+        idx = pd.to_datetime(["2024-01-05 10:00", "2024-01-05 11:00"])
+        s = pd.Series([65.0, np.nan], index=idx)
+        rep = ruido_exceedance_report(s, sector="sector_a")
+        assert len(rep) == 1
+        assert rep.iloc[0]["l_aeq_dba"] == 65.0
+
+    def test_duplicate_timestamps_do_not_corrupt_laeq(self):
+        idx = pd.to_datetime(["2024-01-05 10:00", "2024-01-05 10:00", "2024-01-05 11:00"])
+        s = pd.Series([60.0, 70.0, 65.0], index=idx)
+        rep = ruido_exceedance_report(s, sector="sector_a")
+        assert len(rep) == 1
+        assert rep.iloc[0]["n_mediciones"] == 3
+        expected = 10.0 * np.log10(np.mean(10.0 ** (np.array([60.0, 70.0, 65.0]) / 10.0)))
+        assert rep.iloc[0]["l_aeq_dba"] == round(expected, 1)
+
+    def test_n_mediciones_exposes_window_coverage(self):
+        idx = pd.to_datetime(["2024-01-05 10:00"])
+        s = pd.Series([65.0], index=idx)
+        rep = ruido_exceedance_report(s, sector="sector_a")
+        assert rep.iloc[0]["n_mediciones"] == 1

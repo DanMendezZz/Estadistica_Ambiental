@@ -303,14 +303,20 @@ NORMA_FUENTES: dict[str, dict[str, str | list[str]]] = {
         "ambiental en una zona, no la emisión aislada de una fuente.",
         "url_oficial": "https://www.minambiente.gov.co/wp-content/uploads/2021/10/"
         "Resolucion-0627-de-2006.pdf",
-        "fecha_verificacion": "2026-09-08",
+        "fecha_verificacion": "2026-09-09",
         "estado": "vigente: la Res. 627/2006 no ha sido derogada; confirmado por "
-        "concepto jurídico de MinAmbiente rad. 13002024E2038109 (2024-09-27), "
-        "anterior a la Ley 2450 de 2025 ('Ley contra el Ruido'), que ordena expedir "
-        "reglamentación derivada en 18 meses desde marzo de 2025 (vence hacia "
-        "septiembre de 2026) y podría modificar la Tabla 2. NO verificado si esa "
-        "reglamentación ya se expidió — reverificar en minambiente.gov.co antes de "
-        "diciembre de 2026, sin esperar al vencimiento anual de fecha_verificacion.",
+        "concepto jurídico de MinAmbiente rad. 13002024E2038109 (2024-09-27). "
+        "El plazo de 18 meses de la Ley 2450/2025 ('Ley contra el Ruido', Art. 7 "
+        "inciso 3) para que MinAmbiente/MinSalud expidan la reglamentación técnica "
+        "derivada vence hacia el 2026-09-04. A 2026-09-09, fuentes públicas no "
+        "oficiales (nota de prensa del 2026-08-27 con una congresista exigiendo su "
+        "expedición; único trámite público de MinAmbiente hasta esa fecha es un "
+        "proyecto de decreto del Art. 9, institucional, que NO toca la Tabla 2) "
+        "sugieren que esa reglamentación técnica AÚN NO se ha expedido — pero no "
+        "se verificó de forma directa contra Diario Oficial ni el Gestor Normativo "
+        "de Función Pública (error de acceso en ambos intentos). Reverificar en "
+        "minambiente.gov.co / funcionpublica.gov.co antes de diciembre de 2026, "
+        "sin esperar al vencimiento anual de fecha_verificacion.",
     },
 }
 

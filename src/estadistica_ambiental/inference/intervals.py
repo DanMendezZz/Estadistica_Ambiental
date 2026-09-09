@@ -12,6 +12,7 @@ from estadistica_ambiental.config import (
     NORMA_AGUA_POTABLE,
     NORMA_CO,
     NORMA_OMS,
+    NORMA_RUIDO,
     NORMA_VERTIMIENTOS,
 )
 
@@ -220,3 +221,139 @@ def exceedance_report(
         )
 
     return pd.DataFrame(rows)
+
+
+# ---------------------------------------------------------------------------
+# Ruido ambiental — Res. 627/2006 (ver config.NORMA_RUIDO)
+#
+# A diferencia de exceedance_report() (un único umbral fijo por variable), el
+# ruido se evalúa contra el nivel continuo equivalente L_Aeq,T (Art. 4) sobre
+# dos ventanas horarias fijas por día (Art. 2 y Art. 15): diurna 7:01-21:00
+# (T=14h) y nocturna 21:01-7:00 (T=10h, cruza medianoche). L_Aeq,T es un
+# promedio ENERGÉTICO en dB, no aritmético: hay que pasar a escala lineal
+# (10**(L/10)), promediar, y volver a dB (10*log10(...)).
+# ---------------------------------------------------------------------------
+
+_SECTORES_RUIDO = sorted({k.rsplit("_", 1)[0] for k in NORMA_RUIDO})
+
+
+def _laeq(db_values: np.ndarray) -> float:
+    """Nivel continuo equivalente L_Aeq (Art. 4): promedio energético en dB."""
+    energetic = 10.0 ** (np.asarray(db_values, dtype=float) / 10.0)
+    return float(10.0 * np.log10(energetic.mean()))
+
+
+def _dia_ruido_y_horario(index: pd.DatetimeIndex) -> pd.DataFrame:
+    """Asigna cada timestamp a su ventana horaria (Art. 2) y "día de ruido".
+
+    La ventana nocturna (21:01-7:00) cruza medianoche; se agrupa bajo la
+    fecha de la tarde en que empieza (ej. la noche del 21:01 del 5 de enero
+    al 7:00 del 6 de enero se reporta como "noche del 2024-01-05").
+    """
+    hour_frac = index.hour + index.minute / 60.0 + index.second / 3600.0
+    # Diurno EMPIEZA en 7:01 inclusive (Art. 2); antes de eso (00:00-7:00
+    # inclusive) es madrugada, todavía parte de la noche del día anterior.
+    es_diurno = (hour_frac >= 7.0 + 1 / 60) & (hour_frac <= 21.0)
+    es_madrugada = hour_frac < 7.0 + 1 / 60
+    dia_ruido = pd.Series(pd.DatetimeIndex(index.date), index=index)
+    if es_madrugada.any():
+        dia_ruido.loc[es_madrugada] = pd.DatetimeIndex(
+            (index[es_madrugada] - pd.Timedelta(days=1)).date
+        )
+    horario = pd.Series(np.where(es_diurno, "diurno", "nocturno"), index=index)
+    return pd.DataFrame({"dia_ruido": dia_ruido.values, "horario": horario.values}, index=index)
+
+
+def ruido_exceedance_report(
+    series: pd.Series,
+    sector: str,
+    natural_noise: bool = False,
+) -> pd.DataFrame:
+    """Reporte de cumplimiento de ruido ambiental contra la Tabla 2 (Res. 627/2006).
+
+    Calcula L_Aeq (Art. 4) por día y ventana horaria (diurna/nocturna, Art. 2)
+    y lo compara contra el estándar máximo permisible del sector (Tabla 2,
+    Art. 17). Requiere una serie con ``DatetimeIndex`` -- sin fecha/hora no
+    se puede determinar la ventana horaria aplicable.
+
+    Args:
+        series: Mediciones de nivel de presión sonora en dB(A), indexadas por
+            fecha/hora (idealmente sub-horarias; con menos resolución el
+            L_Aeq calculado es una aproximación).
+        sector: Uno de los sectores de la Tabla 2 -- ver ``_SECTORES_RUIDO``
+            (equivalente a las claves de ``config.NORMA_RUIDO`` sin el sufijo
+            ``_dia``/``_noche``, ej. ``'sector_a'``, ``'sector_c_industrial'``).
+        natural_noise: Si ``True``, aplica la excepción del Art. 17 Parágrafo
+            Segundo (el nivel se supera por fuentes naturales sin intervención
+            humana -- cascadas, fauna, etc., relevante sobre todo en
+            ``sector_d``). La detección de si el ruido es "natural" NO se
+            hace algorítmicamente (no es posible desde una sola serie
+            numérica) -- es una aserción del analista, y las filas quedan
+            marcadas como no evaluadas en vez de reportar una excedencia que
+            podría ser jurídicamente inválida.
+
+    Returns:
+        DataFrame con una fila por (día de ruido, horario): dia_ruido,
+        horario, sector, l_aeq_dba, umbral_dba, excede, margen_db,
+        n_mediciones (cantidad de lecturas agregadas en esa ventana --
+        una ventana con pocas mediciones es una aproximación pobre del
+        L_Aeq,T real, ver Art. 4), nota.
+    """
+    if not isinstance(series.index, pd.DatetimeIndex):
+        raise ValueError(
+            "ruido_exceedance_report requiere una serie con DatetimeIndex "
+            "(Art. 2: el estándar aplicable depende de la hora del día)."
+        )
+    if sector not in _SECTORES_RUIDO:
+        raise ValueError(f"sector={sector!r} no reconocido. Sectores válidos: {_SECTORES_RUIDO}")
+
+    s = series.dropna()
+    if s.empty:
+        return pd.DataFrame(
+            columns=[
+                "dia_ruido",
+                "horario",
+                "sector",
+                "l_aeq_dba",
+                "umbral_dba",
+                "excede",
+                "margen_db",
+                "n_mediciones",
+                "nota",
+            ]
+        )
+
+    grouped = _dia_ruido_y_horario(s.index).assign(valor=s.to_numpy())
+
+    rows = []
+    for (dia, horario), grupo in grouped.groupby(["dia_ruido", "horario"]):
+        l_aeq = _laeq(grupo["valor"].to_numpy())
+        umbral_key = f"{sector}_{'dia' if horario == 'diurno' else 'noche'}"
+        umbral = NORMA_RUIDO[umbral_key]
+
+        if natural_noise:
+            excede = False
+            nota = (
+                "No evaluado contra el estándar -- excepción Art. 17 Parágrafo "
+                "Segundo declarada por el analista (fuente natural sin "
+                "intervención humana)."
+            )
+        else:
+            excede = l_aeq > umbral
+            nota = ""
+
+        rows.append(
+            {
+                "dia_ruido": dia,
+                "horario": horario,
+                "sector": sector,
+                "l_aeq_dba": round(l_aeq, 1),
+                "umbral_dba": umbral,
+                "excede": excede,
+                "margen_db": round(l_aeq - umbral, 1),
+                "n_mediciones": len(grupo),
+                "nota": nota,
+            }
+        )
+
+    return pd.DataFrame(rows).sort_values(["dia_ruido", "horario"]).reset_index(drop=True)
