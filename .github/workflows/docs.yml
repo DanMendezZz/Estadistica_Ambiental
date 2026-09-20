@@ -1,7 +1,19 @@
 name: Docs — mkdocs site
 
+# Solo VALIDA que el sitio compila (mkdocs --strict). El despliegue a Pages lo hace
+# pages.yml: Pages está en modo "workflow" y no sirve la rama gh-pages.
+
 on:
   push:
+    branches: [main]
+    paths:
+      - "mkdocs.yml"
+      - "docs/**"
+      - "src/**"
+      - "CHANGELOG.md"
+      - "pyproject.toml"
+      - ".github/workflows/docs.yml"
+  pull_request:
     branches: [main]
     paths:
       - "mkdocs.yml"
@@ -13,21 +25,19 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # mkdocs gh-deploy push to gh-pages branch
+  contents: read
 
 concurrency:
-  group: docs-mkdocs
-  cancel-in-progress: false
+  group: docs-mkdocs-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
-    name: Build mkdocs site and deploy to gh-pages
+  build:
+    name: Validar build de mkdocs (strict)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v7
@@ -46,11 +56,3 @@ jobs:
 
       - name: Validate mkdocs build (strict)
         run: mkdocs build --strict
-
-      - name: Configure git for gh-deploy
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Deploy to gh-pages branch
-        run: mkdocs gh-deploy --force --no-history
