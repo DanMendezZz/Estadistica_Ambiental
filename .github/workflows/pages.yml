@@ -1,4 +1,9 @@
-name: GitHub Pages — Showcase cumplimiento normativo
+name: GitHub Pages — Docs + Showcase + JupyterLite
+
+# Único workflow que publica en Pages (Settings > Pages > Source: GitHub Actions).
+# Un solo artefacto contiene: documentación mkdocs en "/", el showcase de
+# cumplimiento normativo en "/showcase/" y JupyterLite en "/lite/".
+# docs.yml solo valida el build; NO despliega (gh-pages no lo sirve Pages).
 
 on:
   push:
@@ -6,9 +11,16 @@ on:
     paths:
       - "src/**"
       - "scripts/generate_showcase.py"
+      - "mkdocs.yml"
+      - "docs/**"
+      - "CHANGELOG.md"
+      - "pyproject.toml"
+      - "jupyter-lite.json"
+      - "jupyter_lite_config.json"
+      - "lite_requirements.txt"
       - ".github/workflows/pages.yml"
   schedule:
-    - cron: "0 6 * * 1"   # lunes 6am UTC — regenera con código actualizado
+    - cron: "0 6 * * 1"   # lunes 6am UTC — regenera el showcase con código actualizado
   workflow_dispatch:       # ejecución manual desde la UI de GitHub
 
 permissions:
@@ -23,10 +35,10 @@ concurrency:
 
 jobs:
   # ─────────────────────────────────────────────────────────
-  # JOB 1: Generar el HTML con compliance_report
+  # JOB 1: Construir el sitio completo (showcase + JupyterLite + mkdocs)
   # ─────────────────────────────────────────────────────────
-  generate:
-    name: Generar showcase HTML
+  build:
+    name: Construir sitio (docs + showcase + lite)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -36,29 +48,39 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Instalar paquete (deps base)
-        run: pip install -e "."
+      - name: Instalar paquete con extras de docs
+        run: pip install -e ".[docs]"
 
+      # docs/showcase/ está en .gitignore: se genera aquí y mkdocs lo copia a /showcase/
       - name: Generar showcase Kennedy RMCAB
         run: python scripts/generate_showcase.py
 
-      - name: Verificar que el HTML se generó
+      - name: Construir JupyterLite (notebooks Pyodide)
         run: |
-          test -f docs/showcase/index.html \
-            && echo "✓ docs/showcase/index.html generado ($(wc -c < docs/showcase/index.html) bytes)" \
-            || (echo "✗ docs/showcase/index.html no encontrado" && exit 1)
+          jupyter lite build \
+            --contents docs/lite/files \
+            --output-dir docs/lite/_dist
+
+      - name: Construir sitio mkdocs (strict)
+        run: mkdocs build --strict
+
+      - name: Verificar que el sitio contiene las tres partes
+        run: |
+          for f in index.html showcase/index.html lite/index.html lite/_dist/lab/index.html; do
+            test -f "site/$f" && echo "✓ site/$f" || { echo "✗ site/$f no encontrado"; exit 1; }
+          done
 
       - name: Subir artefacto de Pages
         uses: actions/upload-pages-artifact@v5
         with:
-          path: docs/showcase/
+          path: site/
 
   # ─────────────────────────────────────────────────────────
   # JOB 2: Deploy a GitHub Pages
   # ─────────────────────────────────────────────────────────
   deploy:
     name: Deploy a GitHub Pages
-    needs: generate
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages

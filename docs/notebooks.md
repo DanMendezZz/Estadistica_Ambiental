@@ -7,7 +7,7 @@ La página corre [JupyterLite](https://jupyterlite.readthedocs.io/) con kernel
 [Abrir JupyterLite en pantalla completa :material-launch:](lite/_dist/lab/index.html){ .md-button .md-button--primary target="_blank" }
 
 <iframe
-  src="lite/_dist/lab/index.html"
+  src="../lite/_dist/lab/index.html"
   width="100%"
   height="800"
   style="border: 1px solid #ccc; border-radius: 4px;"
@@ -50,7 +50,7 @@ pip install estadistica-ambiental
 
 ## Construcción local
 
-El sitio JupyterLite se construye en CI (`.github/workflows/docs.yml`) antes del deploy de mkdocs.
+El sitio JupyterLite se construye en CI (`.github/workflows/pages.yml`) antes de publicar el sitio.
 Para reproducirlo localmente:
 
 ```bash
