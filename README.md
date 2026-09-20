@@ -93,7 +93,7 @@ Este repo es **base de conocimiento + librería reutilizable**, no un producto f
 - **20 ADRs** ([`docs/decisiones.md`](docs/decisiones.md) + [`docs/adr/`](docs/adr/)) con el porqué de cada decisión metodológica: outliers como señal real, RMSLE en variables negativas, ENSO con lag por ecosistema, normas centralizadas, base↔satélite, OIDC para PyPI.
 - **16 fichas de dominio** ([`docs/fuentes/<linea>.md`](docs/fuentes/)) con normas regulatorias, fuentes públicas, umbrales y buenas prácticas por línea temática.
 - **Normas colombianas centralizadas** en `config.py` (Res. 2254/2017, 2115/2007, 631/2015, IUA, IRH, ICA, ENSO).
-- **639 tests · CI verde · cobertura ~80 %** sobre Linux + Windows; sitio mkdocs auto-publicado a GitHub Pages tras cada push a `main`.
+- **Más de 700 tests · CI verde · cobertura ~84 %** sobre Linux + Windows; sitio mkdocs auto-publicado a GitHub Pages tras cada push a `main`.
 
 ---
 
@@ -121,7 +121,7 @@ ciclo analítico es siempre el mismo: cargar, validar, describir, inferir, model
 Este repositorio resuelve eso con una **base de conocimiento reutilizable** que combina tres cosas
 que raramente aparecen juntas en un solo lugar:
 
-- **Metodología documentada**: decisiones de diseño (ADR-001 a ADR-019), buenas prácticas calibradas
+- **Metodología documentada**: decisiones de diseño (ADR-001 a ADR-020), buenas prácticas calibradas
   sobre datos reales y fichas de dominio por línea temática.
 - **Normas colombianas en el código**: Res. 2254/2017 (calidad del aire), 2115/2007 (agua potable),
   631/2015 (vertimientos) e índices IDEAM listos para usarse con un solo import, sin hardcodear umbrales.
@@ -306,8 +306,7 @@ varias decisiones del repo:
 - `enso_lagged(lag_meses=2)` para calidad del aire: coincidencia con la literatura colombiana.
 
 Métricas en producción: **RMSE = 3.717 µg/m³**, **HitRate ICA = 88.61 %**, **27/31 estaciones AR(1) PASS**
-(tests T1–T4 + KS + Ljung-Box + Jarque-Bera). El feedback recíproco está documentado en
-[`Plan/Feedback/repo_estadistica_ambiental_feedback.md`](Plan/Feedback/repo_estadistica_ambiental_feedback.md).
+(tests T1–T4 + KS + Ljung-Box + Jarque-Bera). El feedback recíproco está documentado en el proyecto hermano de pronóstico.
 
 ---
 
@@ -413,7 +412,7 @@ Estadistica_Ambiental/
 │   ├── fuentes/                   ← 16 fichas técnicas de dominio
 │   │   └── calidad_aire.md        ← variables · ICA µg/m³ · buenas prácticas BP-1 a BP-7
 │   ├── decisiones.md              ← ADR-001 a ADR-013
-│   ├── adr/                       ← ADR-014 a ADR-019
+│   ├── adr/                       ← ADR-014 a ADR-020
 │   ├── showcase/                  ← index.html – cumplimiento normativo estación Kennedy (RMCAB)
 │   ├── img/                       ← model_comparison.png · forecast_ar1.png
 │   ├── metodologia.md             ← ciclo estadístico detallado
@@ -431,7 +430,7 @@ Estadistica_Ambiental/
 │   ├── generate_showcase.py       ← genera docs/showcase/index.html (workflow pages.yml)
 │   └── build_notebooks.py         ← regenera los 16 notebooks desde plantilla
 │
-└── tests/                         ← 639 tests · ~80% cobertura · CI ubuntu + windows
+└── tests/                         ← más de 700 tests · ~84% cobertura · CI ubuntu + windows
 ```
 
 </details>
@@ -452,7 +451,7 @@ flowchart LR
         M["11 módulos del pipeline"]
         N["16 notebooks plantilla"]
         F["16 fichas de dominio"]
-        A["ADR-001 a ADR-019"]
+        A["ADR-001 a ADR-020"]
     end
 
     BASE -->|"pip install<br/>estadistica-ambiental==X.Y.Z<br/>(pin exacto)"| S1["calidad-aire-CAR<br/>(dashboard CAR-específico)"]
@@ -501,7 +500,7 @@ print(ea.__version__)
 ```bash
 git clone https://github.com/DanMendezZz/Estadistica_Ambiental.git
 cd Estadistica_Ambiental
-pip install -e ".[dev]"
+pip install -e ".[dev,docs]"
 ```
 
 ### Dependencias core
@@ -514,7 +513,7 @@ Ver `pyproject.toml` para la lista completa.
 
 ```bash
 python -m pytest tests/ -q
-# 639 tests collected — ~80% coverage en Linux + Windows
+# más de 700 tests — ~84% de cobertura en Linux + Windows
 ```
 
 ---
@@ -883,7 +882,7 @@ flowchart TD
 
 La base de conocimiento queda documentalmente cerrada en v1.3.2 (todas las decisiones grandes con ADR,
 cobertura de API completa en docs, tests verdes). Los siguientes frentes son **mejoras incrementales**,
-priorizadas por valor pedagógico, no por features de producto. Detalle completo en `Plan/Plan.md` §10.
+priorizadas por valor pedagógico, no por features de producto.
 
 ### A. Pedagógico (alta prioridad)
 
