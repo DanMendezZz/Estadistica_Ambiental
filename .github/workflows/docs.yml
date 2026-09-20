@@ -1,18 +1,10 @@
 name: Docs — mkdocs site
 
 # Solo VALIDA que el sitio compila (mkdocs --strict). El despliegue a Pages lo hace
-# pages.yml: Pages está en modo "workflow" y no sirve la rama gh-pages.
+# pages.yml (que ya construye con --strict en cada push a main): Pages está en
+# modo "workflow" y no sirve la rama gh-pages. Aquí solo se valida en PRs.
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "mkdocs.yml"
-      - "docs/**"
-      - "src/**"
-      - "CHANGELOG.md"
-      - "pyproject.toml"
-      - ".github/workflows/docs.yml"
   pull_request:
     branches: [main]
     paths:

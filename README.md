@@ -286,7 +286,7 @@ reentrenar el modelo base:
 
 ### Showcase: cumplimiento normativo PM2.5/PM10 (estación Kennedy)
 
-El sitio auto-publicado [`docs/showcase/index.html`](docs/showcase/index.html) (workflow `pages.yml`,
+El sitio auto-publicado [`/showcase/`](https://danmendezzz.github.io/Estadistica_Ambiental/showcase/) (workflow `pages.yml`,
 regenerado cada lunes vía `scripts/generate_showcase.py`) muestra el semáforo de cumplimiento normativo
 para PM2.5 y PM10 sobre la estación Kennedy (red RMCAB Bogotá, 2022–2024): excedencias contra Res.
 2254/2017 y OMS 2021, con tabla detallada por norma y gráficos Chart.js interactivos.

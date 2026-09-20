@@ -15,6 +15,9 @@ on:
       - "docs/**"
       - "CHANGELOG.md"
       - "pyproject.toml"
+      - "jupyter-lite.json"
+      - "jupyter_lite_config.json"
+      - "lite_requirements.txt"
       - ".github/workflows/pages.yml"
   schedule:
     - cron: "0 6 * * 1"   # lunes 6am UTC — regenera el showcase con código actualizado
