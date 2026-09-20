@@ -430,7 +430,7 @@ Estadistica_Ambiental/
 │   ├── generate_showcase.py       ← genera docs/showcase/index.html (workflow pages.yml)
 │   └── build_notebooks.py         ← regenera los 16 notebooks desde plantilla
 │
-└── tests/                         ← +700 tests · ~84% cobertura · CI ubuntu + windows
+└── tests/                         ← más de 700 tests · ~84% cobertura · CI ubuntu + windows
 ```
 
 </details>
@@ -513,7 +513,7 @@ Ver `pyproject.toml` para la lista completa.
 
 ```bash
 python -m pytest tests/ -q
-# 700+ tests collected — ~84% coverage en Linux + Windows
+# más de 700 tests — ~84% de cobertura en Linux + Windows
 ```
 
 ---
@@ -882,7 +882,7 @@ flowchart TD
 
 La base de conocimiento queda documentalmente cerrada en v1.3.2 (todas las decisiones grandes con ADR,
 cobertura de API completa en docs, tests verdes). Los siguientes frentes son **mejoras incrementales**,
-priorizadas por valor pedagógico, no por features de producto. Detalle completo en `Plan/Plan.md` §10.
+priorizadas por valor pedagógico, no por features de producto.
 
 ### A. Pedagógico (alta prioridad)
 

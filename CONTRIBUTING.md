@@ -10,13 +10,14 @@ Requiere Python >= 3.10.
 ```bash
 git clone https://github.com/DanMendezZz/Estadistica_Ambiental.git
 cd Estadistica_Ambiental
-pip install -e ".[dev]"
+pip install -e ".[dev,docs]"
 pre-commit install
 ```
 
-Los módulos pesados son *extras* opcionales (`ml`, `bayes`, `spatial`, `deep`, `prophet`,
-`netcdf`, `profile`, `fast`, `docs`). Instala solo los que necesites, por ejemplo
-`pip install -e ".[dev,ml,spatial]"`. Los tests que dependen de un extra se saltan solos si
+El extra `docs` es necesario porque el hook `mkdocs-build-strict` de pre-commit ejecuta
+`mkdocs build --strict`. Los módulos pesados son *extras* opcionales (`ml`, `bayes`, `spatial`,
+`deep`, `prophet`, `netcdf`, `profile`, `fast`): instala solo los que necesites, por ejemplo
+`pip install -e ".[dev,docs,ml,spatial]"`. Los tests que dependen de un extra se saltan solos si
 no está instalado.
 
 ## Flujo de trabajo
