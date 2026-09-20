@@ -31,6 +31,7 @@ no está instalado.
 ruff check src/ tests/
 ruff format --check src/ tests/
 pytest
+mkdocs build --strict   # si tocaste docs/, src/ o mkdocs.yml (lo corre el hook)
 ```
 
 5. Abre el PR usando la plantilla y enlaza el issue (`Closes #N`).

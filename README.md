@@ -500,7 +500,7 @@ print(ea.__version__)
 ```bash
 git clone https://github.com/DanMendezZz/Estadistica_Ambiental.git
 cd Estadistica_Ambiental
-pip install -e ".[dev]"
+pip install -e ".[dev,docs]"
 ```
 
 ### Dependencias core
