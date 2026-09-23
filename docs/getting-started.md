@@ -19,14 +19,14 @@ pip install estadistica-ambiental
 Para pinear a una versión exacta (en producción / repos satélite):
 
 ```bash
-pip install "estadistica-ambiental==1.3.2"
+pip install "estadistica-ambiental==1.4.0"
 ```
 
 ### Desde GitHub (commits sin tag, ramas o forks)
 
 ```bash
 pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental.git@main"
-pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental.git@v1.3.2"
+pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental.git@v1.4.0"
 ```
 
 ### Desde un clon local (para desarrollar el repo)

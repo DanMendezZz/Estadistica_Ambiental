@@ -462,7 +462,7 @@ flowchart LR
 ```
 
 **Reglas clave del ADR:** la base nunca depende de un satélite (coupling unidireccional); cada
-satélite pinea la versión exacta de la base (`estadistica-ambiental==1.3.2`, no rangos abiertos);
+satélite pinea la versión exacta de la base (`estadistica-ambiental==1.4.0`, no rangos abiertos);
 apps Streamlit/Dash, pipelines ETL nocturnos, configuraciones de deploy productivo y datos crudos
 de cliente **no** viven en este repo. El primer satélite materializado (`Estadistica_Ambiental_Dashboard`)
 validó el patrón y fue retirado el 2026-07-24 una vez cumplido su propósito de referencia; la
@@ -532,24 +532,24 @@ como dependencia (ver [arquitectura base ↔ satélite](#arquitectura-base--sat�
 pip install estadistica-ambiental
 
 # Pinear a versión exacta (recomendado en producción)
-pip install "estadistica-ambiental==1.3.2"
+pip install "estadistica-ambiental==1.4.0"
 
 # Con extras
-pip install "estadistica-ambiental[ml,spatial]==1.3.2"
+pip install "estadistica-ambiental[ml,spatial]==1.4.0"
 ```
 
 ### Alternativa — desde GitHub (commits sin tag, ramas, forks)
 
 ```bash
 # Pin a tag concreto
-pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.3.2"
+pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@v1.4.0"
 
 # Rama main (sin garantías de estabilidad)
 pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@main"
 ```
 
 > **Pin a versión siempre** en repos satélite. Evita que un commit en `main` rompa
-> producción sin aviso. Cuando salga `v1.4.0` actualizás conscientemente.
+> producción sin aviso. Cuando salga `v1.5.0` actualizás conscientemente.
 
 ### Documentación navegable
 
@@ -880,7 +880,7 @@ flowchart TD
 
 ## Trabajo futuro
 
-La base de conocimiento queda documentalmente cerrada en v1.3.2 (todas las decisiones grandes con ADR,
+La base de conocimiento queda documentalmente cerrada en v1.4.0 (todas las decisiones grandes con ADR,
 cobertura de API completa en docs, tests verdes). Los siguientes frentes son **mejoras incrementales**,
 priorizadas por valor pedagógico, no por features de producto.
 
