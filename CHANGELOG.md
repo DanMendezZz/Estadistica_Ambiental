@@ -12,6 +12,8 @@ Versiones: [Semver](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-09-22
+
 ### Agregado
 - **Línea temática 17 — Ruido Ambiental** (issues #14/#33): `config.NORMA_RUIDO`
   con los estándares máximos permisibles de la Tabla 2 (Art. 17, Res.
