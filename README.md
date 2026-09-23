@@ -549,7 +549,7 @@ pip install "git+https://github.com/DanMendezZz/Estadistica_Ambiental@main"
 ```
 
 > **Pin a versión siempre** en repos satélite. Evita que un commit en `main` rompa
-> producción sin aviso. Cuando salga `v1.4.0` actualizás conscientemente.
+> producción sin aviso. Cuando salga `v1.5.0` actualizás conscientemente.
 
 ### Documentación navegable
 
